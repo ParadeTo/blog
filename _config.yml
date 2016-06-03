@@ -11,14 +11,6 @@ author: Ayou
 language: zh-CN
 timezone: Asia/Chongqing
 
-# Menu
-menu:
-
-  Home:
-  Archives: /archives
-  Reading: /reading
-  Categories: /categories
-  About: ¹ØÓÚ
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
@@ -73,7 +65,7 @@ pagination_dir: page
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
-theme: landscape
+theme: yaht
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
