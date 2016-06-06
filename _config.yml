@@ -70,6 +70,7 @@ theme: yaht
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
-  type: git
-  repository: https://github.com/ParadeTo/ParadeTo.github.io.git
-  branch: master
+    type: git
+    repo:
+                github: https://github.com/ParadeTo/ParadeTo.github.io.git,master
+                coding: https://git.coding.net/youxingzhi/youxingzhi.git,master
