@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title></title>
+</head>
+<body>
+  <canvas id="canvas" width="800" height="600" style="border:1px solid black;margin:10px auto;display:block;"></canvas>
+  <script>
+//    var tangram = [
+//      {p:[{x:0,y:0},{x:800,y:0},{x:400,y:400}],color:"#caff67"},
+//      {p:[{x:0,y:0},{x:400,y:400},{x:0,y:800}],color:"#67becf"},
+//      {p:[{x:800,y:0},{x:800,y:400},{x:600,y:600},{x:600,y:200}],color:"#ef3d61"},
+//      {p:[{x:600,y:200},{x:600,y:600},{x:400,y:400}],color:"#f9f51a"},
+//      {p:[{x:400,y:400},{x:600,y:600},{x:400,y:800},{x:200,y:600}],color:"#a594c0"},
+//      {p:[{x:200,y:600},{x:400,y:800},{x:0,y:800}],color:"#fa8ccc"},
+//      {p:[{x:800,y:400},{x:800,y:800},{x:400,y:800}],color:"#f6ca29"},
+//    ]
+//    window.onload = function() {
+//      var canvas = document.getElementById("canvas");
+//      canvas.height = 800;
+//      canvas.width = 800;
+//      var context = canvas.getContext("2d");
+//      for (var i=0;i < tangram.length;i++) {
+//        draw(tangram[i], context);
+//      }
+//
+//    }
+//    function draw(piece, cxt) {
+//      cxt.beginPath();
+//      cxt.moveTo(piece.p[0].x, piece.p[0].y);
+//      for(var i=1;i<piece.p.length;i++){
+//        cxt.lineTo(piece.p[i].x,piece.p[i].y);
+//      }
+//      cxt.closePath();
+//      cxt.fillStyle = piece.color;
+//      cxt.strokeStyle = "black";
+//      cxt.fill();
+//      cxt.stroke();
+//    }
+
+      var canvas = document.getElementById("canvas");
+      canvas.height = 800;
+      canvas.width = 800;
+      var context = canvas.getContext("2d");
+      // 弧形
+
+      context.lineWidth = 5;
+      context.strokeStyle = "#005588";
+      context.beginPath();
+      context.arc(200,200,100,0,1.5*Math.PI);
+      //context.closePath();
+      context.stroke();
+
+      context.lineWidth = 5;
+      context.fillStyle = "green";
+      context.beginPath();
+      context.arc(500,200,100,0,1.5*Math.PI);
+      context.closePath();
+      context.fill();
+    // 多边形
+//    context.moveTo(50,50);
+//    context.lineTo(200,200);
+//    context.lineTo(50,200);
+//    context.lineTo(50,50);
+//    context.fillStyle = "rgb(2,100,24)";
+//    context.fill();
+//    // 给多边形加上外边框
+//    context.lineWidth = 5;
+//    context.strokeStyle = "red";
+//    context.stroke();
+
+// context.beginPath();
+//context.moveTo(50,50);
+//context.lineTo(200,200);
+//context.lineTo(50,200);
+//context.lineTo(50,50);
+// context.closePath();
+//context.fillStyle = "blue";
+//context.fill();
+//
+// context.beginPath();
+//context.moveTo(50,250);
+//context.lineTo(200,400);
+//context.lineTo(50,400);
+//context.lineTo(50,250);
+// context.closePath();
+//context.fillStyle = "black";
+//context.fill();
+    // 七巧板
+  </script>
+</body>
+</html>
