@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<canvas  id="canvas" width="800" height="600" style="border:1px solid black;margin:10px auto;display:block;"></canvas>
+<script>
+    var canvas = document.getElementById("canvas");
+    canvas.height = 400;
+    canvas.width = 800;
+    var context = canvas.getContext("2d");
+    // 画矩形
+//    context.rect(100,100,100,100);
+//    context.fillStyle = "red";
+//    context.strokeStyle = "blue";
+//    context.fill();
+//    context.stroke();
+    //
+//    context.fillRect(230,100,100,100);
+//    context.strokeRect(360,100,100,100);
+    // lineCap
+//    context.beginPath()
+//    context.moveTo(100,100);
+//    context.lineTo(400,100);
+//    context.lineWidth = 20;
+//    context.lineCap = 'butt'
+//    context.stroke();
+//
+//    context.beginPath()
+//    context.moveTo(100,200);
+//    context.lineTo(400,200);
+//    context.lineWidth = 20;
+//    context.lineCap = 'round';
+//    context.stroke();
+//
+//    context.beginPath()
+//    context.moveTo(100,300);
+//    context.lineTo(400,300);
+//    context.lineWidth = 20;
+//    context.lineCap = 'square';
+//    context.stroke();
+//
+//    context.beginPath()
+//    context.moveTo(100,50);
+//    context.lineTo(100,350);
+//    context.lineWidth = 1;
+//    context.stroke();
+//
+//    context.beginPath()
+//    context.moveTo(400,50);
+//    context.lineTo(400,350);
+//    context.lineWidth = 1;
+//    context.stroke();
+    // lineJoin
+//        context.lineWidth = 10
+//        context.beginPath()
+//        context.moveTo(100,100);
+//        context.lineTo(200,200);
+//        context.lineTo(100,300);
+//        context.lineJoin = 'miter';
+//        context.stroke();
+//
+//        context.beginPath()
+//        context.moveTo(200,100);
+//        context.lineTo(300,200);
+//        context.lineTo(200,300);
+//        context.lineJoin = 'bevel';
+//        context.stroke();
+//
+//        context.beginPath()
+//        context.moveTo(300,100);
+//        context.lineTo(400,200);
+//        context.lineTo(300,300);
+//        context.lineJoin = 'round';
+//        context.stroke();
+    // 五角星
+//     context.beginPath();
+//    context.lineWidth = 10;
+    context.fillStyle = 'black';
+    context.fillRect(0,0,canvas.width,canvas.height);
+    for(var i = 0;i < 200;i++) {
+        var r = Math.random() * 10 + 10;
+        var x = Math.random() * canvas.width;
+        var y = Math.random() * canvas.height;
+        var a = Math.random() * 360;
+        drawStar(context, r, r/2.0, x, y, a);
+    }
+
+//    for (var i = 0;i<5;i++) {
+//        context.lineTo(Math.cos((18 + i*72)/180 * Math.PI) * 100 + 400,
+//            -Math.sin((18 + i*72)/180 * Math.PI) * 100 + 200);
+//        context.lineTo(Math.cos((54 + i*72)/180 * Math.PI) * 50 + 400,
+//                -Math.sin((54 + i*72)/180 * Math.PI) * 50 + 200);
+//    }
+//    context.closePath();
+
+//    context.stroke();
+
+
+    //drawStar(context, 50, 100, 400, 200, 180);
+    /**
+     *
+     * @param cxt 绘图上下文
+     * @param r 内圆半径
+     * @param R 外圆半径
+     * @param x 圆心x
+     * @param y 圆心y
+     * @param angle 五角星选择角度，逆时针为正
+     */
+//    function drawStar(cxt, r, R, x, y, angle) {
+//        cxt.beginPath();
+//        for (var i = 0;i<5;i++) {
+//            cxt.lineTo(Math.cos((angle+18 + i*72)/180 * Math.PI) * R + x,
+//                    -Math.sin((angle+18 + i*72)/180 * Math.PI) * R + y);
+//            cxt.lineTo(Math.cos((angle+54 + i*72)/180 * Math.PI) * r + x,
+//                    -Math.sin((angle+54 + i*72)/180 * Math.PI) * r + y);
+//        }
+//        cxt.closePath();
+//
+//        cxt.fillStyle = '#fb3';
+//        cxt.strokeStyle = '#fd5';
+//        cxt.lineWidth = 3;
+//        cxt.lineJoin = "round";
+//
+//        cxt.fill();
+//        cxt.stroke();
+//    }
+
+        function drawStar(cxt, x, y, R, rot) {
+            starPath
+        }
+</script>
+</body>
+</html>
