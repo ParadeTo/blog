@@ -13,7 +13,7 @@ timezone: Asia/Chongqing
 
 
 # URL
-## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
+## If your site is put in a suhhexobdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
 url: http://www.paradeto.com
 root: /
 permalink: :year/:month/:day/:title/
@@ -74,3 +74,4 @@ deploy:
     repo:
                 github: https://github.com/ParadeTo/ParadeTo.github.io.git,master
                 coding: https://git.coding.net/youxingzhi/youxingzhi.git,master
+

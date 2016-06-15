@@ -1,18 +1,18 @@
 ---
-title: canvasµ¹¼ÆÊ±Ğ§¹û
+title: canvaså€’è®¡æ—¶æ•ˆæœ
 date: 2016-06-10 22:07:05
 tags:
 - canvas
 categories:
-- canvas
-description: ÀûÓÃcanvasÖÆ×÷µÄÒ»¸öµ¹¼ÆÊ±Ğ¡¹¤¾ß
+- html/css
+description: åˆ©ç”¨canvasåˆ¶ä½œçš„ä¸€ä¸ªå€’è®¡æ—¶å°å·¥å…·
 ---
-×î½ü¿ªÊ¼Ñ§Ï°canvas£¬ÊµÏÖÁË[Ä½¿ÎÍø](http://www.imooc.com/learn/133)ÉÏµÄÒ»¸öµ¹¼ÆÊ±Àı×Ó¡£
-## ×îÖÕĞ§¹û
+æœ€è¿‘å¼€å§‹å­¦ä¹ canvasï¼Œå®ç°äº†[æ…•è¯¾ç½‘](http://www.imooc.com/learn/133)ä¸Šçš„ä¸€ä¸ªå€’è®¡æ—¶ä¾‹å­ã€‚
+## æœ€ç»ˆæ•ˆæœ
 !()[canvas-count-down/canvas-result.png]
-×îºóµÄĞ§¹ûÊÇ²»ÊÇºÜÑ¤ÀöÄØ
-## Êı×Ö±íÊ¾·½·¨
-ÓÃ¶şÎ¬¾ØÕó±íÊ¾0~9£¬£º£¬¡°Ìì¡±ÕâĞ©ºóÃæĞèÒªÓÃµ½µÄ×Ö·û
+æœ€åçš„æ•ˆæœæ˜¯ä¸æ˜¯å¾ˆç»šä¸½å‘¢
+## æ•°å­—è¡¨ç¤ºæ–¹æ³•
+ç”¨äºŒç»´çŸ©é˜µè¡¨ç¤º0~9ï¼Œï¼šï¼Œâ€œå¤©â€è¿™äº›åé¢éœ€è¦ç”¨åˆ°çš„å­—ç¬¦
 ```javascript
 digit =
 ? ? [
@@ -159,13 +159,13 @@ digit =
 ? ? ? ? ? ? [0, 1, 1, 0, 1, 1, 0],
 ? ? ? ? ? ? [0, 1, 1, 0, 1, 1, 0],
 ? ? ? ? ? ? [1, 1, 0, 0, 0, 1, 1]
-? ? ? ? ]//Ìì
+? ? ? ? ]//å¤©
 ? ? ];
 ```
-Ò»¸öÊı×ÖµÄ»æÖÆÔ­Àí(Ïê¼û[Ä½¿ÎÍø](http://www.imooc.com/video/2450)):
+ä¸€ä¸ªæ•°å­—çš„ç»˜åˆ¶åŸç†(è¯¦è§[æ…•è¯¾ç½‘](http://www.imooc.com/video/2450)):
 !()[canvas-count-down/canvas-digit.png]
-## Ä£ÄâÒ»¸öĞ¡ÇòµÄÔË¶¯
-Àı×ÓÖĞ£¬µ±Êı×Ö·¢Éú±ä»¯Ê±£¬»á³öÏÖºÜ¶à²ÊÉ«µÄÔË¶¯µÄĞ¡Çò£¬ÕâÊÇÔõÃ´ÊµÏÖµÄÄØ£¬ÏÈ´ÓÄ£ÄâÒ»¸öĞ¡ÇòµÄÔË¶¯¿ªÊ¼£º
+## æ¨¡æ‹Ÿä¸€ä¸ªå°çƒçš„è¿åŠ¨
+ä¾‹å­ä¸­ï¼Œå½“æ•°å­—å‘ç”Ÿå˜åŒ–æ—¶ï¼Œä¼šå‡ºç°å¾ˆå¤šå½©è‰²çš„è¿åŠ¨çš„å°çƒï¼Œè¿™æ˜¯æ€ä¹ˆå®ç°çš„å‘¢ï¼Œå…ˆä»æ¨¡æ‹Ÿä¸€ä¸ªå°çƒçš„è¿åŠ¨å¼€å§‹ï¼š
 ```javascript
 var WINDOW_WIDTH = 1024;
 var WINDOW_HEIGHT = 400;
@@ -178,10 +178,10 @@ var curShowTimeSeconds = 0
 var balls = [];
 const colors = ["#33B5E5", "#0099CC", "#AA66CC", "#9933CC", "#99CC00", "#669900", "#FFBB33", "#FF8800", "#FF4444", "#CC0000"]
 
-// x,y±íÊ¾Ğ¡ÇòµÄ×ø±ê
-// g±íÊ¾ÖØÁ¦¼ÓËÙ¶È
-// vx£¬vy±íÊ¾Ë®Æ½ºÍ´¹Ö±·½ÏòÉÏµÄËÙ¶È
-// color ±íÊ¾Ğ¡ÇòµÄÑÕÉ«
+// x,yè¡¨ç¤ºå°çƒçš„åæ ‡
+// gè¡¨ç¤ºé‡åŠ›åŠ é€Ÿåº¦
+// vxï¼Œvyè¡¨ç¤ºæ°´å¹³å’Œå‚ç›´æ–¹å‘ä¸Šçš„é€Ÿåº¦
+// color è¡¨ç¤ºå°çƒçš„é¢œè‰²
 var ball = {x: 1000, y: 50, g: 2, vx: -4, vy: -10, color: "blue"};
 
 window.onload = function () {
@@ -209,17 +209,17 @@ function getCurrentShowTimeSeconds() {
     return ret >= 0 ? ret : 0;
 }
 function updateBalls() {
-    ball.vy += ball.g; // ËÙ¶È±ä»¯
-    ball.x += ball.vx; // Ë®Æ½·½ÏòµÄÎ»ÖÃ±ä»¯
-    ball.y += ball.vy;  // ´¹Ö±·½ÏòµÄÎ»ÖÃ±ä»¯
+    ball.vy += ball.g; // é€Ÿåº¦å˜åŒ–
+    ball.x += ball.vx; // æ°´å¹³æ–¹å‘çš„ä½ç½®å˜åŒ–
+    ball.y += ball.vy;  // å‚ç›´æ–¹å‘çš„ä½ç½®å˜åŒ–
     if (ball.y >= WINDOW_HEIGHT - RADIUS) {
-        // ·´µ¯
+        // åå¼¹
         ball.y = WINDOW_HEIGHT - RADIUS;
-        // ÄÜÁ¿ËğºÄ
+        // èƒ½é‡æŸè€—
         ball.vy = -ball.vy*0.75;
     }
 }
-// »æÖÆĞ¡Çò
+// ç»˜åˆ¶å°çƒ
 function render(cxt) {
     cxt.clearRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     cxt.fillStyle = ball.color;
@@ -229,11 +229,11 @@ function render(cxt) {
     cxt.fill();
 }
 ```
-Ğ¡Çò»áÏÈ×öÒ»¸öĞ±Å×ÔË¶¯£¬È»ºóÅöµ½µ×²¿ºó·´µ¯ÆğÀ´£¬Èç´Ë·´¸´£¬Ò»Ö±µ½´¹Ö±ËÙ¶ÈÎª0.
+å°çƒä¼šå…ˆåšä¸€ä¸ªæ–œæŠ›è¿åŠ¨ï¼Œç„¶åç¢°åˆ°åº•éƒ¨ååå¼¹èµ·æ¥ï¼Œå¦‚æ­¤åå¤ï¼Œä¸€ç›´åˆ°å‚ç›´é€Ÿåº¦ä¸º0.
 !()[canvas-count-down/canvas-ball.png]
 
-## ÍêÕû¶¯»­
-ÍêÕûÀı×Ó´úÂëÈçÏÂÍ¼ËùÊ¾£º
+## å®Œæ•´åŠ¨ç”»
+å®Œæ•´ä¾‹å­ä»£ç å¦‚ä¸‹å›¾æ‰€ç¤ºï¼š
 ```javascript
 var WINDOW_WIDTH = 642;
 var WINDOW_HEIGHT = 500;
@@ -253,14 +253,14 @@ window.onload = function() {
     canvas.height = WINDOW_HEIGHT;
     curShowTimeSeconds = getCurrentShowTimeSeconds();
 
-    // ²»Í£µÄ¸üĞÂºÍÖØ»æ£¬ÕâÀïÊ±¼ä±ØĞëÒªĞ¡ÓÚ1Ãë£¬·ñÔò²»×¼È·
+    // ä¸åœçš„æ›´æ–°å’Œé‡ç»˜ï¼Œè¿™é‡Œæ—¶é—´å¿…é¡»è¦å°äº1ç§’ï¼Œå¦åˆ™ä¸å‡†ç¡®
     setInterval(function() {
         render(context);
         update();
     },50);
 }
 /**
- * ÅĞ¶ÏÃëÊıÊÇ·ñ·¢ÉúÁË±ä»¯À´¾ö¶¨ÊÇ·ñ¸üĞÂÊ±¼ä
+ * åˆ¤æ–­ç§’æ•°æ˜¯å¦å‘ç”Ÿäº†å˜åŒ–æ¥å†³å®šæ˜¯å¦æ›´æ–°æ—¶é—´
  */
 function update() {
     var nextShowTimeSeconds = getCurrentShowTimeSeconds();
@@ -284,39 +284,39 @@ function update() {
         var sCurDays = curDays.toString();
         sCurDays = sCurDays.length < 3 ? '0' + sCurDays : sCurDays;
 
-        // Ìì-°ÙÎ»
+        // å¤©-ç™¾ä½
         if ( sNextDays[0] != sCurDays[0]) {
             addBalls( MARGIN_LEFT + 93*(RADIUS+1) - 45 * (RADIUS+1), MARGIN_TOP-22*(RADIUS+1) , sCurDays[0] );
         }
-        // Ìì-Ê®Î»
+        // å¤©-åä½
         if ( sNextDays[1] != sCurDays[1]) {
             addBalls( MARGIN_LEFT + 93*(RADIUS+1) - 30 * (RADIUS+1), MARGIN_TOP-22*(RADIUS+1) , sCurDays[1] );
         }
-        // Ìì-¸öÎ»
+        // å¤©-ä¸ªä½
         if ( sNextDays[2] != sCurDays[2]) {
             addBalls( MARGIN_LEFT + 93*(RADIUS+1) - 15 * (RADIUS+1), MARGIN_TOP-22*(RADIUS+1) , sCurDays[2] );
         }
-        // Ê±-Ê®Î»
+        // æ—¶-åä½
         if( parseInt(curHours/10) != parseInt(nextHours/10) ){
             addBalls( MARGIN_LEFT + 0 , MARGIN_TOP , parseInt(curHours/10) );
         }
-        // Ê±-¸öÎ»
+        // æ—¶-ä¸ªä½
         if( parseInt(curHours%10) != parseInt(nextHours%10) ){
             addBalls( MARGIN_LEFT + 15*(RADIUS+1) , MARGIN_TOP , parseInt(curHours/10) );
         }
-        // ·Ö-Ê®Î»
+        // åˆ†-åä½
         if( parseInt(curMinutes/10) != parseInt(nextMinutes/10) ){
             addBalls( MARGIN_LEFT + 39*(RADIUS+1) , MARGIN_TOP , parseInt(curMinutes/10) );
         }
-        // ·Ö-¸öÎ»
+        // åˆ†-ä¸ªä½
         if( parseInt(curMinutes%10) != parseInt(nextMinutes%10) ){
             addBalls( MARGIN_LEFT + 54*(RADIUS+1) , MARGIN_TOP , parseInt(curMinutes%10) );
         }
-        // Ãë-Ê®Î»
+        // ç§’-åä½
         if( parseInt(curSeconds/10) != parseInt(nextSeconds/10) ){
             addBalls( MARGIN_LEFT + 78*(RADIUS+1) , MARGIN_TOP , parseInt(curSeconds/10) );
         }
-        // Ãë-¸öÎ»
+        // ç§’-ä¸ªä½
         if( parseInt(curSeconds%10) != parseInt(nextSeconds%10) ){
             addBalls( MARGIN_LEFT + 93*(RADIUS+1) , MARGIN_TOP , parseInt(nextSeconds%10) );
         }
@@ -325,7 +325,7 @@ function update() {
     updateBalls();
 }
 /**
- * ¸üĞÂĞ¡ÇòµÄÔË¶¯¹ì¼£
+ * æ›´æ–°å°çƒçš„è¿åŠ¨è½¨è¿¹
  */
 function updateBalls(){
 
@@ -335,19 +335,19 @@ function updateBalls(){
         balls[i].y += balls[i].vy;
         balls[i].vy += balls[i].g;
 
-        // ·´µ¯
+        // åå¼¹
         if( balls[i].y >= WINDOW_HEIGHT-RADIUS ){
             balls[i].y = WINDOW_HEIGHT-RADIUS;
-            // ÄÜÁ¿ËğºÄ
+            // èƒ½é‡æŸè€—
             balls[i].vy = - balls[i].vy*0.75;
         }
     }
 }
 /**
- * ¸ø±ä»¯µÄÊı×ÖÔö¼Ó²ÊÉ«Ğ¡Çò
- * @param x Êı×Ö×óÉÏ½Çx
- * @param y Êı×Ö×óÉÏ½Çy
- * @param num Êı×Ö
+ * ç»™å˜åŒ–çš„æ•°å­—å¢åŠ å½©è‰²å°çƒ
+ * @param x æ•°å­—å·¦ä¸Šè§’x
+ * @param y æ•°å­—å·¦ä¸Šè§’y
+ * @param num æ•°å­—
  */
 function addBalls(x, y, num) {
     for( var i = 0  ; i < digit[num].length ; i ++ ) {
@@ -356,10 +356,10 @@ function addBalls(x, y, num) {
                 var aBall = {
                     x:x+j*2*(RADIUS+1)+(RADIUS+1),
                     y:y+i*2*(RADIUS+1)+(RADIUS+1),
-                    g:1.5+Math.random(),// Ëæ»úÖØÁ¦¼ÓËÙ¶È
-                    vx:Math.pow( -1 , Math.ceil( Math.random()*1000 ) ) * 4,//Ëæ»úË®Æ½ËÙ¶È
+                    g:1.5+Math.random(),// éšæœºé‡åŠ›åŠ é€Ÿåº¦
+                    vx:Math.pow( -1 , Math.ceil( Math.random()*1000 ) ) * 4,//éšæœºæ°´å¹³é€Ÿåº¦
                     vy:-5,
-                    color: colors[ Math.floor( Math.random()*colors.length ) ] // Ëæ»úÑÕÉ«
+                    color: colors[ Math.floor( Math.random()*colors.length ) ] // éšæœºé¢œè‰²
                 }
 
                 balls.push( aBall )
@@ -368,7 +368,7 @@ function addBalls(x, y, num) {
     }
 }
 /**
- * µÃµ½µ±Ç°µ¹¼ÆÊ±µÄÃëÊı
+ * å¾—åˆ°å½“å‰å€’è®¡æ—¶çš„ç§’æ•°
  * @returns {number}
  */
 function getCurrentShowTimeSeconds() {
@@ -378,26 +378,26 @@ function getCurrentShowTimeSeconds() {
     return ret>=0?ret:0;
 }
 /**
- * ¼ÆËãÌì¡¢Ê±¡¢·Ö¡¢Ãë
+ * è®¡ç®—å¤©ã€æ—¶ã€åˆ†ã€ç§’
  * @param cxt
  */
 function render(cxt) {
 
-    // Çå¿Õ¾ØĞÎ¿Õ¼ä
+    // æ¸…ç©ºçŸ©å½¢ç©ºé—´
     cxt.clearRect(0,0,WINDOW_WIDTH,WINDOW_HEIGHT);
-    // ¼ÆËãÌì¡¢Ê±¡¢·Ö¡¢Ãë
+    // è®¡ç®—å¤©ã€æ—¶ã€åˆ†ã€ç§’
     var days = parseInt(curShowTimeSeconds/(24*3600));
     var hours = parseInt((curShowTimeSeconds-days*24*3600)/3600);
     var minutes = parseInt((curShowTimeSeconds-days*24*3600-hours*3600)/60);
     var seconds = curShowTimeSeconds % 60;
-    // Ìì
+    // å¤©
     days = days.toString();
     days = days.length < 3 ? '0' + days : days;
     for (var i=days.length- 1;i>=0;i--) {
         renderDigit(MARGIN_LEFT + 93*(RADIUS+1) - 15 * (days.length-i) * (RADIUS+1), MARGIN_TOP-22*(RADIUS+1), days[i], cxt);
     }
     renderDigit(MARGIN_LEFT + 93*(RADIUS+1),MARGIN_TOP-22*(RADIUS+1),11,cxt);
-    // Ğ¡Ê±£º·Ö£ºÃë
+    // å°æ—¶ï¼šåˆ†ï¼šç§’
     renderDigit(MARGIN_LEFT,MARGIN_TOP,parseInt(hours/10),cxt);
     renderDigit(MARGIN_LEFT + 15*(RADIUS+1),MARGIN_TOP,parseInt(hours%10),cxt);
     renderDigit(MARGIN_LEFT + 30*(RADIUS+1),MARGIN_TOP,10,cxt);
@@ -407,11 +407,11 @@ function render(cxt) {
     renderDigit(MARGIN_LEFT + 78*(RADIUS+1),MARGIN_TOP,parseInt(seconds/10),cxt);
     renderDigit(MARGIN_LEFT + 93*(RADIUS+1),MARGIN_TOP,parseInt(seconds%10),cxt);
 
-    // »­Ğ¡Çò
+    // ç”»å°çƒ
     renderBalls(cxt);
 }
 /**
- * »­Í¼
+ * ç”»å›¾
  * @param x
  * @param y
  * @param num
@@ -433,7 +433,7 @@ function renderDigit(x,y,num,cxt) {
 }
 
 /**
- * »­Çò
+ * ç”»çƒ
  * @param cxt
  */
 function renderBalls(cxt) {
@@ -448,14 +448,14 @@ function renderBalls(cxt) {
     }
 }
 ```
-## ÓÅ»¯
-ÉÏÃæµÄ´úÂëÓĞÒ»¸öÎÊÌâ£¬¾ÍÊÇËæ×Å³ÌĞòµÄÔËĞĞballsÊı×é³¤¶È»áÒ»Ö±Ôö³¤£¬µ«ÆäÊµÔËĞĞµ½»­²¼Ö®ÍâµÄĞ¡Çò¾Í¿ÉÒÔ´ÓÊı×éÖĞÉ¾È¥ÁË£¬ËùÒÔÎÒÔÚupdateBalls£¨¼ÆËã·´µ¯Ç°£©¼ÓÁËÒÔÏÂ´úÂë£¬¸ú¿Î³ÌÓĞµã²»Í¬£¨ºÙºÙ£¬´úÂë¸ü¼ò½àÅ¶£©£º
+## ä¼˜åŒ–
+ä¸Šé¢çš„ä»£ç æœ‰ä¸€ä¸ªé—®é¢˜ï¼Œå°±æ˜¯éšç€ç¨‹åºçš„è¿è¡Œballsæ•°ç»„é•¿åº¦ä¼šä¸€ç›´å¢é•¿ï¼Œä½†å…¶å®è¿è¡Œåˆ°ç”»å¸ƒä¹‹å¤–çš„å°çƒå°±å¯ä»¥ä»æ•°ç»„ä¸­åˆ å»äº†ï¼Œæ‰€ä»¥æˆ‘åœ¨updateBallsï¼ˆè®¡ç®—åå¼¹å‰ï¼‰åŠ äº†ä»¥ä¸‹ä»£ç ï¼Œè·Ÿè¯¾ç¨‹æœ‰ç‚¹ä¸åŒï¼ˆå˜¿å˜¿ï¼Œä»£ç æ›´ç®€æ´å“¦ï¼‰ï¼š
 ```javascript
-        // É¾È¥»­²¼ÍâĞ¡Çò
+        // åˆ å»ç”»å¸ƒå¤–å°çƒ
         if (balls[i].x + RADIUS < 0 || balls[i].x - RADIUS > WINDOW_WIDTH) {
-            balls.splice(i,1);// °Ñµ±Ç°ÔªËØÉ¾³ıºó£¬Ë÷ÒıÒª¼õÒ» ±ÈÈç[1,2,3]ÖĞ É¾µô2ºóÏÂÒ»¸öÔªËØµÄË÷Òı»¹ÊÇ1
+            balls.splice(i,1);// æŠŠå½“å‰å…ƒç´ åˆ é™¤åï¼Œç´¢å¼•è¦å‡ä¸€ æ¯”å¦‚[1,2,3]ä¸­ åˆ æ‰2åä¸‹ä¸€ä¸ªå…ƒç´ çš„ç´¢å¼•è¿˜æ˜¯1
             continue;
         }
 ```
-´òÓ¡Êı×éµÄ³¤¶È£¬Æä³¤¶È²»»áÎŞÏŞÔö¼Ó
+æ‰“å°æ•°ç»„çš„é•¿åº¦ï¼Œå…¶é•¿åº¦ä¸ä¼šæ— é™å¢åŠ 
 !()[canvas-count-down/canvas-length.png]
