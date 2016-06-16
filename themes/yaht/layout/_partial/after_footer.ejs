@@ -179,6 +179,9 @@
     });
   </script>
 <% } %>
+<% if (page.layout=='resume'){ %>
+<script src="<%- config.root %>js/resume.js"></script>
+<% }%>
 <%- partial('google_analytics') %>
 
 <%- partial('back_to_top') %>
