@@ -9,12 +9,11 @@
             </div>
             <% } %>
             <% item.projects.forEach(function(i){ %>
-                <div class="project-item">
-                    <div class="img-box" style="">
-                        <img src="<%= i.split('|')[1]%>" alt="<%= i.split('|')[0]%>"/>
+                <a  href="<%= i.url%>" class="project-item">
+                    <div class="img-box" style="background: #ddd url('<%= i.img%>') no-repeat center">
                     </div>
-                    <a class="project-name" href="<%= i.split('|')[2]%>"><%= i.split('|')[0]%></a>
-                </div>
+                    <div class="project-name"><%= i.name%></div>
+                </a>
             <% }); %>
         </div>
     </article>
