@@ -3,6 +3,14 @@
   background url('/img/resume/soft_wallpaper.png') repeat
   padding-top 60px
 
+  /*加粗*/
+  .bold
+    font-weight bolder
+
+  ul
+    list-style: none;
+
+  /*清浮动*/
   .clear
     clear both
 
@@ -36,6 +44,21 @@
 
   h2#titleName
     margin 20px -60px 10px
+
+  h2#titleName:before
+    background-position: -90px bottom;
+
+  h2#tools:before
+    background-position: left top;
+
+  h2#clock:before
+    background-position: -45px top;
+
+  h2#learn:before
+    background-position: right top;
+
+  h2#ribbon:before
+    background-position: left -45px;
 
   #bio
     position relative
@@ -93,6 +116,8 @@
       padding: 3px 0 0 0;
       text-transform: uppercase;
       z-index: 1;
+      .skill-name
+        margin-left 5px
       .score
         position: absolute;
         top: 0;
@@ -101,10 +126,11 @@
         width: 50px;
         text-align: right;
         color: #aaa;
-  /*工作经历*/
-  #jobs
+
+  /*工作经历 教育经历*/
+  .two-col
     margin: 0;
-    list-style: none;
+    position: relative;
     li
       margin: 0 0 20px 0;
       clear: both;
@@ -114,6 +140,10 @@
         width: 40%;
       p
         text-align: justify;
+
+  #honorsAwards
+    list-style-type: disc;
+    font-size: 13px;
 
   .project-content
     display -webkit-flex

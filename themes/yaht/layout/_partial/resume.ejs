@@ -1,9 +1,13 @@
+<%
+var resumeCh=item.resumeCh;
+var resumeEn=item.resumeEn;
+%>
 <div id="resumeMain" class="<%= item.layout %>" itemscope itemprop="blogPost">
-    <div id="wrapper">
-        <h2 id="titleName" class="sectionHead">游行至</h2>
+    <div id="wrapper" class="ch">
+        <h2 id="titleName" class="sectionHead"><%= resumeCh.name %></h2>
 
         <div id="bio">
-            <h2>WEB前端工程师&nbsp;&nbsp;1989.12</h2>
+            <h2><%= resumeCh.vocation %>&nbsp;&nbsp;<%= resumeCh.birthday %></h2>
 
             <!--SOCIAL LINKS-->
             <div id="socialIcons">
@@ -13,80 +17,190 @@
                    href="http://www.dataguru.cn/home.php?mod=space&uid=256390&do=thread&view=me&from=space"></a>
             </div>
             <p>
-                Known as "THE MOLITOR", I'm a web designer and WordPress theme developer living in the outskirts of
-                Seattle with my wife and two kids. I'm an active author on ThemeForest where I enjoy spending my day in
-                Photoshop converting custom designs into fancy-pants
+                <%= resumeCh.intro %>
             </p>
         </div>
 
         <div class="clear"></div>
         <h2 id="tools" class="sectionHead">技能</h2>
         <ul id="skills" class="ready">
-            <!--////////////////////////////////////////////////////////////////////////////////////-->
-            <!--Notice the class names indicate the % of your skills. i.e. s70 = 70%, s40 = 40% etc. -->
-            <!--////////////////////////////////////////////////////////////////////////////////////-->
-            <li id="skill1" data-score="90">
-                <span style="display: inline;">WordPress Development</span>
+            <% resumeCh.skills.forEach(function(s){ %>
+            <li id="skill1" data-score="<%= s.score %>">
+                <span class="skill-name" style="display: inline;"><%= s.name %></span>
                 <span class="score"></span>
             </li>
-            <li id="skill2" data-score="70">
-                <span style="display: inline;">PHP</span>
-                <span class="score"></span>
-            </li>
-            <li id="skill3" data-score="100">
-                <span style="display: inline;">HTML + CSS</span>
-                <span class="score"></span>
-            </li>
-
+            <% }); %>
         </ul>
-        <h2 id="clock" class="sectionHead">Experience</h2>
-        <ul id="jobs">
+        <h2 id="clock" class="sectionHead">工作经历</h2>
+        <!-- 工作经历-->
+        <ul id="jobs" class="two-col">
+            <% resumeCh.experience.forEach(function(e){ %>
             <li>
                 <div class="details">
-                    <h3>深圳齐牛互联网金融服务有限公司</h3>
-                    <h4>Overlord - City, State</h4>
-                    <h5>2015/03 - 今</h5>
+                    <h3 class="bold"><%= e.corp %></h3>
+                    <h4><%= e.vocation %></h4>
+                    <h5><%= e.period %></h5>
+                </div>
+                <p>
+                    <%- e.work %>
+                </p>
+            </li>
+            <% }); %>
+        </ul>
+        <div class="clear"></div>
+        <h2 id="learn" class="sectionHead">Education</h2>
+        <!-- 教育经历-->
+        <ul id="schools" class="two-col">
+            <li>
+                <div class="details">
+                    <h3 class="bold">University of State</h3>
+                    <h4>Degree Title - Concentration</h4>
+                    <h5>2005 - 2007</h5>
                 </div>
                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut justo nibh, mattis sit amet consequat a, varius vitae metus. Proin pharetra sodales pellentesque.</p>
             </li>
             <li>
                 <div class="details">
-                    <h3>Some Other Company</h3>
-                    <h4>Lead Front-End Developer - City, State</h4>
-                    <h5>Jan 2010 - Jan 2011</h5>
-                </div>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut justo nibh, mattis sit amet consequat a, varius vitae metus. Proin pharetra sodales pellentesque.</p>
-            </li>
-            <li>
-                <div class="details">
-                    <h3>Another Company</h3>
-                    <h4>Creative Director - City, State</h4>
-                    <h5>Jun 2008 - Dec 2009</h5>
+                    <h3>State University</h3>
+                    <h4>Degree Title - Concentration</h4>
+                    <h5>2001 - 2004</h5>
                 </div>
                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut justo nibh, mattis sit amet consequat a, varius vitae metus. Proin pharetra sodales pellentesque.</p>
             </li>
         </ul>
-    </div>
-    <article itemprop="articleBody">
-
-        <div class="article-content ">
-
-        </div>
-        <div class="article-content project-content">
-            <%- partial('gallery') %>
-            <% if( table && (item.toc !== false) && theme.toc.article){ %>
-            <div id="toc" class="toc-article">
-                <strong class="toc-title"><%= __('contents') %></strong>
-                <%- toc(item.content) %>
-            </div>
-            <% } %>
+        <div class="clear"></div>
+        <!-- 获奖经历-->
+        <h2 id="ribbon" class="sectionHead">Honors &amp; Awards</h2>
+        <ul id="honorsAwards">
+            <li>Academy Award for Best Sound Design in a Bathroom</li>
+            <li>Emmy Award for Most Used Extra in a Drama</li>
+            <li>Grammy Award for Best Use of a Goat in a Soundtrack</li>
+            <li>S.A.G. Award for Touching the Ground</li>
+            <li>Presented with the Honor of Throwing Pies at Donald Trump</li>
+            <li>Featured in Dog &amp; Country Monthly (issue 298, pg. 20)</li>
+        </ul>
+        <div class="clear"></div>
+        <!-- 作品-->
+        <h2 id="eye" class="sectionHead">As Seen On</h2>
+        <div class="project-content">
             <% item.projects.forEach(function(i){ %>
-            <a href="<%= i.url %>" class="project-item">
-                <div class="img-box" style="background: #ddd url('<%= i.img %>') no-repeat center">
+            <a href="<%- i.url %>" class="project-item">
+                <div class="img-box" style="background: #ddd url('<%- i.img %>') no-repeat center">
                 </div>
                 <div class="project-name"><%= i.name %></div>
             </a>
             <% }); %>
         </div>
-    </article>
+    </div>
+    <!-- 英文简历-->
+    <!--<div id="wrapper" class="en">-->
+        <!--<h2 id="titleName" class="sectionHead"><%= resumeEn.name %></h2>-->
+
+        <!--<div id="bio">-->
+            <!--<h2>WEB前端工程师&nbsp;&nbsp;1989.12</h2>-->
+
+            <!--&lt;!&ndash;SOCIAL LINKS&ndash;&gt;-->
+            <!--<div id="socialIcons">-->
+                <!--<a class="socialIcon" target="_blank" id="githubIcon" href="https://github.com/ParadeTo"></a>-->
+                <!--<a class="socialIcon" target="_blank" id="blogIcon" href="http://www.paradeto.com"></a>-->
+                <!--<a class="socialIcon" target="_blank" id="dataguruIcon"-->
+                   <!--href="http://www.dataguru.cn/home.php?mod=space&uid=256390&do=thread&view=me&from=space"></a>-->
+            <!--</div>-->
+            <!--<p>-->
+                <!--Known as "THE MOLITOR", I'm a web designer and WordPress theme developer living in the outskirts of-->
+                <!--Seattle with my wife and two kids. I'm an active author on ThemeForest where I enjoy spending my day in-->
+                <!--Photoshop converting custom designs into fancy-pants-->
+            <!--</p>-->
+        <!--</div>-->
+
+        <!--<div class="clear"></div>-->
+        <!--<h2 id="tools" class="sectionHead">技能</h2>-->
+        <!--<ul id="skills" class="ready">-->
+           <!--<li id="skill1" data-score="90">-->
+                <!--<span style="display: inline;">WordPress Development</span>-->
+                <!--<span class="score"></span>-->
+            <!--</li>-->
+            <!--<li id="skill2" data-score="70">-->
+                <!--<span style="display: inline;">PHP</span>-->
+                <!--<span class="score"></span>-->
+            <!--</li>-->
+            <!--<li id="skill3" data-score="100">-->
+                <!--<span style="display: inline;">HTML + CSS</span>-->
+                <!--<span class="score"></span>-->
+            <!--</li>-->
+
+        <!--</ul>-->
+        <!--<h2 id="clock" class="sectionHead">Experience</h2>-->
+        <!--&lt;!&ndash; 工作经历&ndash;&gt;-->
+        <!--<ul id="jobs" class="two-col">-->
+            <!--<li>-->
+                <!--<div class="details">-->
+                    <!--<h3 class="bold">深圳齐牛互联网金融服务有限公司</h3>-->
+                    <!--<h4>Overlord - City, State</h4>-->
+                    <!--<h5>2015/03 - 今</h5>-->
+                <!--</div>-->
+                <!--<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut justo nibh, mattis sit amet consequat a, varius vitae metus. Proin pharetra sodales pellentesque.</p>-->
+            <!--</li>-->
+            <!--<li>-->
+                <!--<div class="details">-->
+                    <!--<h3>Some Other Company</h3>-->
+                    <!--<h4>Lead Front-End Developer - City, State</h4>-->
+                    <!--<h5>Jan 2010 - Jan 2011</h5>-->
+                <!--</div>-->
+                <!--<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut justo nibh, mattis sit amet consequat a, varius vitae metus. Proin pharetra sodales pellentesque.</p>-->
+            <!--</li>-->
+            <!--<li>-->
+                <!--<div class="details">-->
+                    <!--<h3>Another Company</h3>-->
+                    <!--<h4>Creative Director - City, State</h4>-->
+                    <!--<h5>Jun 2008 - Dec 2009</h5>-->
+                <!--</div>-->
+                <!--<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut justo nibh, mattis sit amet consequat a, varius vitae metus. Proin pharetra sodales pellentesque.</p>-->
+            <!--</li>-->
+        <!--</ul>-->
+        <!--<div class="clear"></div>-->
+        <!--<h2 id="learn" class="sectionHead">Education</h2>-->
+        <!--&lt;!&ndash; 教育经历&ndash;&gt;-->
+        <!--<ul id="schools" class="two-col">-->
+            <!--<li>-->
+                <!--<div class="details">-->
+                    <!--<h3 class="bold">University of State</h3>-->
+                    <!--<h4>Degree Title - Concentration</h4>-->
+                    <!--<h5>2005 - 2007</h5>-->
+                <!--</div>-->
+                <!--<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut justo nibh, mattis sit amet consequat a, varius vitae metus. Proin pharetra sodales pellentesque.</p>-->
+            <!--</li>-->
+            <!--<li>-->
+                <!--<div class="details">-->
+                    <!--<h3>State University</h3>-->
+                    <!--<h4>Degree Title - Concentration</h4>-->
+                    <!--<h5>2001 - 2004</h5>-->
+                <!--</div>-->
+                <!--<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut justo nibh, mattis sit amet consequat a, varius vitae metus. Proin pharetra sodales pellentesque.</p>-->
+            <!--</li>-->
+        <!--</ul>-->
+        <!--<div class="clear"></div>-->
+        <!--&lt;!&ndash; 获奖经历&ndash;&gt;-->
+        <!--<h2 id="ribbon" class="sectionHead">Honors &amp; Awards</h2>-->
+        <!--<ul id="honorsAwards">-->
+            <!--<li>Academy Award for Best Sound Design in a Bathroom</li>-->
+            <!--<li>Emmy Award for Most Used Extra in a Drama</li>-->
+            <!--<li>Grammy Award for Best Use of a Goat in a Soundtrack</li>-->
+            <!--<li>S.A.G. Award for Touching the Ground</li>-->
+            <!--<li>Presented with the Honor of Throwing Pies at Donald Trump</li>-->
+            <!--<li>Featured in Dog &amp; Country Monthly (issue 298, pg. 20)</li>-->
+        <!--</ul>-->
+        <!--<div class="clear"></div>-->
+        <!--&lt;!&ndash; 作品&ndash;&gt;-->
+        <!--<h2 id="eye" class="sectionHead">As Seen On</h2>-->
+        <!--<div class="project-content">-->
+            <!--<% item.projects.forEach(function(i){ %>-->
+                <!--<a href="<%- i.url %>" class="project-item">-->
+                    <!--<div class="img-box" style="background: #ddd url('<%- i.img %>') no-repeat center">-->
+                    <!--</div>-->
+                    <!--<div class="project-name"><%= i.name %></div>-->
+                <!--</a>-->
+            <!--<% }); %>-->
+        <!--</div>-->
+    <!--</div>-->
 </div>  
