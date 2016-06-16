@@ -1,0 +1,23 @@
+<div id="main" class="<%= item.layout %>" itemscope itemprop="blogPost">
+    <article itemprop="articleBody">
+        <div class="article-content project-content">
+            <%- partial('gallery') %>
+            <% if( table&&(item.toc !== false) && theme.toc.article){ %>
+            <div id="toc" class="toc-article">
+                <strong class="toc-title"><%= __('contents') %></strong>
+                <%- toc(item.content) %>
+            </div>
+            <% } %>
+            <% item.projects.forEach(function(i){ %>
+                <div class="project-item">
+                    <div class="img-box" style="">
+                        <img src="<%= i.split('|')[1]%>" alt="<%= i.split('|')[0]%>"/>
+                    </div>
+                    <a class="project-name" href="<%= i.split('|')[2]%>"><%= i.split('|')[0]%></a>
+                </div>
+            <% }); %>
+        </div>
+    </article>
+    <%- partial('pagination') %>
+    <%- partial('comment') %>
+</div>  
