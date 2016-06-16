@@ -1,0 +1,92 @@
+<div id="resumeMain" class="<%= item.layout %>" itemscope itemprop="blogPost">
+    <div id="wrapper">
+        <h2 id="titleName" class="sectionHead">游行至</h2>
+
+        <div id="bio">
+            <h2>WEB前端工程师&nbsp;&nbsp;1989.12</h2>
+
+            <!--SOCIAL LINKS-->
+            <div id="socialIcons">
+                <a class="socialIcon" target="_blank" id="githubIcon" href="https://github.com/ParadeTo"></a>
+                <a class="socialIcon" target="_blank" id="blogIcon" href="http://www.paradeto.com"></a>
+                <a class="socialIcon" target="_blank" id="dataguruIcon"
+                   href="http://www.dataguru.cn/home.php?mod=space&uid=256390&do=thread&view=me&from=space"></a>
+            </div>
+            <p>
+                Known as "THE MOLITOR", I'm a web designer and WordPress theme developer living in the outskirts of
+                Seattle with my wife and two kids. I'm an active author on ThemeForest where I enjoy spending my day in
+                Photoshop converting custom designs into fancy-pants
+            </p>
+        </div>
+
+        <div class="clear"></div>
+        <h2 id="tools" class="sectionHead">技能</h2>
+        <ul id="skills" class="ready">
+            <!--////////////////////////////////////////////////////////////////////////////////////-->
+            <!--Notice the class names indicate the % of your skills. i.e. s70 = 70%, s40 = 40% etc. -->
+            <!--////////////////////////////////////////////////////////////////////////////////////-->
+            <li id="skill1" data-score="90">
+                <span style="display: inline;">WordPress Development</span>
+                <span class="score"></span>
+            </li>
+            <li id="skill2" data-score="70">
+                <span style="display: inline;">PHP</span>
+                <span class="score"></span>
+            </li>
+            <li id="skill3" data-score="100">
+                <span style="display: inline;">HTML + CSS</span>
+                <span class="score"></span>
+            </li>
+
+        </ul>
+        <h2 id="clock" class="sectionHead">Experience</h2>
+        <ul id="jobs">
+            <li>
+                <div class="details">
+                    <h3>深圳齐牛互联网金融服务有限公司</h3>
+                    <h4>Overlord - City, State</h4>
+                    <h5>2015/03 - 今</h5>
+                </div>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut justo nibh, mattis sit amet consequat a, varius vitae metus. Proin pharetra sodales pellentesque.</p>
+            </li>
+            <li>
+                <div class="details">
+                    <h3>Some Other Company</h3>
+                    <h4>Lead Front-End Developer - City, State</h4>
+                    <h5>Jan 2010 - Jan 2011</h5>
+                </div>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut justo nibh, mattis sit amet consequat a, varius vitae metus. Proin pharetra sodales pellentesque.</p>
+            </li>
+            <li>
+                <div class="details">
+                    <h3>Another Company</h3>
+                    <h4>Creative Director - City, State</h4>
+                    <h5>Jun 2008 - Dec 2009</h5>
+                </div>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut justo nibh, mattis sit amet consequat a, varius vitae metus. Proin pharetra sodales pellentesque.</p>
+            </li>
+        </ul>
+    </div>
+    <article itemprop="articleBody">
+
+        <div class="article-content ">
+
+        </div>
+        <div class="article-content project-content">
+            <%- partial('gallery') %>
+            <% if( table && (item.toc !== false) && theme.toc.article){ %>
+            <div id="toc" class="toc-article">
+                <strong class="toc-title"><%= __('contents') %></strong>
+                <%- toc(item.content) %>
+            </div>
+            <% } %>
+            <% item.projects.forEach(function(i){ %>
+            <a href="<%= i.url %>" class="project-item">
+                <div class="img-box" style="background: #ddd url('<%= i.img %>') no-repeat center">
+                </div>
+                <div class="project-name"><%= i.name %></div>
+            </a>
+            <% }); %>
+        </div>
+    </article>
+</div>  
