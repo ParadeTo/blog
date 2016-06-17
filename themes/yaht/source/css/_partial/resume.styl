@@ -2,48 +2,69 @@
   width 100% !important
   background url('/img/resume/soft_wallpaper.png') repeat
   padding-top 60px
-
-  /*º”¥÷*/
+  min-width: 320px
+  /*Âä†Á≤ó*/
   .bold
     font-weight bolder
 
   ul
     list-style: none;
 
-  /*«Â∏°∂Ø*/
+  /*Ê∏ÖÊµÆÂä®*/
   .clear
     clear both
 
-  #wrapper
-    max-width 700px
+  /*‰∏≠Ëã±ÊñáÂàáÊç¢*/
+  #lang
+    position: absolute
+    top: 0
+    right: 0
+    li
+      float left
+      margin-right 10px
+      margin-top 10px
+    &.active
+      font-weight bolder
+    &:hover
+      cursor pointer
+
+  .wrapper
+    /*Â∞è‰∫é568*/
     margin 0px auto 30px
-    padding 60px
+    padding 5%
+    width 80%
     background #fff
     box-shadow 0 1px 3px rgba(0,0,0,.1)
     position relative
-
-  h2.sectionHead:before
-    content ""
-    position absolute
-    width 45px
-    height 45px
-    left -105px
-    top -15px
-    background-image url(/img/resume/icons.png)
+    @media mini
+      width 700px
+  /*Â∞è‰∫é1560 Ê≤°ÊúâÂâçÈù¢ÁöÑÂõæÊ†á*/
+  @media desktop
+    h2.sectionHead:before
+      content ""
+      position absolute
+      width 45px
+      height 45px
+      left -105px
+      top -15px
+      background-image url(/img/resume/icons.png)
 
   h2.sectionHead
     clear both
     font bold 20px/12px 'Microsoft YaHei',sans-serif
-    margin 60px -60px
-    border-left 52px solid #444
+    margin 3rem -10%
+    border-left 3.8rem solid #444
     color #444
     padding 1px 0 0 8px
     letter-spacing -2px
     text-transform uppercase
     position relative
+    @media mini
+      margin 60px -80px
 
   h2#titleName
-    margin 20px -60px 10px
+    @media mini
+      margin 20px -80px 10px
 
   h2#titleName:before
     background-position: -90px bottom;
@@ -65,7 +86,7 @@
     p
       clear: left;
       margin: 40px auto;
-      padding: 40px 45px;
+      padding: 5% 7%
       max-width: 560px;
       background: #fbfbfb;
       border: 1px solid #f3f3f3;
@@ -74,8 +95,11 @@
       border-width: 0 1px 1px;
       border-color: #fff #f3f3f3 #e8e8e8;
       line-height: 1.6em;
+      /*Â§ß‰∫é568px*/
+      @media phone
+        padding: 40px 45px;
 
-  /*…ÁΩª¡¥Ω”*/
+  /*Á§æ‰∫§ÈìæÊé•*/
   #socialIcons
     width 50%
     height 30px
@@ -97,7 +121,7 @@
     #dataguruIcon
       background url(/img/resume/dataguru-40.png) no-repeat center
 
-  /*ººƒ‹*/
+  /*ÊäÄËÉΩ*/
   ul#skills
     margin: 0;
     width: 100%;
@@ -116,8 +140,25 @@
       padding: 3px 0 0 0;
       text-transform: uppercase;
       z-index: 1;
+      height: 26px;
+      margin-top: 26px;
+      /*Â§ß‰∫é768px*/
+      @media mini
+        margin-top: 0;
       .skill-name
-        margin-left 5px
+        position absolute
+        top -26px;
+        color #444
+        margin-left 0
+        width: 200px;
+        /*Â§ß‰∫é768px*/
+        @media mini
+          position static
+          color: white
+          margin-left 5px
+          height: 100%
+          line-height: 100%
+          width: auto
       .score
         position: absolute;
         top: 0;
@@ -127,7 +168,7 @@
         text-align: right;
         color: #aaa;
 
-  /*π§◊˜æ≠¿˙ ΩÃ”˝æ≠¿˙*/
+  /*Â∑•‰ΩúÁªèÂéÜ ÊïôËÇ≤ÁªèÂéÜ*/
   .two-col
     margin: 0;
     position: relative;
@@ -139,9 +180,21 @@
         float: left;
         width: 40%;
       p
+        width: 40%
+        float: left
+        margin-left: 5%
+        display block
         text-align: justify;
+      &:after
+        clear: both;
+        content: '';
+        height: 1px;
+        width: 1px;
+        display: block;
+
 
   #honorsAwards
+    padding 0 5%
     list-style-type: disc;
     font-size: 13px;
 
