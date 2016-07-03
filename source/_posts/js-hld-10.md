@@ -2,7 +2,6 @@
 title: 笔记-javascript高级程序设计（第3版）第10章
 date: 2016-06-06 15:56:49
 tags:
-- 笔记
 - javascript
 categories:
 - 读书笔记
