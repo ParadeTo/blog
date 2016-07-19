@@ -1,65 +1,87 @@
 <!DOCTYPE html>
 <html>
 <head lang="en">
-    <meta charset="UTF-8">
-    <title></title>
+  <meta charset="UTF-8">
+  <title></title>
 </head>
 <body>
-<canvas  id="canvas" width="800" height="600" style="border:1px solid black;margin:10px auto;display:block;"></canvas>
+<canvas id="canvas" width="800" height="600" style="border:1px solid black;margin:10px auto;display:block;"></canvas>
 <script>
-    var canvas = document.getElementById("canvas");
-    canvas.height = 600;
-    canvas.width = 800;
-    var context = canvas.getContext("2d");
-    // 渐变天空
-    var skyStyle = context.createLinearGradient(0,0,0,canvas.height);
-    skyStyle.addColorStop(0.0,'black');
-    skyStyle.addColorStop(1.0,'#035');
-    context.fillStyle = skyStyle;
-    context.fillRect(0,0,canvas.width,canvas.height);
-    for(var i = 0;i < 100;i++) {
-        var r = Math.random() * 10 + 10;
-        var x = Math.random() * canvas.width;
-        var y = Math.random() * canvas.height*0.65;
-        var a = Math.random() * 360;
-        drawStar(context, x, y,r,  a);
+  var canvas = document.getElementById("canvas");
+  canvas.height = 600;
+  canvas.width = 800;
+  var context = canvas.getContext("2d");
+  // 渐变天空
+  var skyStyle = context.createLinearGradient(0, 0, 0, canvas.height);
+  skyStyle.addColorStop(0.0, 'black');
+  skyStyle.addColorStop(1.0, '#035');
+  context.fillStyle = skyStyle;
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  // 画星星
+  for (var i = 0; i < 100; i++) {
+    var r = Math.random() * 10 + 10;
+    var x = Math.random() * canvas.width;
+    var y = Math.random() * canvas.height * 0.65;
+    var a = Math.random() * 360;
+    drawStar(context, x, y, r, a);
+  }
+  // 画月亮
+  fillMoon(context, 2, 600, 200, 100, 30)
+  /**
+   * 绘制一个标准的星星
+   * @param cxt 绘图上下文
+   */
+  function starPath(cxt) {
+    cxt.beginPath();
+
+    for (var i = 0; i < 5; i++) {
+      var x1 = Math.cos((18 + i * 72) / 180 * Math.PI);
+      var y1 = -Math.sin((18 + i * 72) / 180 * Math.PI);
+      var x2 = Math.cos((54 + i * 72) / 180 * Math.PI) * 0.5;
+      var y2 = -Math.sin((54 + i * 72) / 180 * Math.PI) * 0.5;
+      cxt.lineTo(x1, y1);
+      cxt.lineTo(x2, y2);
     }
+    cxt.closePath();
+  }
 
-    /**
-     * 绘制一个标准的星星
-     * @param cxt 绘图上下文
-     */
-    function starPath(cxt) {
-        cxt.beginPath();
+  function drawStar(cxt, x, y, R, rot) {
+    cxt.save();
+    // 利用图形变换来得到想要的图形
+    cxt.translate(x, y);
+    cxt.rotate(rot / 180 * Math.PI);
+    cxt.scale(R, R)// 绘制原点都在(0, 0),所以scale对坐标的影响没有
+    // 绘制一个标准的五角星
+    starPath(cxt);
+    // 其他设置
+    cxt.fillStyle = "#fb3";
+    cxt.lineWidth = 1;
+    cxt.lineJoin = 'round';
 
-        for (var i = 0;i<5;i++) {
-            var x1 = Math.cos((18 + i*72)/180 * Math.PI);
-            var y1 = -Math.sin((18 + i*72)/180 * Math.PI);
-            var x2 = Math.cos((54 + i*72)/180 * Math.PI) * 0.5;
-            var y2 = -Math.sin((54 + i*72)/180 * Math.PI) * 0.5;
-            cxt.lineTo( x1,y1 );
-            cxt.lineTo( x2,y2);
-        }
-        cxt.closePath();
-    }
-
-        function drawStar(cxt, x, y, R, rot) {
-            cxt.save();
-            // 利用图形变换来得到想要的图形
-            cxt.translate(x,y);
-            cxt.rotate(rot/180*Math.PI);
-            cxt.scale(R,R)// 绘制原点都在(0, 0),所以scale对坐标的影响没有
-            // 绘制一个标准的五角星
-            starPath(cxt);
-            // 其他设置
-            cxt.fillStyle = "#fb3";
-            cxt.lineWidth = 1;
-            cxt.lineJoin = 'round';
-
-            cxt.fill();
-            //cxt.stroke();// 防止缩放效果对边框也进行缩放
-            cxt.restore();
-        }
+    cxt.fill();
+    //cxt.stroke();// 防止缩放效果对边框也进行缩放
+    cxt.restore();
+  }
+  function fillMoon(cxt, d, x, y, R, rot, /*optional*/fillColor) {
+    cxt.save();
+    cxt.translate(x, y);
+    cxt.rotate(rot * Math.PI / 180);
+    cxt.scale(R, R);
+    pathMoon(cxt, d);
+    cxt.fillStyle = fillColor || '#fb5';
+    cxt.fill();
+    cxt.restore();
+  }
+  function pathMoon(cxt, d) {
+    cxt.beginPath();
+    cxt.arc(0, 0, 1, 0.5 * Math.PI, 1.5 * Math.PI, true);
+    cxt.moveTo(0, -1);
+    cxt.arcTo(d, 0, 0, 1, dis(0, -1, d, 0) / d);
+    cxt.closePath();
+  }
+  function dis(x1, y1, x2, y2) {
+    return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+  }
 </script>
 </body>
 </html>
