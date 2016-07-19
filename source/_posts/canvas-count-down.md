@@ -453,7 +453,7 @@ function renderBalls(cxt) {
 ```javascript
         // 删去画布外小球
         if (balls[i].x + RADIUS < 0 || balls[i].x - RADIUS > WINDOW_WIDTH) {
-            balls.splice(i,1);// 把当前元素删除后，索引要减一 比如[1,2,3]中 删掉2后下一个元素的索引还是1
+            balls.splice(i--,1);// 把当前元素删除后，索引要减一 比如[1,2,3]中 删掉2后下一个元素的索引还是1
             continue;
         }
 ```
