@@ -1,7 +1,7 @@
 /**
  * Created by ayou on 2016-06-16.
  */
-(function(){
+$(function(){
   var skillDic = {
     'ch':[
       '幼儿园',
@@ -65,4 +65,4 @@
     $('.lang-container').fadeOut().eq(index).fadeIn();
     skillsAnimation();
   });
-})()
+});

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title></title>
+  <style>
+    #container {
+      width:800px;
+      height:600px;
+      border: 1px solid red;
+      position: relative;
+      background-color: #00193a;
+    }
+  </style>
+</head>
+<body>
+<div id="container">
+
+</div>
+<script>
+  var parentContainer = document.getElementById("container");
+  (function (window) {
+    var utils = window.utils || {};
+    window.utils = utils || window.utils;
+    /**
+     * 获取1-seek的随机值
+     */
+    utils.getRandom = function (seek) {
+      return parseInt(Math.random() * seek + 1);
+    }
+    utils.PI = Math.PI;
+//根据弧度计算出水平位置长度
+    utils.getTranslateX = function (r, radious) {
+      return parseInt(Math.abs(2 * r * Math.sin(90 * radious / 180)));
+    }
+    utils.drawCloud = function (container) {
+      container.moveTo(0, 80);
+      var i = 0;
+      var maxWidth = parentContainer.clientWidth;
+      var x = 0, y = 60, x1 = 0, y1 = 60;
+//一弧度=180/pi
+      container.beginPath();
+      while (x <= maxWidth) {
+        var r = utils.getRandom(15);
+        var radious = utils.getRandom(360) / Math.PI;
+        var nextX = utils.getTranslateX(r, radious);
+        container.arc(x + r, y, r, 0, radious, false);
+        x += nextX;
+      }
+      container.closePath();
+      container.fillStyle = "white";
+//      container.fillRect(0, 60, maxWidth, 60);
+      container.fill();
+    }
+  })(window);
+  (function (window) {
+    var canvas = document.createElement("canvas");
+    canvas.style.position = "absolute";
+    canvas.width=800;
+    canvas.height =600;
+    canvas.left=0;
+    canvas.top=0;
+    var ctx = canvas.getContext("2d");
+    parentContainer.appendChild(canvas);
+    utils.drawCloud(ctx);
+// var c = document.createElement("canvas");
+// c.style.position = "absolute";
+// cx = c.getContext("2d");
+// parentContainer.appendChild(c);
+//
+// cx.fillText("00000", 70, 50, 50, 50);
+  })(window)
+</script>
+</body>
+</html>

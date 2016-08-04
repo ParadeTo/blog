@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title></title>
+  <style>
+    #canvas {
+      border: 1px solid red;
+    }
+  </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+  function getRand(min,max) {
+    return min+Math.random()*(max-min);
+  }
+  function pathCloud(cxt) {
+    var startX = 0;
+    var startY = 0;
+    cxt.beginPath();
+    cxt.moveTo(startX, startY);
+    cxt.bezierCurveTo(startX - 2, startY + 1, startX - 2, startY + 3.5, startX + 3, startY + 3.5);
+    cxt.bezierCurveTo(startX + 4, startY + 5, startX + 7.5, startY + 5, startX + 8.5, startY + 3.5);
+    cxt.bezierCurveTo(startX + 12.5, startY + 3.5, startX + 12.5, startY + 2, startX + 11, startY + 1);
+    cxt.bezierCurveTo(startX + 13, startY - 2, startX + 10, startY - 2.5, startX + 8.5, startY - 1.5);
+    cxt.bezierCurveTo(startX + 7.5, startY - 3.75, startX + 4, startY - 3, startX + 4, startY - 1.5);
+    cxt.bezierCurveTo(startX + 1.5, startY - 3.75, startX - 1, startY - 3, startX, startY);
+    cxt.closePath();
+  }
+
+  window.onload = function() {
+    var canvas = document.getElementById("canvas");
+    canvas.height = 800;
+    canvas.width = 1200;
+    var context = canvas.getContext("2d");
+    context.save();
+    // 利用图形变换来得到想要的图形
+    context.translate(200, 200);
+    context.scale(10, 10)// 绘制原点都在(0, 0),所以scale对坐标的影响没有
+    // 绘制一个标准的五角星
+    pathCloud(context);
+    // 其他设置
+    context.fillStyle = "#fb3";
+    context.lineWidth = 1;
+    context.lineJoin = 'round';
+
+    context.fill();
+    //context.stroke();// 防止缩放效果对边框也进行缩放
+    context.restore();
+  }
+</script>
+</body>
+</html>
