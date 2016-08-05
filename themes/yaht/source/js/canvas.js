@@ -1,7 +1,8 @@
 /**
  * Created by ayou on 2016-06-16.
  */
-var canvas;
+var canvas = document.getElementById("headerCanvas");
+
 function drawLand(cxt) {
   cxt.save();
   cxt.beginPath();
@@ -97,6 +98,31 @@ function dis(x1, y1, x2, y2) {
 }
 
 /**
+ * 太阳
+ * @param cxt
+ * @param x
+ * @param y
+ * @param R 半径
+ * @param fillColor
+ */
+function fillSun(cxt,x,y,R,fillColor) {
+  cxt.save();
+  cxt.translate(x, y);
+  cxt.scale(R, R);
+  pathSun(cxt);
+  cxt.fillStyle = fillColor || '#fdc54e';
+  cxt.shadowBlur = 200; // 模糊尺寸
+  cxt.shadowColor = '#fff'; // 颜色
+  cxt.fill();
+  cxt.restore();
+}
+function pathSun(cxt) {
+  cxt.beginPath();
+  cxt.arc(0, 0, 1, 0, 2 * Math.PI, true);
+  cxt.closePath();
+}
+
+/**
  * 渐变天空
  * @param context 开始颜色
  * @param startColor 开始颜色
@@ -184,9 +210,13 @@ function nightCanvas(context,scale) {
 function dayCanvas(context,scale) {
   // 渐变天空
   gradientSky(context,'#46D0FE','#87effe')
+  // 太阳
+  var x = 0.9 * canvas.width;
+  var y = 0.5 * canvas.height;
+  fillSun(context,x,y,50*scale);
   // 白云
-  for (var i=0;i<3;i++) {
-    var s = (Math.random() * 10 + 10)*scale;
+  for (var i=0;i<8;i++) {
+    var s = (Math.random() * 10 )*scale;
     var x = Math.random() * canvas.width;
     var y = Math.random() * canvas.height ;
     drawCloud(context,x,y,s);
@@ -194,9 +224,8 @@ function dayCanvas(context,scale) {
 
 }
 
-window.onload = function() {
+function draw() {
   // 初始化canvas
-  canvas = document.getElementById("headerCanvas");
   var header = document.getElementsByTagName("header")[0];
   var width = header.offsetWidth;
   var height = header.offsetHeight;
@@ -207,7 +236,19 @@ window.onload = function() {
   // 计算canvas图形比例
   var scale = height/207;
 
-  // 晚上
-  dayCanvas(context,scale);
+  // 计算晚上还是白天
+  var hour = new Date().getHours();
+  if (hour>=6&&hour<=18) {
+    dayCanvas(context,scale);
+  } else {
+    nightCanvas(context,scale);
+  }
+}
 
+window.onload = function() {
+  draw();
 };
+
+window.onresize = function() {
+  draw();
+}
