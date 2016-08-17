@@ -1,10 +1,6 @@
 ---
 title: 笔记-javascript高级程序设计（第3版）第13章
-<<<<<<< HEAD
-date: 2016-08-06 15:56:49
-=======
 date: 2016-08-15 15:56:49
->>>>>>> 41d134acdd29147db770c6dc1e5028fceb463167
 tags:
 - javascript
 categories:
@@ -12,14 +8,11 @@ categories:
 description: javascript高级程序设计（第3版）第13章笔记
 ---
 ## 事件流
-<<<<<<< HEAD
 * 事件冒泡
 * 事件捕获
 
-=======
 ### 事件冒泡
 ### 事件捕获
->>>>>>> 41d134acdd29147db770c6dc1e5028fceb463167
 ## 事件处理程序
 ### HTML事件处理程序
 ### DOM0级事件处理程序
@@ -238,10 +231,7 @@ EventUtil.addHandler(window, "scroll", function (event) {
 * mouseup
 
 #### 事件顺序
-<<<<<<< HEAD
 点击某元素时的事件顺序：
-=======
->>>>>>> 41d134acdd29147db770c6dc1e5028fceb463167
 mousedown->mouseup->click->mousedown->mouseup->click->dblclick
 
 #### 检测
@@ -393,11 +383,8 @@ event.inputMethod:
 * 9，通过脚本输入
 
 ### 复合事件
-<<<<<<< HEAD
 略
 
-=======
->>>>>>> 41d134acdd29147db770c6dc1e5028fceb463167
 ### 变动事件
 * DOMSubtreeModified DOM结构中发生任何变化时触发
 * DOMNodeInserted 在一个节点作为子节点被插入到另一个节点中时触发
