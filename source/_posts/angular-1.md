@@ -4,7 +4,7 @@ date: 2016-06-20 14:12:01
 tags:
 - angularjs
 categories:
-- angularjs
+- 前端框架
 description: angularjs学习笔记，一
 ---
 ## AngularJS的优势
@@ -87,7 +87,7 @@ AngularJS
                             }
                             $scope.employee = employee;
                         });
-                        
+
 ```
 **使用binding expression给图片src赋值会导致404：**
 ```

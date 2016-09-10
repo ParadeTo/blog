@@ -1,11 +1,11 @@
 ---
 title: H5仿原生APP密码输入
 date: 2016-07-01 09:07:41
-tags: 
+tags:
 - 仿原生APP
 - 密码
 categories:
-- 移动WEB
+- javascript
 description: 用H5仿造的原生APP密码输入控件
 ---
 
@@ -111,6 +111,3 @@ imitatePwd('pwdInput1')
        alert(pwd)
     });
 ```
-
-
-

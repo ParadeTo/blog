@@ -4,7 +4,7 @@ date: 2016-07-11 14:12:01
 tags:
 - angularjs
 categories:
-- angularjs
+- 前端框架
 description: angularjs学习笔记，二
 ---
 ## Search filter
