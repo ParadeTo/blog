@@ -23,10 +23,11 @@ function drawLand(cxt) {
  * 根据日期计算月亮的圆缺
  */
 function computerDByDate() {
-  var day = new Date().getDate();
+  var day = new Date(2016,9,13).getDate();
   // 15的月亮最圆
   var d = 21.2*Math.exp(Math.abs(day-15)*(-0.234));
-  return day - 15 >= 0 ? -d : d;
+  console.log(d);
+  return (day >= 7 && day <= 22) ? -d : d;
 }
 
 /**
@@ -87,6 +88,7 @@ function fillMoon(cxt, d, x, y, R, rot, /*optional*/fillColor) {
   cxt.restore();
 }
 function pathMoon(cxt, d) {
+
   cxt.beginPath();
   cxt.arc(0, 0, 1, 0.5 * Math.PI, 1.5 * Math.PI, true);
   cxt.moveTo(0, -1);
