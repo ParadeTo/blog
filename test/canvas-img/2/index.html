@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title></title>
+</head>
+<body >
+  <canvas id="canvas" width="800" height="600" style="border:1px solid black;margin:10px auto;display:block;"></canvas>
+  <canvas id="offCanvas" style="display:none"></canvas>
+  <script>
+    var canvas = document.getElementById("canvas");
+    var context = canvas.getContext("2d");
+    var image = new Image();
+    var isMouseDown = false;
+    var scale;
+    var offCanvas = document.getElementById("offCanvas");
+    var offContext = offCanvas.getContext("2d");
+
+    window.onload = function() {
+      canvas.height = 110;
+      canvas.width = 110;
+      image.src = "img.jpg";
+      image.onload = function () {
+        offCanvas.width = image.width;
+        offCanvas.height = image.height;
+        scale = offCanvas.width / canvas.width;
+        context.drawImage(image,0,0,canvas.width,canvas.height);
+        offContext.drawImage(image,0,0);
+      }
+    }
+    function windowToCanvas(x,y){
+      var bbox = canvas.getBoundingClientRect()
+      return {x:x-bbox.left,y:y-bbox.top};
+    }
+    function drawCanvasWithMagnifier(isShow,point) {
+      context.clearRect(0,0,canvas.width,canvas.height)
+      context.drawImage(image,0,0,canvas.width,canvas.height)
+      if (isShow) {
+        drawMagnifier(point)
+      }
+    }
+    function drawMagnifier(point) {
+      var imageLG_cx = point.x * scale
+      var imageLG_cy = point.y * scale
+      var mr = 20
+      var sr = imageLG_cx - mr;
+      var sy = imageLG_cy - mr;
+      var dx = point.x - mr;
+      var dy = point.y - mr;
+      context.drawImage(offCanvas,sr,sy,2*mr,2*mr,dx,dy,2*mr,2*mr);
+    }
+    canvas.onmousedown = function(e) {
+      e.preventDefault();
+      var point = windowToCanvas(e.clientX,e.clientY);
+      isMouseDown = true;
+      drawCanvasWithMagnifier(true,point) 
+    }
+    canvas.onmousemove = function(e) {
+      e.preventDefault();
+      if (isMouseDown === true) {
+        var point = windowToCanvas(e.clientX,e.clientY)
+        console.log(point);
+        drawCanvasWithMagnifier(true,point)  
+      }
+    }
+    canvas.onmouseup = function(e) {
+      e.preventDefault();
+      isMouseDown = false;
+      drawCanvasWithMagnifier(false) 
+    }
+    canvas.onmouseout = function(e) {
+      e.preventDefault();
+      isMouseDown = false;
+      drawCanvasWithMagnifier(false) 
+    }
+  </script>
+</body>
+</html>
