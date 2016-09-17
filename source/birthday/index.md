@@ -1,0 +1,4 @@
+---
+title: birthday
+layout: birthday
+---

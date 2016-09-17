@@ -1,6 +1,8 @@
 <script src="<%- config.root %>js/jquery-2.1.0.min.js"></script>
 <!--canvas-->
+<% if (page.layout!='resume'&&page.layout!='birthday'){ %>
 <script src="<%- config.root %>js/canvas.js"></script>
+<% } %>
 <script type="text/javascript">
   $(document).ready(function(){
     $('.navbar').click(function(){
@@ -183,6 +185,10 @@
 <% } %>
 <% if (page.layout=='resume'){ %>
 <script src="<%- config.root %>js/resume.js"></script>
+<% }%>
+<% if (page.layout=='birthday'){ %>
+<script src="<%- config.root %>js/l-by-l.min.js"></script>
+<script src="<%- config.root %>js/birthday.js"></script>
 <% }%>
 <%- partial('google_analytics') %>
 
