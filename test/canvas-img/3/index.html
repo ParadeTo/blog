@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title></title>
+</head>
+<body >
+  <canvas id="canvasa" width="200" height="200" style="border:1px solid black;margin:10px auto;display:block;"></canvas>
+  <canvas id="canvasb" width="200" height="200" style="border:1px solid black;margin:10px auto;display:block;"></canvas>
+  <div style="text-align:center;">
+    <a href="javascript:grayEffect();">filter</a>
+  </div>
+  <script>
+    var canvasa = document.getElementById("canvasa");
+    var contexta = canvasa.getContext("2d");
+
+    var canvasb = document.getElementById("canvasb");
+    var contextb = canvasb.getContext("2d");
+
+    var image = new Image();
+
+    window.onload = function() {
+
+      image.src = "./img.jpg";
+      image.onload = function () {
+        contexta.drawImage(image,0,0,canvasa.width,canvasa.height)
+      }
+    }
+
+    // 滤镜
+    function grayEffect() {
+      var imageData = contexta.getImageData(0,0,canvasa.width,canvasa.height);
+      var pixelData = imageData.data;
+      for (var i=0;i<canvasb.width*canvasb.height;i++) {
+        var r = pixelData[4*i+0];
+        var g = pixelData[4*i+1];
+        var b = pixelData[4*i+2];
+        var gray = r*0.3+g*0.59+b*0.11;
+        pixelData[4*i+0] = gray;
+        pixelData[4*i+1] = gray;
+        pixelData[4*i+2] = gray;
+      }
+      contextb.putImageData(imageData,0,0);
+    }
+  </script>
+</body>
+</html>
