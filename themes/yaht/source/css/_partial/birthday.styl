@@ -1,13 +1,29 @@
 @import url(http://fonts.googleapis.com/css?family=Lato:300italic);
 
-body {
-  background: #ee9ca7;
+@font-face {
+    font-family: Marriage;
+    src: url('/font/Marriage-Moment.ttf');
+}
+
+.birthday {
+  position:absolute;
+  top:0;
+  left:0;
+  bottom:0;
+  right:0;
+  background-color: #ee9ca7;
+}
+
+#sign {
+  font-family: Marriage;
+  font-size:2rem;
+  text-align:center;
 }
 
 #cake {
   display: block;
   position: relative;
-  margin: -10em auto 0 auto;
+  margin: -15em auto 0 auto;
 }
 
 /* ============================================== Candle
@@ -20,7 +36,7 @@ body {
   top: 228px;
   left: 50%;
   margin-left: -2.5px;
-  margin-top: -8.33333333px;
+  margin-top: -92px;
   width: 5px;
   height: 35px;
   -webkit-transform: translateY(-300px);
