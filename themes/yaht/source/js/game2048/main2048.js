@@ -38,6 +38,7 @@ var dict = {
 '512':"小流氓",
 '1024':"大流氓",
 '2048':"老流氓",
+'4096':'禽兽'
 };
 // 解决 2 2 4 8 点击一次左边后出现16 0 0 0的bug
 var hasConflicted = new Array();
@@ -76,7 +77,7 @@ $(document).keydown(function(event) {
 				isGameOver();
 			}
 			break;
-		default: 
+		default:
 			break;
 	}
 });
@@ -100,7 +101,7 @@ document.addEventListener('touchend',function(event) {
 	if (Math.abs(deltax) < 0.2*documentWidth && Math.abs(deltay) < 0.3*documentWidth) {
 		return ;
 	}
-	
+
 
 	// 滑动在x轴上进行
 	if (Math.abs(deltax)>=Math.abs(deltay)) {
@@ -139,7 +140,7 @@ document.addEventListener('touchend',function(event) {
 })
 
 function prepareForMobile () {
-	if (documentWidth > 500) { 
+	if (documentWidth > 500) {
 		gridContainerWidth = 500;
 		cellSpace = 20;
 		cellSideLength = 100;
@@ -158,10 +159,17 @@ function isGameOver() {
 	if (nospace(board) && nomove(board)) {
 		gameover();
 	}
+	if (achieve2048(board)) {
+		win();
+	}
 }
 
 function gameover() {
 	alert('game over');
+}
+
+function win() {
+	alert('你赢了，可以继续游戏！')
 }
 
 function newGame() {
@@ -204,7 +212,7 @@ function updateBoardView() {
 				theNumberCell.css('height','0px');
 				theNumberCell.css('top',getPosTop(i,j)+cellSideLength/2);
 				theNumberCell.css('left',getPosLeft(i,j)+cellSideLength/2);
-			} 
+			}
 			else {
 				theNumberCell.css('width',cellSideLength+'px');
 				theNumberCell.css('height',cellSideLength+'px');
@@ -261,7 +269,7 @@ function moveLeft() {
 						// move
 						showMoveAnimation(i,j,i,k,updateBoardView,dict);
 						// add
-						board[i][k] = board[i][j] * 2;	
+						board[i][k] = board[i][j] * 2;
 						board[i][j] = 0
 						// 加分
 						score += board[i][k];
@@ -300,7 +308,7 @@ function moveRight() {
 						// move
 						showMoveAnimation(i,j,i,k,updateBoardView,dict);
 						// add
-						board[i][k] = board[i][j] * 2;	
+						board[i][k] = board[i][j] * 2;
 						board[i][j] = 0
 						// 加分
 						score += board[i][k];
@@ -339,7 +347,7 @@ function moveUp() {
 						// move
 						showMoveAnimation(i,j,k,j,updateBoardView,dict);
 						// add
-						board[k][j] = board[i][j] * 2;	
+						board[k][j] = board[i][j] * 2;
 						board[i][j] = 0
 						// 加分
 						score += board[k][j];
@@ -378,12 +386,12 @@ function moveDown() {
 						// move
 						showMoveAnimation(i,j,k,j,updateBoardView,dict);
 						// add
-						board[k][j] = board[i][j] * 2;	
+						board[k][j] = board[i][j] * 2;
 						board[i][j] = 0
 						// 加分
 						score += board[k][j];
 						updateScore(score);
-						
+
 						hasConflicted[k][j] = true;
 						break;
 					}

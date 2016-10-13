@@ -11,12 +11,11 @@ description: javascript高级程序设计（第3版）第13章笔记
 * 事件冒泡
 * 事件捕获
 
-### 事件冒泡
-### 事件捕获
 ## 事件处理程序
 ### HTML事件处理程序
+略
 ### DOM0级事件处理程序
-```
+```javascript
 var btn = document.getElementById('byBtn');
 btn.onclick = function() {
   alert(this.id);
@@ -24,7 +23,7 @@ btn.onclick = function() {
 ```
 *以这种方式添加的事件处理程序会在事件流的冒泡阶段被处理*
 ### DOM2级事件处理程序
-```
+```javascript
 addEventListener(event,callback,type)
 type
   true: 捕获阶段调用事件处理程序，不建议
@@ -37,14 +36,14 @@ removeEventListener(event,callback,type)
 * attachEvent this等于window，事件以添加的相反顺序触发
 * detachEvent
 
-```
+```javascript
 btn.attachEvent('onclick', function(){
   alert(this === window); // true
 })
 ```
 
 ### 跨浏览器的事件处理程序
-```
+```javascript
 var EventUtil = {
   addHandler: function(ele,type,handler){
     if(ele.addEventListener){
@@ -90,15 +89,15 @@ var EventUtil = {
 
 ### IE中的事件对象
 * 使用DOM0级方法添加事件处理程序时，event对象作为window对象的一个属性存在
-```
+```javascript
 btn.onclick = function() {
   var event = window.event;
   alert(event.type); // click
 }
 ```
 * 如果事件处理程序是使用attachEvent()添加的，那么就会有一个event对象作为参数传入
-```
-btn.attachEvent("onclick", function() {
+```javascript
+btn.attachEvent("onclick", function(event) {
   alert(event.type); // 'click'
 });
 ```
@@ -109,7 +108,7 @@ btn.attachEvent("onclick", function() {
   * type：String，只读，被触发的事件的类型
 
 * 不要使用this
-```
+```javascript
 btn.onclick = function() {
   alert(window.event.srcElement === this); //true
 }
@@ -119,7 +118,7 @@ btn.attachEvent('onclick', function(event){
 ```
 
 ### 跨浏览器的事件对象
-```
+```javascript
 var EventUtil = {
     /*省略的代码*/
     getEvent : function(event) {
@@ -168,7 +167,7 @@ var EventUtil = {
 
 #### load
 图像加载
-```
+```javascript
 EventUtil.addHandler(window,"load",function() {
    var img = document.createElement('img');
     EventUtil.addHandler(img,"load",function(event) {
@@ -180,7 +179,7 @@ EventUtil.addHandler(window,"load",function() {
 });
 ```
 js加载
-```
+```javascript
 EventUtil.addHandler(window,"load",function() {
     var script = document.createElement('script');
     EventUtil.addHandler(script,"load",function(event) {
@@ -195,10 +194,10 @@ EventUtil.addHandler(window,"load",function() {
 用户从一个页面切换到另一个页面，就会发生unload事件
 
 #### resize
-ie, safari, chrome, opera会在浏览器变化了1像素时就出发，然后随着变化不断重复触发；firefox则只会在用户停止调整才触发
+ie, safari, chrome, opera会在浏览器变化了1像素时就出发，然后随着变化不断重复触发；firefox则只会在用户停止调整才触发。针对这个就出现了[函数节流](http://www.cnblogs.com/dolphinX/p/3403821.html)的概念。
 
 #### scroll
-```
+```javascript
 EventUtil.addHandler(window, "scroll", function (event) {
     if (document.compatMode == 'CSS1Compat') {
         alert(document.documentElement.scrollTop);
@@ -235,10 +234,10 @@ EventUtil.addHandler(window, "scroll", function (event) {
 mousedown->mouseup->click->mousedown->mouseup->click->dblclick
 
 #### 检测
-检测是否支持除dblclick, mouseenter, mouseleave之外的事件
-document.implementation.hasFeature('MouseEvents','2.0');
+检测是否支持除``dblclick, ouseenter, mouseleave``之外的事件
+``document.implementation.hasFeature('MouseEvents','2.0');``
 检测是否支持上面的所有事件，可以使用：
-document.implementation.hasFeature('MouseEvent','3.0');
+``document.implementation.hasFeature('MouseEvent','3.0');``
 
 #### 客户区坐标位置
 event.clientX
@@ -255,7 +254,7 @@ event.screenX
 event.screenY
 
 #### 修改键
-```
+```javascript
 EventUtil.addHandler(div, 'click', function(event) {
   event = EventUtil.getEvent(event);
   var keys = new Array();
@@ -280,7 +279,7 @@ mouseover 事件主目标是获得光标的元素，相关元素（relateTarget�
 mouseout 事件主目标是失去光标的元素，相关元素是获得光标的元素
 
 *IE中的是fromElement和toElement*
-```
+```javascript
  getRelatedTarget:function(event) {
         if (event.relatedTarget) {
             return event.relatedTarget;
@@ -295,12 +294,12 @@ mouseout 事件主目标是失去光标的元素，相关元素是获得光标�
 ```
 
 #### 鼠标按钮
-对于mousedown mouseup
+对于``mousedown mouseup``
 0 主鼠标按钮
 1 中间鼠标按钮，滚轮
 2 次鼠标按钮
 *IE中有8种*
-```
+```javascript
 getButton : function(event) {
         if (document.implementation.hasFeature('MouseEvents','2.0')) {
             return event.button;
@@ -324,9 +323,8 @@ getButton : function(event) {
     }
 ```
 
-#### 更多的事件信息
 #### 鼠标滚轮事件
-```
+```javascript
     // 获取滚动的前后数值向前120 向后－120
     getWheelDelta : function(event) {
         if (event.wheelDelta) {
@@ -340,9 +338,6 @@ getButton : function(event) {
     }
 ```
 
-#### 触摸设备
-#### 无障碍性问题
-
 ### 键盘与文本事件
 * keydown 文本框变化之前触发
 * keypress 按下字符键触发，文本框变化之前触发
@@ -353,7 +348,7 @@ keyCode
 
 #### 字符编码
 keypress 任何可以获得焦点的元素都可以触发，按下能够影响文本显示的键会触发（例如退格键）
-event.charCode
+``event.charCode``
 ```
  getCharCode: function(event) {
         if (typeof event.charCode == 'number') {
@@ -382,9 +377,6 @@ event.inputMethod:
 * 8，组合输入
 * 9，通过脚本输入
 
-### 复合事件
-略
-
 ### 变动事件
 * DOMSubtreeModified DOM结构中发生任何变化时触发
 * DOMNodeInserted 在一个节点作为子节点被插入到另一个节点中时触发
@@ -395,16 +387,16 @@ event.inputMethod:
 * DOMCharacterDataModified 在文本节点的值发生变化时触发
 
 检测浏览器是否支持变动事件:
-```
+```javascript
 var isSupported = document.implementation.hasFeature('MutationEvents','2.0');
 ```
 #### 删除节点
-在使用removeChild()或replaceChild()从DOM中删除节点时：
-首先会触发DOMNodeRemoved事件。这个事件的目标（event.target）是被删除的节点，event.relatedNode包含对父节点的引用。
-如果被删除的节点包括子节点，那么其所有子节点以及这个被移除的节点上会相继触发DOMNodeRemovedFromDocument事件。
-然后触发DOMSubtreeModified事件。该事件的目标是被移除节点的父节点
+在使用``removeChild()``或``replaceChild()``从DOM中删除节点时：
+首先会触发DOMNodeRemoved事件。这个事件的目标``event.target``是被删除的节点，``event.relatedNode``包含对父节点的引用。
+如果被删除的节点包括子节点，那么其所有子节点以及这个被移除的节点上会相继触发``DOMNodeRemovedFromDocument``事件。
+然后触发``DOMSubtreeModified事``件。该事件的目标是被移除节点的父节点
 例子：
-```
+```html
 <body>
 <ul id="myList">
   <li>Item 1</li>
@@ -414,28 +406,29 @@ var isSupported = document.implementation.hasFeature('MutationEvents','2.0');
 </body>
 ```
 假设要移除ul元素，此时会触发：
-1 在ul上触发DOMNodeRemoved事件，relatedNode等于document.body
-2 在ul上触发DOMNodeRemovedFromDocument
-3 ul的每个li元素上触发DOMNodeRemovedFromDocument
-4 在document.body上触发DOMSubtreeModified事件，因为ul元素是document.body的直接子元素
+1 在ul上触发``DOMNodeRemoved``事件，``relatedNode``等于``document.body``
+2 在ul上触发``DOMNodeRemovedFromDocument``
+3 ul的每个li元素上触发``DOMNodeRemovedFromDocument``
+4 在document.body上触发``DOMSubtreeModified``事件，因为ul元素是document.body的直接子元素
 
 #### 插入节点
-appendChild replaceChild insertBefore
-首先触发DOMNodeInserted事件。event.target是被插入的节点，event.relatedNode包含对父节点的引用。冒泡
-然后再新插入的节点上触发DOMNodeInsertedIntoDocument事件，不冒泡，插入之前添加事件处理程序。其目标是被插入的节点。
-最后触发DOMSubtreeModified，触发于新插入节点的父节点。冒泡
+``appendChild replaceChild insertBefore``
+首先触发``DOMNodeInserted``事件。``event.target``是被插入的节点，``event.relatedNode``包含对父节点的引用。冒泡
+然后再新插入的节点上触发``DOMNodeInsertedIntoDocument``事件，不冒泡，插入之前添加事件处理程序。其目标是被插入的节点。
+最后触发``DOMSubtreeModified``，触发于新插入节点的父节点。冒泡
 
 ### HTML5事件
 #### contextmenu事件
 右键菜单
-```
+```html
 <div id="myDiv">右键菜单</div>
-  <ul id="myMenu" style="position:absolute;visibility:hidden;background-color:silver">
-    <li>1</li>
-    <li>2</li>
-    <li>3</li>
-  </ul>
-
+<ul id="myMenu" style="position:absolute;visibility:hidden;background-color:silver">
+  <li>1</li>
+  <li>2</li>
+  <li>3</li>
+</ul>
+```
+```javascript
 window.onload = function() {
   var div = document.getElementById('myDiv');
       var menu = document.getElementById('myMenu');
@@ -453,7 +446,7 @@ window.onload = function() {
 ```
 
 #### beforeunload 事件
-```
+```javascript
   EventUtil.addHandler(div,'contextmenu',function(event){
     event = EventUtil.getEvent(event);
     var message = '真的要关闭吗'
@@ -463,9 +456,9 @@ window.onload = function() {
 ```
 
 #### DOMContentLoaded 事件
-window的load事件会在页面的一切都加载完毕时触发，但这个过程因为要加载的外部资源过多而颇费周折。DOMContentLoaded在形成完整的DOM树之后就会触发，不会处理图像、js、css文件或其他资源是否已经下载完毕。会在load事件之前触发
+window的load事件会在页面的一切都加载完毕时触发，但这个过程因为要加载的外部资源过多而颇费周折。``DOMContentLoaded``在形成完整的DOM树之后就会触发，不会处理图像、js、css文件或其他资源是否已经下载完毕。会在load事件之前触发
 对于不支持该事件的浏览器，可以这样：
-```
+```javascript
 setTimeout(function(){
   //
 },0)
@@ -478,7 +471,7 @@ setTimeout(function(){
 * interactive 可以操作对象了，但还没有完全加载
 * complete 对象已经加载
 
-```
+```javascript
 EventUtil.addHandler(document,'readystatechange',function(event){
   if (document.readyState == 'interactive') {
     alert('Content loaded');
@@ -487,7 +480,7 @@ EventUtil.addHandler(document,'readystatechange',function(event){
 ```
 
 交互阶段和完成阶段的顺序无法保证，有必要同时检测，如:
-```
+```javascript
 EventUtil.addHandler(document,'readystatechange',function(event){
   if (document.readyState == 'interactive' || document.readyState == 'complete' ) {
     EventUtil.removeHandler(document,'readystatechange',arguments.callee);
@@ -499,7 +492,7 @@ EventUtil.addHandler(document,'readystatechange',function(event){
 上面的代码，检测是否进入交互阶段或完成阶段。如果是，则移除相应的事件处理程序以免在其他阶段再执行
 
 加载script的例子：
-```
+```javascript
 EventUtil.addHandler(window,'load',function(){
   var script = document.createElement('script');
   EventUtil.addHandler(script, "readystatechange", function(event){
@@ -517,7 +510,7 @@ EventUtil.addHandler(window,'load',function(){
 
 #### pageshow和pagehide事件
 往返缓存（back-forward cache，或bfcache），可以在用户使用浏览器的后退和前进按钮时加快页面的转换速度。
-保存了页面数据、DOM和JS得状态。
+保存了页面数据、DOM和JS的状态。
 不触发load事件
 * pageshow
 这个事件在页面显示时触发，无论页面来自bfcache
@@ -530,23 +523,15 @@ event.persisted 如果页面被保存在了bfcache中，则这个属性的值为
 event.persisted 如果页面在卸载之后会被保存在bfcache中，则为true，否则，为false
 
 #### hashchange
-```
+```javascript
 EventUtil.addHandler(window,'hashchange',function(){
   alert("old URL:"+event.oldURL+"\nNew URL:"+event.newURL);
 });
 ```
 检测
-```
+```javascript
 var isSupported = ("onhashchange" in window) && (document.documentMode === undefined || document.documentMode > 7)
 ```
-
-### 设备事件
-#### orientationchange
-safari
-window.orientation
-#### MozOrientation
-#### deviceorientation
-#### devicemotion
 
 ### 触摸与手势事件
 #### 触摸
@@ -565,7 +550,7 @@ window.orientation
 * screenX,screenY 屏幕坐标
 * target 触摸的DOM节点目标
 
-```
+```javascript
   function handleTouchEvent(event) {
     // 只跟踪一次触摸
     if (event.touches.length == 1) {
@@ -610,13 +595,14 @@ event.scale 两个手指间距离的变化情况，从1开始距离拉大增大�
 对“事件处理程序过多”问题的解决方法就是事件委托
 利用了事件冒泡，只指定一个事件处理程序，管理某一类型的所有事件
 例：
-```
+```html
 <ul id="myLinks">
     <li id="goSomewhere">Go somewhere</li>
     <li id="doSomething">Do something</li>
     <li id="sayHi">Say hi</li>
 </ul>
-
+```
+```javascript
     var i1 = document.getElementById('goSomewhere')
     var i2 = document.getElementById('doSomething')
     var i3 = document.getElementById('sayHi')
@@ -634,7 +620,7 @@ event.scale 两个手指间距离的变化情况，从1开始距离拉大增大�
 
 可以用事件委托来解决这个问题，所有用到按钮的事件（多数鼠标事件和键盘事件）都适合采用事件委托技术。
 
-```
+```javascript
    var list = document.getElementById("myLinks");
     EventUtil.addHandler(list, "click", function (event) {
         event = EventUtil.getEvent(event);
@@ -657,13 +643,15 @@ event.scale 两个手指间距离的变化情况，从1开始距离拉大增大�
 * document对象很快就可以访问，而且可以在页面生命周期的任何时点上为它添加事件处理程序
 * 在页面上设置事件处理程序所需的时间更少，只添加一个事件处理程序所需的DOM引用更少，所花的时间也更少。
 * 整个页面占用的内存空间更少，能够提升整体性能
-适合事件委托的事件包括:click mousedown mouseup keydown keyup keypress
+适合事件委托的事件包括:``click mousedown mouseup keydown keyup keypress``
 
 ### 移除事件处理程序
-```
+```html
 <div id="myDiv">
     <input type="button" id="myBtn"/>
 </div>
+```
+```javascript
 <script>
     var btn = document.getElementById('myBtn');
     btn.onclick = function () {
@@ -677,6 +665,3 @@ event.scale 两个手指间距离的变化情况，从1开始距离拉大增大�
 click事件中移除了input 但是事件处理程序仍然与按钮保持着引用关系，最好手工移除，也可以通过事件委托来解决。
 
 一般在unload事件中移除所有事件处理程序
-
-## 模拟事件
-暂时不深究

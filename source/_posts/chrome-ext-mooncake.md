@@ -9,9 +9,9 @@ description: 简单的chrome插件，模拟抢月饼
 ---
 今天看到阿里的抢月饼事件，心血来潮写了个非常简单的chrome插件，[项目地址](https://github.com/ParadeTo/grab-mooncake-demo)
 
-# 代码
+
 ## 抢月饼页
-```
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -84,7 +84,7 @@ description: 简单的chrome插件，模拟抢月饼
 ## chrome插件
 * manifest.json
 
-```
+```json
 {
     "manifest_version": 2,
     "name": "抢月饼",
@@ -110,7 +110,7 @@ description: 简单的chrome插件，模拟抢月饼
 
 * grab-mooncake.js
 
-```
+```javascript
 function grabMooncake(el) {
     // 轮询
     var timer = setInterval(function() {
