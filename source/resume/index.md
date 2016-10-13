@@ -1,6 +1,7 @@
 ---
 title: resume
 layout: resume
+module: demo
 language: en
 resumeCh:
   name: 游行至

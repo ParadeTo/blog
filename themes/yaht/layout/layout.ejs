@@ -12,7 +12,7 @@
     <%- partial('_partial/after_footer') %>
   </body>
 </html>
-<% } else if(page.layout=='resume'){ %>
+<% } else if(page.module=='demo'){ %>
     <% if(page.source.match(/\.md$/)){ %>
     <%- partial('_partial/head') %>
     <body>
@@ -25,19 +25,6 @@
     <% }else{ %>
     <%- page.content %>
     <% } %>
-<% } else if(page.layout=='birthday'){ %>
-  <% if(page.source.match(/\.md$/)){ %>
-  <%- partial('_partial/head') %>
-  <body>
-
-  <%- body %>
-
-  <%- partial('_partial/after_footer') %>
-  </body>
-  </html>
-  <% }else{ %>
-  <%- page.content %>
-  <% } %>
 <% } else if(page.layout=='page'){ %>
   <% if(page.source.match(/\.md$/)){ %>
     <%- partial('_partial/head') %>
