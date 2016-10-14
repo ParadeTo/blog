@@ -25,5 +25,9 @@ function showMoveAnimation(fromx,fromy,tox,toy,cb){
 }
 
 function updateScore(score) {
+	var highest = parseInt($('#highest').text());
+	if (highest < score) {
+			$('#highest').text(score);
+	}
 	$('#score').text(score);
 }
