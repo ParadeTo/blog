@@ -156,7 +156,7 @@ function prepareForMobile () {
 }
 
 function isGameOver() {
-	if (nospace(board) /*&& nomove(board)*/) {
+	if (nospace(board) && nomove(board)) {
 		storeRecord(board,score);
 		initRecord()
 		gameover();
