@@ -4,6 +4,24 @@ gridContainerWidth = 0.92 * documentWidth
 cellSideLength = 0.18 * documentWidth
 cellSpace = 0.04*documentWidth
 
+var store = window.localStorage;
+var record = [];
+
+// 每次游戏结束记录分数
+function storeRecord(board) {
+	var record = store.getItem('record') ? store.getItem('item')  : [];
+	// 得到board中的最大值
+	var max = -1;
+	for( var i = 0 ; i < 4 ; i ++ )
+        for( var j = 0 ; j < 4 ; j ++ )
+            if( board[i][j] > max ) {
+            	max = board[i][j];
+            }
+
+  record[max] = record[max] ? record[max] + 1 : 1;
+  sotre.setItem('record',record);
+}
+
 function getPosTop(i,j) {
 	return cellSpace + i*(cellSideLength+cellSpace)
 }
