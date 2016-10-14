@@ -12,7 +12,8 @@ description: 自己亲自测试了下带凭据的跨域请求
 
 ## 默认情况
 ### 远程服务端
-```
+使用``express``搭建了一个简单的远程服务器，部署在3001端口上
+```javascript
 router.get('/testCors', function(req, res, next) {
   res.setHeader('Access-Control-Allow-origin','*');
   res.send('跨域了！')
@@ -22,7 +23,7 @@ router.get('/testCors', function(req, res, next) {
 ### 本地服务端
 * index.html
 
-```
+```html
 <!DOCTYPE html>
 <html>
   <head>
@@ -43,6 +44,7 @@ router.get('/testCors', function(req, res, next) {
         }
       }
     }
+    // 向远程服务器发送请求
     xhr.open('get','http://localhost:3001/testCors',true);
     xhr.send(null);
   </script>
@@ -51,7 +53,7 @@ router.get('/testCors', function(req, res, next) {
 * app.js
 这里用node起了一个简单的[静态文件服务器](http://cnodejs.org/topic/4f16442ccae1f4aa27001071)
 
-```
+```javascript
 var PORT = 8000;
 var http = require('http');
 var path = require('path');
@@ -90,7 +92,7 @@ console.log("Server runing at port: " + PORT + ".");
 
 ## 修改
 ### 远程服务端
-```
+```javascript
 router.get('/testCors', function(req, res, next) {
   console.log(req.cookies);
   res.setHeader('Access-Control-Allow-origin','http://localhost:8000'); // 指定了credentials时不能用＊
@@ -102,27 +104,27 @@ router.get('/testCors', function(req, res, next) {
 ```
 
 ### 本地服务端
-```
-    document.cookie = 'id=1';
-    console.log(document.cookie);
-    var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState == 4) {
-        if (xhr.status >= 200 && xhr.status < 300 || xhr.status===304) {
-          console.log(document.cookie);
-        } else {
-          alert('error')
-        }
-      }
+```javascript
+document.cookie = 'id=1';
+console.log(document.cookie);
+var xhr = new XMLHttpRequest();
+xhr.onreadystatechange = function() {
+  if (xhr.readyState == 4) {
+    if (xhr.status >= 200 && xhr.status < 300 || xhr.status===304) {
+      console.log(document.cookie);
+    } else {
+      alert('error')
     }
-    xhr.open('get','http://localhost:3001/testCors',true);
-    xhr.withCredentials = true;
-    xhr.send(null);
+  }
+}
+xhr.open('get','http://localhost:3001/testCors',true);
+xhr.withCredentials = true;
+xhr.send(null);
 ```
 
 ### 结果
 * 浏览器日志
-
+发送了``id＝1``的cookie
 ![Paste_Image.png](cors-cookie/2.png)
 
 ![Paste_Image.png](cors-cookie/3.png)

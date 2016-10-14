@@ -70,7 +70,7 @@ function nomove (board) {
 	if(canMoveLeft(board) ||
 		canMoveRight(board) ||
 		canMoveUp(board) ||
-		canMoveDown(board) 
+		canMoveDown(board)
 		)
 		return false;
 	return true;
@@ -147,4 +147,14 @@ function noBlockVertical(col,row1,row2,board) {
 		}
 	}
 	return true;
+}
+
+// 达到2048
+function achieve2048(board) {
+	for( var i = 0 ; i < 4 ; i ++ )
+			for( var j = 0 ; j < 4 ; j ++ )
+					if( board[i][j] == 2048 )
+							return true;
+
+	return false;
 }
