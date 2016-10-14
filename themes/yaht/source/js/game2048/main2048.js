@@ -156,10 +156,14 @@ function prepareForMobile () {
 }
 
 function isGameOver() {
-	if (nospace(board) && nomove(board)) {
+	if (nospace(board) /*&& nomove(board)*/) {
+		storeRecord(board,score);
+		initRecord()
 		gameover();
 	}
 	if (achieve2048(board)) {
+		storeRecord(board,score);
+		initRecord()
 		win();
 	}
 }
@@ -197,7 +201,30 @@ function init() {
 		}
 	}
 	updateBoardView();
+	initRecord();
 	score = 0;
+}
+
+// 初始化记录
+function initRecord() {
+	var record = localStorage.getItem('record');
+	if(record) {
+		record = JSON.parse(record);
+		var html ='';
+		for(var k in record) {
+			var bgColor = getNumberBackgroundColor(parseInt(k))
+			var color = getNumberColor(parseInt(k))
+			html += 	'<span style="background-color:'+bgColor+';color:'+color+'">' + dict[k] + '<i>' + record[k] + '</i></span>';
+		}
+		$("#record").html(html);
+	}
+
+	var highest = localStorage.getItem('highest')
+	if(highest) {
+		$('#highest').text(highest)
+	} else {
+		$('#highest').text(0)
+	}
 }
 
 // 根据board中的值来更新前端

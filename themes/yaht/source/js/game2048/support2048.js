@@ -5,11 +5,13 @@ cellSideLength = 0.18 * documentWidth
 cellSpace = 0.04*documentWidth
 
 var store = window.localStorage;
-var record = [];
+
 
 // 每次游戏结束记录分数
-function storeRecord(board) {
-	var record = store.getItem('record') ? store.getItem('item')  : [];
+function storeRecord(board,score) {
+	// 称号
+	var record = store.getItem('record') ? store.getItem('record')  : '{}';
+	record = JSON.parse(record);
 	// 得到board中的最大值
 	var max = -1;
 	for( var i = 0 ; i < 4 ; i ++ )
@@ -19,7 +21,12 @@ function storeRecord(board) {
             }
 
   record[max] = record[max] ? record[max] + 1 : 1;
-  sotre.setItem('record',record);
+  store.setItem('record',JSON.stringify(record));
+  // 最高分数
+  var highest = store.getItem('highest') ? store.getItem('highest')  : 0;
+  if (score >= highest) {
+  	  store.setItem('highest',score);
+  }
 }
 
 function getPosTop(i,j) {
