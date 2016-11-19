@@ -5,7 +5,7 @@ tags:
 - helmet
 - nodejs
 categories:
-- 前端理论
+- 项目实战
 description: helmet使用记录
 ---
 [helmet](https://www.npmjs.com/package/helmet)包含10个中间件:
