@@ -23,7 +23,7 @@ resumeCh:
       score: 20
   experience:
     - corp: 深圳妈妈资本管理有线公司
-      vocation: 高级前端工程师傅
+      vocation: 高级前端工程师
       period: 2016/08 ~ 今
       work: 前端项目react框架研究及搭建</br>引入并推动前后端分离的开发方式</br>妈妈送房项目前端重构
     - corp: 深圳齐牛互联网金融服务有限公司
