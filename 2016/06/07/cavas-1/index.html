@@ -1,0 +1,456 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>cavas基本绘图 | Ayou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="Ayou">
+    
+    <meta name="description" itemprop="description" content="canvas创建、基本绘图">
+    
+    
+    
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/yaht.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/yaht.jpg">
+    
+    
+        <link rel="stylesheet" href="/css/style.css">
+    
+    
+    
+<script type="text/javascript">
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "//hm.baidu.com/hm.js?bc27adb5eec6cd3b858ecca2a190876a";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+
+</head>
+
+  <body>
+    <header>
+      <canvas id="headerCanvas">
+
+</canvas>
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Ayou" title="Ayou"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Ayou">Ayou</a></h1>
+				<h2 class="blog-motto">Good Good Study, Day Day Up!</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/resume">Resume</a></li>
+					
+						<li><a href="/demo">Demo</a></li>
+					
+					<li>
+					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:www.paradeto.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/06/07/cavas-1/" title="cavas基本绘图" itemprop="url">cavas基本绘图</a>
+  </h1>
+  <p class="article-author">By
+    
+      <a href="http://www.paradeto.com" title="Ayou">Ayou</a>
+    </p>
+  <p class="article-time">
+    <time datetime="2016-06-07T01:29:36.000Z" itemprop="datePublished">2016-06-07</time>
+    更新日期:<time datetime="2016-11-19T08:25:18.000Z" itemprop="dateModified">2016-11-19</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#创建canvas"><span class="toc-number">1.</span> <span class="toc-text">创建canvas</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#简单的绘制"><span class="toc-number">2.</span> <span class="toc-text">简单的绘制</span></a></li></ol>
+		</div>
+		
+		<h2 id="&#x521B;&#x5EFA;canvas"><a href="#&#x521B;&#x5EFA;canvas" class="headerlink" title="&#x521B;&#x5EFA;canvas"></a>&#x521B;&#x5EFA;canvas</h2><figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">canvas</span> <span class="attr">id</span>=<span class="string">&quot;canvas&quot;</span> <span class="attr">width</span>=<span class="string">&quot;800&quot;</span> <span class="attr">height</span>=<span class="string">&quot;600&quot;</span> <span class="attr">style</span>=<span class="string">&quot;border:1px solid black;margin:10px auto;display:block;&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">canvas</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>&#x4E0D;&#x8981;&#x4F7F;&#x7528;css&#x7ED9;canvas&#x8BBE;&#x7F6E;&#x5BBD;&#x9AD8;&#xFF0C;&#x4F1A;&#x51FA;&#x73B0;&#x5947;&#x602A;&#x7684;&#x6548;&#x679C;(<a href="http://wangxiaalwy.blog.163.com/blog/static/1552508182013106112418455/" target="_blank" rel="external">&#x5173;&#x4E8E;&#x4F7F;&#x7528;Css&#x8BBE;&#x7F6E;Canvas&#x753B;&#x5E03;&#x5927;&#x5C0F;&#x7684;&#x95EE;&#x9898;</a>),&#x53EF;&#x4EE5;&#x5728;js&#x4E2D;&#x8BBE;&#x7F6E;&#x5BBD;&#x9AD8;&#xFF1A;<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">&lt;script&gt;</div><div class="line">    <span class="keyword">var</span> canvas = <span class="built_in">document</span>.getElementById(<span class="string">&quot;canvas&quot;</span>);</div><div class="line">    canvas.height = <span class="number">500</span>;</div><div class="line">    canvas.width = <span class="number">500</span>;</div><div class="line">    <span class="keyword">var</span> context = canvas.getContext(<span class="string">&quot;2d&quot;</span>);</div><div class="line"><span class="xml"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></div></pre></td></tr></table></figure></p>
+<h2 id="&#x7B80;&#x5355;&#x7684;&#x7ED8;&#x5236;"><a href="#&#x7B80;&#x5355;&#x7684;&#x7ED8;&#x5236;" class="headerlink" title="&#x7B80;&#x5355;&#x7684;&#x7ED8;&#x5236;"></a>&#x7B80;&#x5355;&#x7684;&#x7ED8;&#x5236;</h2><ul>
+<li>&#x76F4;&#x7EBF;&#x3001;&#x591A;&#x8FB9;&#x5F62;</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">context.moveTo(<span class="number">50</span>,<span class="number">50</span>);</div><div class="line">context.lineTo(<span class="number">200</span>,<span class="number">200</span>);</div><div class="line">context.lineWidth = <span class="number">5</span>; <span class="comment">// &#x7EBF;&#x6761;&#x5BBD;&#x5EA6;</span></div><div class="line">content.strokeStyle = <span class="string">&quot;#005588&quot;</span> <span class="comment">// &#x7EBF;&#x6761;&#x989C;&#x8272;</span></div><div class="line">context.stroke();</div></pre></td></tr></table></figure>
+<ul>
+<li>&#x591A;&#x53D8;&#x5F62;&#x7740;&#x8272;</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">context.moveTo(<span class="number">50</span>,<span class="number">50</span>);</div><div class="line">context.lineTo(<span class="number">200</span>,<span class="number">200</span>);</div><div class="line">context.lineTo(<span class="number">50</span>,<span class="number">200</span>);</div><div class="line">context.lineTo(<span class="number">50</span>,<span class="number">50</span>);</div><div class="line">context.fillStyle = <span class="string">&quot;rgb(2,100,24)&quot;</span>;</div><div class="line">context.fill();</div><div class="line"><span class="comment">// &#x7ED9;&#x591A;&#x8FB9;&#x5F62;&#x52A0;&#x4E0A;&#x5916;&#x8FB9;&#x6846;</span></div><div class="line">context.lineWidth = <span class="number">5</span>;</div><div class="line">context.strokeStyle = <span class="string">&quot;red&quot;</span>;</div><div class="line">context.stroke();</div></pre></td></tr></table></figure>
+<ul>
+<li>&#x7ED8;&#x5236;&#x4E24;&#x6761;&#x4E0D;&#x540C;&#x989C;&#x8272;&#x7684;&#x76F4;&#x7EBF;</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">context.moveTo(<span class="number">50</span>,<span class="number">50</span>);</div><div class="line">context.lineTo(<span class="number">200</span>,<span class="number">200</span>);</div><div class="line">context.strokeStyle = <span class="string">&quot;blue&quot;</span>;</div><div class="line">context.stroke();</div><div class="line"></div><div class="line">context.moveTo(<span class="number">60</span>,<span class="number">50</span>);</div><div class="line">context.lineTo(<span class="number">300</span>,<span class="number">200</span>);</div><div class="line">context.strokeStyle = <span class="string">&quot;black&quot;</span>;</div><div class="line">context.stroke();</div></pre></td></tr></table></figure>
+<p><img src="/2016/06/07/cavas-1/canvas-1-1.png" alt=""><br>&#x8FD9;&#x91CC;&#x4E0E;&#x6559;&#x7A0B;&#x4E0D;&#x540C;&#xFF0C;&#x6559;&#x7A0B;&#x4E2D;&#x4E24;&#x6761;&#x76F4;&#x7EBF;&#x90FD;&#x662F;&#x9ED1;&#x8272;&#xFF0C;&#x9700;&#x8981;&#x7528;context.beginPath()&#x548C;context.closePath()&#x6765;&#x533A;&#x5206;&#x4E0D;&#x540C;&#x7684;&#x7ED8;&#x5236;&#x8DEF;&#x5F84;&#xFF08;<strong>closePath&#x4F1A;&#x81EA;&#x52A8;&#x5C01;&#x95ED;&#x56FE;&#x5F62;</strong>&#xFF09;&#x3002;&#x4F46;&#x662F;&#xFF0C;&#x5F53;&#x7ED8;&#x5236;&#x586B;&#x5145;&#x591A;&#x8FB9;&#x5F62;&#x65F6;&#xFF0C;&#x4F1A;&#x6709;&#x5982;&#x4E0B;&#x95EE;&#x9898;&#xFF1A;<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// context.beginPath();</span></div><div class="line">   context.moveTo(<span class="number">50</span>,<span class="number">50</span>);</div><div class="line">   context.lineTo(<span class="number">200</span>,<span class="number">200</span>);</div><div class="line">   context.lineTo(<span class="number">50</span>,<span class="number">200</span>);</div><div class="line">   context.lineTo(<span class="number">50</span>,<span class="number">50</span>);</div><div class="line">   <span class="comment">// context.closePath();</span></div><div class="line">   context.fillStyle = <span class="string">&quot;blue&quot;</span>;</div><div class="line">   context.fill();</div><div class="line"></div><div class="line"><span class="comment">// context.beginPath();</span></div><div class="line">   context.moveTo(<span class="number">50</span>,<span class="number">250</span>);</div><div class="line">   context.lineTo(<span class="number">200</span>,<span class="number">400</span>);</div><div class="line">   context.lineTo(<span class="number">50</span>,<span class="number">400</span>);</div><div class="line">   context.lineTo(<span class="number">50</span>,<span class="number">250</span>);</div><div class="line">   <span class="comment">// context.closePath();</span></div><div class="line">   context.fillStyle = <span class="string">&quot;black&quot;</span>;</div><div class="line">   context.fill();</div></pre></td></tr></table></figure></p>
+<p><img src="/2016/06/07/cavas-1/canvas-1-2-1.png" alt=""><br>&#x53BB;&#x6389;&#x4EE3;&#x7801;&#x4E2D;&#x7684;&#x6CE8;&#x91CA;&#xFF0C;&#x53EF;&#x4EE5;&#x8FBE;&#x5230;&#x6211;&#x4EEC;&#x7684;&#x9884;&#x671F;&#x6548;&#x679C;<br><img src="/2016/06/07/cavas-1/canvas-1-2-2.png" alt=""></p>
+<ul>
+<li>&#x7ED8;&#x5236;&#x4E00;&#x4E2A;&#x4E03;&#x5DE7;&#x677F;<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> tangram = [</div><div class="line">  {<span class="attr">p</span>:[{<span class="attr">x</span>:<span class="number">0</span>,<span class="attr">y</span>:<span class="number">0</span>},{<span class="attr">x</span>:<span class="number">800</span>,<span class="attr">y</span>:<span class="number">0</span>},{<span class="attr">x</span>:<span class="number">400</span>,<span class="attr">y</span>:<span class="number">400</span>}],<span class="attr">color</span>:<span class="string">&quot;#caff67&quot;</span>},</div><div class="line">  {<span class="attr">p</span>:[{<span class="attr">x</span>:<span class="number">0</span>,<span class="attr">y</span>:<span class="number">0</span>},{<span class="attr">x</span>:<span class="number">400</span>,<span class="attr">y</span>:<span class="number">400</span>},{<span class="attr">x</span>:<span class="number">0</span>,<span class="attr">y</span>:<span class="number">800</span>}],<span class="attr">color</span>:<span class="string">&quot;#67becf&quot;</span>},</div><div class="line">  {<span class="attr">p</span>:[{<span class="attr">x</span>:<span class="number">800</span>,<span class="attr">y</span>:<span class="number">0</span>},{<span class="attr">x</span>:<span class="number">800</span>,<span class="attr">y</span>:<span class="number">400</span>},{<span class="attr">x</span>:<span class="number">600</span>,<span class="attr">y</span>:<span class="number">600</span>},{<span class="attr">x</span>:<span class="number">600</span>,<span class="attr">y</span>:<span class="number">200</span>}],<span class="attr">color</span>:<span class="string">&quot;#ef3d61&quot;</span>},</div><div class="line">  {<span class="attr">p</span>:[{<span class="attr">x</span>:<span class="number">600</span>,<span class="attr">y</span>:<span class="number">200</span>},{<span class="attr">x</span>:<span class="number">600</span>,<span class="attr">y</span>:<span class="number">600</span>},{<span class="attr">x</span>:<span class="number">400</span>,<span class="attr">y</span>:<span class="number">400</span>}],<span class="attr">color</span>:<span class="string">&quot;#f9f51a&quot;</span>},</div><div class="line">  {<span class="attr">p</span>:[{<span class="attr">x</span>:<span class="number">400</span>,<span class="attr">y</span>:<span class="number">400</span>},{<span class="attr">x</span>:<span class="number">600</span>,<span class="attr">y</span>:<span class="number">600</span>},{<span class="attr">x</span>:<span class="number">400</span>,<span class="attr">y</span>:<span class="number">800</span>},{<span class="attr">x</span>:<span class="number">200</span>,<span class="attr">y</span>:<span class="number">600</span>}],<span class="attr">color</span>:<span class="string">&quot;#a594c0&quot;</span>},</div><div class="line">  {<span class="attr">p</span>:[{<span class="attr">x</span>:<span class="number">200</span>,<span class="attr">y</span>:<span class="number">600</span>},{<span class="attr">x</span>:<span class="number">400</span>,<span class="attr">y</span>:<span class="number">800</span>},{<span class="attr">x</span>:<span class="number">0</span>,<span class="attr">y</span>:<span class="number">800</span>}],<span class="attr">color</span>:<span class="string">&quot;#fa8ccc&quot;</span>},</div><div class="line">  {<span class="attr">p</span>:[{<span class="attr">x</span>:<span class="number">800</span>,<span class="attr">y</span>:<span class="number">400</span>},{<span class="attr">x</span>:<span class="number">800</span>,<span class="attr">y</span>:<span class="number">800</span>},{<span class="attr">x</span>:<span class="number">400</span>,<span class="attr">y</span>:<span class="number">800</span>}],<span class="attr">color</span>:<span class="string">&quot;#f6ca29&quot;</span>},</div><div class="line">]</div><div class="line"><span class="built_in">window</span>.onload = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>{</div><div class="line">  <span class="keyword">var</span> canvas = <span class="built_in">document</span>.getElementById(<span class="string">&quot;canvas&quot;</span>);</div><div class="line">  canvas.height = <span class="number">800</span>;</div><div class="line">  canvas.width = <span class="number">800</span>;</div><div class="line">  <span class="keyword">var</span> context = canvas.getContext(<span class="string">&quot;2d&quot;</span>);</div><div class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> i=<span class="number">0</span>;i &lt; tangram.length;i++) {</div><div class="line">    draw(tangram[i], context);</div><div class="line">  }</div><div class="line"></div><div class="line">}</div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">draw</span>(<span class="params">piece, cxt</span>) </span>{</div><div class="line">  cxt.beginPath();</div><div class="line">  cxt.moveTo(piece.p[<span class="number">0</span>].x, piece.p[<span class="number">0</span>].y);</div><div class="line">  <span class="keyword">for</span>(<span class="keyword">var</span> i=<span class="number">1</span>;i&lt;piece.p.length;i++){</div><div class="line">    cxt.lineTo(piece.p[i].x,piece.p[i].y);</div><div class="line">  }</div><div class="line">  cxt.closePath();</div><div class="line">  cxt.fillStyle = piece.color;</div><div class="line">  cxt.strokeStyle = <span class="string">&quot;black&quot;</span>;</div><div class="line">  cxt.fill();</div><div class="line">  cxt.stroke();</div><div class="line">}</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><img src="/2016/06/07/cavas-1/canvas-1-3.png" alt=""></p>
+<ul>
+<li>&#x753B;&#x5706;<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">context.arc(</div><div class="line">	centerx, <span class="comment">// &#x5706;&#x5FC3;x</span></div><div class="line">    centery, <span class="comment">// &#x5706;&#x5FC3;y</span></div><div class="line">    radius,  <span class="comment">// &#x534A;&#x5F84;</span></div><div class="line">    startingAngle,  <span class="comment">// &#x8D77;&#x59CB;&#x7684;&#x89D2;&#x5EA6;</span></div><div class="line">    endingAngle,    <span class="comment">// &#x7ED3;&#x675F;&#x7684;&#x89D2;&#x5EA6;</span></div><div class="line">    anticlockwise   <span class="comment">// &#x662F;&#x5426;&#x9006;&#x65F6;&#x9488;</span></div><div class="line">)</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>&#x4F8B;&#xFF1A;<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">context.lineWidth = <span class="number">5</span>;</div><div class="line">context.strokeStyle = <span class="string">&quot;#005588&quot;</span>;</div><div class="line">context.beginPath();</div><div class="line">context.arc(<span class="number">200</span>,<span class="number">200</span>,<span class="number">100</span>,<span class="number">0</span>,<span class="number">1.5</span>*<span class="built_in">Math</span>.PI);</div><div class="line">context.closePath(); <span class="comment">// &#x53BB;&#x6389;&#x4EE5;&#x540E;&#x4E0D;&#x4F1A;&#x5C01;&#x95ED;&#x56FE;&#x5F62; beginPath&#x4E0E;closePath&#x4E0D;&#x9700;&#x8981;&#x6210;&#x5BF9;&#x51FA;&#x73B0;</span></div><div class="line">context.stroke();</div><div class="line"></div><div class="line">context.lineWidth = <span class="number">5</span>;</div><div class="line">context.fillStyle = <span class="string">&quot;green&quot;</span>;</div><div class="line">context.beginPath();</div><div class="line">context.arc(<span class="number">500</span>,<span class="number">200</span>,<span class="number">100</span>,<span class="number">0</span>,<span class="number">1.5</span>*<span class="built_in">Math</span>.PI);</div><div class="line">context.closePath(); <span class="comment">// &#x5BF9;fill&#x6CA1;&#x4EC0;&#x4E48;&#x7528; </span></div><div class="line">context.fill();</div></pre></td></tr></table></figure></p>
+<p><img src="/2016/06/07/cavas-1/canvas-1-4.png" alt=""></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/canvas/">canvas</a><a href="/tags/html/">html</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/html-css/">html/css</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="http://www.paradeto.com/2016/06/07/cavas-1/" data-title="cavas基本绘图 | Ayou" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/06/10/canvas-count-down/" title="canvas倒计时效果">
+  <strong>PREVIOUS:</strong><br/>
+  <span>
+  canvas倒计时效果</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/06/06/js-hld-10/"  title="笔记-javascript高级程序设计（第3版）第10章">
+ <strong>NEXT:</strong><br/> 
+ <span>笔记-javascript高级程序设计（第3版）第10章
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	<div class="ds-thread"></div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+  <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#创建canvas"><span class="toc-number">1.</span> <span class="toc-text">创建canvas</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#简单的绘制"><span class="toc-number">2.</span> <span class="toc-text">简单的绘制</span></a></li></ol>
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+			<li><a href="/categories/html-css/" title="html/css">html/css<sup>3</sup></a></li>
+		
+			<li><a href="/categories/javascript/" title="javascript">javascript<sup>4</sup></a></li>
+		
+			<li><a href="/categories/nodejs/" title="nodejs">nodejs<sup>2</sup></a></li>
+		
+			<li><a href="/categories/前端工具/" title="前端工具">前端工具<sup>1</sup></a></li>
+		
+			<li><a href="/categories/前端框架/" title="前端框架">前端框架<sup>3</sup></a></li>
+		
+			<li><a href="/categories/前端理论/" title="前端理论">前端理论<sup>1</sup></a></li>
+		
+			<li><a href="/categories/算法/" title="算法">算法<sup>1</sup></a></li>
+		
+			<li><a href="/categories/读书笔记/" title="读书笔记">读书笔记<sup>3</sup></a></li>
+		
+			<li><a href="/categories/转载/" title="转载">转载<sup>1</sup></a></li>
+		
+			<li><a href="/categories/项目实战/" title="项目实战">项目实战<sup>2</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			<li><a href="/tags/WEB安全/" title="WEB安全">WEB安全<sup>2</sup></a></li>
+		
+			<li><a href="/tags/angularjs/" title="angularjs">angularjs<sup>2</sup></a></li>
+		
+			<li><a href="/tags/angularjs2/" title="angularjs2">angularjs2<sup>1</sup></a></li>
+		
+			<li><a href="/tags/canvas/" title="canvas">canvas<sup>2</sup></a></li>
+		
+			<li><a href="/tags/chrome插件/" title="chrome插件">chrome插件<sup>1</sup></a></li>
+		
+			<li><a href="/tags/css/" title="css">css<sup>1</sup></a></li>
+		
+			<li><a href="/tags/helmet/" title="helmet">helmet<sup>1</sup></a></li>
+		
+			<li><a href="/tags/html/" title="html">html<sup>2</sup></a></li>
+		
+			<li><a href="/tags/http/" title="http">http<sup>2</sup></a></li>
+		
+			<li><a href="/tags/https/" title="https">https<sup>1</sup></a></li>
+		
+			<li><a href="/tags/javascript/" title="javascript">javascript<sup>5</sup></a></li>
+		
+			<li><a href="/tags/jquery插件/" title="jquery插件">jquery插件<sup>1</sup></a></li>
+		
+			<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>4</sup></a></li>
+		
+			<li><a href="/tags/promise/" title="promise">promise<sup>1</sup></a></li>
+		
+			<li><a href="/tags/slb/" title="slb">slb<sup>1</sup></a></li>
+		
+			<li><a href="/tags/webpack/" title="webpack">webpack<sup>1</sup></a></li>
+		
+			<li><a href="/tags/事件/" title="事件">事件<sup>1</sup></a></li>
+		
+			<li><a href="/tags/仿原生APP/" title="仿原生APP">仿原生APP<sup>1</sup></a></li>
+		
+			<li><a href="/tags/密码/" title="密码">密码<sup>1</sup></a></li>
+		
+			<li><a href="/tags/异步编程/" title="异步编程">异步编程<sup>1</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  <div class="rsspart">
+	<a href="null" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+	</div>
+		<p class="copyright">Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/zhyu/yaht" target="_blank" title="YAHT">YAHT</a> © 2016 
+		
+		<a href="http://www.paradeto.com" target="_blank" title="Ayou">Ayou</a>
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<!--canvas-->
+
+<script src="/js/canvas.js"></script>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.navbar').click(function(){
+      $('header nav').toggleClass('shownav');
+    });
+    var myWidth = 0;
+    function getSize(){
+      if( typeof( window.innerWidth ) == 'number' ) {
+        myWidth = window.innerWidth;
+      } else if( document.documentElement && document.documentElement.clientWidth) {
+        myWidth = document.documentElement.clientWidth;
+      };
+    };
+    var m = $('#main'),
+    a = $('#asidepart'),
+    c = $('.closeaside'),
+    o = $('.openaside');
+    $(window).resize(function(){
+      getSize();
+      if (myWidth >= 1024) {
+        $('header nav').removeClass('shownav');
+      }else
+      {
+        m.removeClass('moveMain');
+        a.css('display', 'block').removeClass('fadeOut');
+        o.css('display', 'none');
+        
+            $('#toc.toc-aside').css('display', 'none');
+          
+      }
+    });
+    c.click(function(){
+      a.addClass('fadeOut').css('display', 'none');
+      o.css('display', 'block').addClass('fadeIn');
+      m.addClass('moveMain');
+    });
+    o.click(function(){
+      o.css('display', 'none').removeClass('beforeFadeIn');
+      a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');
+      m.removeClass('moveMain');
+    });
+    $(window).scroll(function(){
+      o.css("top",Math.max(80,260-$(this).scrollTop()));
+    });
+  });
+</script>
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+      var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+      if(ai.length>0){
+        ai.wrap('<div class="video-container" />');
+      };
+      if(ae.length>0){
+        ae.wrap('<div class="video-container" />');
+      };
+      if(ah.length==0){
+        t.css('display','none');
+      }else{
+        c.click(function(){
+          ta.css('display', 'block').addClass('fadeIn');
+        });
+        o.click(function(){
+          ta.css('display', 'none');
+        });
+        $(window).scroll(function(){
+          ta.css("top",Math.max(140,320-$(this).scrollTop()));
+        });
+      };
+    });
+  </script>
+
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+      var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+      var html = [
+        '<a href="#" class="overlay" id="qrcode"></a>',
+        '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+        '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+        '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+        '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+        '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+        '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+        '<span title="Share to"></span>'
+        ].join('');
+        $this.append(html);
+        $('.article-share-qrcode').click(function(){
+          var imgSrc = $('#qrcode-pic').attr('data-src');
+          $('#qrcode-pic').attr('src', imgSrc);
+          $('#qrcode-pic').load(function(){
+            $('.qrcode strong').text(' ');
+          });
+        });
+    });
+  </script>
+
+
+  
+    <script type="text/javascript">
+      var duoshuoQuery = {short_name:"paradeto"};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0]
+        || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+    </script>
+  
+  
+
+
+
+
+
+
+
+
+
+  <div id="back-to-top">
+    <a title="返回顶部"><img src="/img/scrollup.png"/></a>
+  </div>
+  <script src="/js/back_to_top.js"></script>
+
+
+
+  </body>
+</html>
+

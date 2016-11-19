@@ -1,0 +1,439 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>chrome插件开发（模拟抢月饼） | Ayou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="Ayou">
+    
+    <meta name="description" itemprop="description" content="简单的chrome插件，模拟抢月饼">
+    
+    
+    
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/yaht.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/yaht.jpg">
+    
+    
+        <link rel="stylesheet" href="/css/style.css">
+    
+    
+    
+<script type="text/javascript">
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "//hm.baidu.com/hm.js?bc27adb5eec6cd3b858ecca2a190876a";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+
+</head>
+
+  <body>
+    <header>
+      <canvas id="headerCanvas">
+
+</canvas>
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Ayou" title="Ayou"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Ayou">Ayou</a></h1>
+				<h2 class="blog-motto">Good Good Study, Day Day Up!</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/resume">Resume</a></li>
+					
+						<li><a href="/demo">Demo</a></li>
+					
+					<li>
+					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:www.paradeto.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/09/13/chrome-ext-mooncake/" title="chrome插件开发（模拟抢月饼）" itemprop="url">chrome插件开发（模拟抢月饼）</a>
+  </h1>
+  <p class="article-author">By
+    
+      <a href="http://www.paradeto.com" title="Ayou">Ayou</a>
+    </p>
+  <p class="article-time">
+    <time datetime="2016-09-13T11:59:46.000Z" itemprop="datePublished">2016-09-13</time>
+    更新日期:<time datetime="2016-11-19T08:25:18.000Z" itemprop="dateModified">2016-11-19</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#抢月饼页"><span class="toc-number">1.</span> <span class="toc-text">抢月饼页</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#chrome插件"><span class="toc-number">2.</span> <span class="toc-text">chrome插件</span></a></li></ol>
+		</div>
+		
+		<p>&#x4ECA;&#x5929;&#x770B;&#x5230;&#x963F;&#x91CC;&#x7684;&#x62A2;&#x6708;&#x997C;&#x4E8B;&#x4EF6;&#xFF0C;&#x5FC3;&#x8840;&#x6765;&#x6F6E;&#x5199;&#x4E86;&#x4E2A;&#x975E;&#x5E38;&#x7B80;&#x5355;&#x7684;chrome&#x63D2;&#x4EF6;&#xFF0C;<a href="https://github.com/ParadeTo/grab-mooncake-demo" target="_blank" rel="external">&#x9879;&#x76EE;&#x5730;&#x5740;</a></p>
+<h2 id="&#x62A2;&#x6708;&#x997C;&#x9875;"><a href="#&#x62A2;&#x6708;&#x997C;&#x9875;" class="headerlink" title="&#x62A2;&#x6708;&#x997C;&#x9875;"></a>&#x62A2;&#x6708;&#x997C;&#x9875;</h2><figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;!DOCTYPE html&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">&quot;en&quot;</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">&quot;UTF-8&quot;</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">meta</span> <span class="attr">name</span>=<span class="string">&quot;viewport&quot;</span> <span class="attr">content</span>=<span class="string">&quot;width=device-width, initial-scale=1.0&quot;</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">&quot;X-UA-Compatible&quot;</span> <span class="attr">content</span>=<span class="string">&quot;ie=edge&quot;</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">title</span>&gt;</span>&#x62A2;&#x6708;&#x997C;&#x4E86;<span class="tag">&lt;/<span class="name">title</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">style</span>&gt;</span><span class="undefined"></span></div><div class="line">    .container {</div><div class="line">      width:400px;</div><div class="line">      margin:10px auto;</div><div class="line">      text-align: center;</div><div class="line">    }</div><div class="line">    button {</div><div class="line">      width:200px;</div><div class="line">      height:40px;</div><div class="line">      border-radius: 3px;</div><div class="line">      background-color: gray;</div><div class="line">      color:white;</div><div class="line">      margin: 0 auto;</div><div class="line">      border:0;</div><div class="line">      color:white;</div><div class="line">    }</div><div class="line">    button[disabled]:hover {</div><div class="line">      cursor:not-allowed;</div><div class="line">    }</div><div class="line">    button.active {</div><div class="line">      background-color: #ffcf1d;</div><div class="line">    }</div><div class="line">    button.active:hover{</div><div class="line">      cursor:pointer;</div><div class="line">    }</div><div class="line"></div><div class="line">  <span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;container&quot;</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">&quot;img/mooncake.jpg&quot;</span> <span class="attr">alt</span>=<span class="string">&quot;&#x6708;&#x997C;&quot;</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">button</span> <span class="attr">id</span>=<span class="string">&apos;btn&apos;</span> <span class="attr">disabled</span>=<span class="string">&quot;true&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">button</span>&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="javascript"></span></div><div class="line">    <span class="keyword">var</span> time = <span class="number">3</span>;</div><div class="line">    <span class="keyword">var</span> $btn = <span class="built_in">document</span>.querySelector(<span class="string">&apos;#btn&apos;</span>);</div><div class="line">    <span class="function"><span class="keyword">function</span> <span class="title">countDown</span>(<span class="params">time</span>) </span>{</div><div class="line">      <span class="keyword">var</span> timer = setInterval(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>{</div><div class="line">        <span class="keyword">if</span> (time === <span class="number">0</span>) {</div><div class="line">          $btn.innerHTML = <span class="string">&apos;&#x5F00;&#x62A2;&apos;</span>;</div><div class="line">          $btn.setAttribute(<span class="string">&quot;class&quot;</span>,<span class="string">&quot;active&quot;</span>);</div><div class="line">          $btn.removeAttribute(<span class="string">&quot;disabled&quot;</span>);</div><div class="line">          clearInterval(timer);</div><div class="line">          <span class="keyword">return</span>;</div><div class="line">        }</div><div class="line">        $btn.innerHTML = time;</div><div class="line">        time -= <span class="number">1</span>;</div><div class="line">      },<span class="number">1000</span>)</div><div class="line">    }</div><div class="line">    <span class="function"><span class="keyword">function</span> <span class="title">btnClick</span> (<span class="params"></span>) </span>{</div><div class="line">      alert(<span class="string">&apos;&#x4F60;&#x62A2;&#x5230;&#x4E86;&#x6708;&#x997C;&#xFF0C;&#x8FD9;&#x4E0B;&#x7CDF;&#x7CD5;&#x4E86;&#xFF01;&apos;</span>)</div><div class="line">    }</div><div class="line">    <span class="built_in">window</span>.onload = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>{</div><div class="line">        countDown(time);</div><div class="line">        $btn.onclick = btnClick;</div><div class="line">    }</div><div class="line"></div><div class="line">  <span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div></pre></td></tr></table></figure>
+<h2 id="chrome&#x63D2;&#x4EF6;"><a href="#chrome&#x63D2;&#x4EF6;" class="headerlink" title="chrome&#x63D2;&#x4EF6;"></a>chrome&#x63D2;&#x4EF6;</h2><ul>
+<li>manifest.json</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">{</div><div class="line">    <span class="attr">&quot;manifest_version&quot;</span>: <span class="number">2</span>,</div><div class="line">    <span class="attr">&quot;name&quot;</span>: <span class="string">&quot;&#x62A2;&#x6708;&#x997C;&quot;</span>,</div><div class="line">    <span class="attr">&quot;version&quot;</span>: <span class="string">&quot;1.0&quot;</span>,</div><div class="line">    <span class="attr">&quot;description&quot;</span>: <span class="string">&quot;&#x4EBA;&#x751F;&#x5C31;&#x50CF;&#x62A2;&#x6708;&#x997C;&#xFF0C;&#x4F60;&#x6C38;&#x8FDC;&#x4E0D;&#x77E5;&#x9053;&#x4F1A;&#x53D1;&#x751F;&#x4EC0;&#x4E48;&quot;</span>,</div><div class="line">    <span class="attr">&quot;content_scripts&quot;</span>: [{</div><div class="line">        <span class="attr">&quot;matches&quot;</span>: [<span class="string">&quot;*://localhost/&quot;</span>],</div><div class="line">        <span class="attr">&quot;js&quot;</span>: [<span class="string">&quot;js/grab-mooncake.js&quot;</span>]</div><div class="line">    }],</div><div class="line">    <span class="attr">&quot;browser_action&quot;</span>: {</div><div class="line">        <span class="attr">&quot;default_icon&quot;</span>: {</div><div class="line">            <span class="attr">&quot;19&quot;</span>: <span class="string">&quot;img/icon19.png&quot;</span>,</div><div class="line">            <span class="attr">&quot;38&quot;</span>: <span class="string">&quot;img/icon38.png&quot;</span></div><div class="line">        }</div><div class="line">    },</div><div class="line">    <span class="attr">&quot;icons&quot;</span>: {</div><div class="line">        <span class="attr">&quot;16&quot;</span>: <span class="string">&quot;img/icon16.png&quot;</span>,</div><div class="line">        <span class="attr">&quot;48&quot;</span>: <span class="string">&quot;img/icon48.png&quot;</span>,</div><div class="line">        <span class="attr">&quot;128&quot;</span>: <span class="string">&quot;img/icon128.png&quot;</span></div><div class="line">    }</div><div class="line">}</div></pre></td></tr></table></figure>
+<ul>
+<li>grab-mooncake.js</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">grabMooncake</span>(<span class="params">el</span>) </span>{</div><div class="line">    <span class="comment">// &#x8F6E;&#x8BE2;</span></div><div class="line">    <span class="keyword">var</span> timer = setInterval(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>{</div><div class="line">        <span class="keyword">if</span> (el.classList.contains(<span class="string">&apos;active&apos;</span>)) {</div><div class="line">            fireEvent(el,<span class="string">&apos;click&apos;</span>);</div><div class="line">            clearInterval(timer);</div><div class="line">            <span class="keyword">return</span>;</div><div class="line">        }</div><div class="line">    }, <span class="number">500</span>)</div><div class="line">}</div><div class="line"></div><div class="line"><span class="keyword">var</span> fireEvent = <span class="function"><span class="keyword">function</span>(<span class="params">element,event</span>)</span>{</div><div class="line"> <span class="keyword">if</span> (<span class="built_in">document</span>.createEventObject){</div><div class="line">  <span class="comment">// IE&#x6D4F;&#x89C8;&#x5668;&#x652F;&#x6301;fireEvent&#x65B9;&#x6CD5;</span></div><div class="line">  <span class="keyword">var</span> evt = <span class="built_in">document</span>.createEventObject();</div><div class="line">  <span class="keyword">return</span> element.fireEvent(<span class="string">&apos;on&apos;</span>+event,evt)</div><div class="line"> }</div><div class="line"> <span class="keyword">else</span>{</div><div class="line">  <span class="comment">// &#x5176;&#x4ED6;&#x6807;&#x51C6;&#x6D4F;&#x89C8;&#x5668;&#x4F7F;&#x7528;dispatchEvent&#x65B9;&#x6CD5;</span></div><div class="line">  <span class="keyword">var</span> evt = <span class="built_in">document</span>.createEvent( <span class="string">&apos;HTMLEvents&apos;</span> );</div><div class="line">  <span class="comment">// initEvent&#x63A5;&#x53D7;3&#x4E2A;&#x53C2;&#x6570;&#xFF1A;</span></div><div class="line">  <span class="comment">// &#x4E8B;&#x4EF6;&#x7C7B;&#x578B;&#xFF0C;&#x662F;&#x5426;&#x5192;&#x6CE1;&#xFF0C;&#x662F;&#x5426;&#x963B;&#x6B62;&#x6D4F;&#x89C8;&#x5668;&#x7684;&#x9ED8;&#x8BA4;&#x884C;&#x4E3A;</span></div><div class="line">  evt.initEvent(event, <span class="literal">true</span>, <span class="literal">true</span>);</div><div class="line">  <span class="keyword">return</span> !element.dispatchEvent(evt);</div><div class="line"> }</div><div class="line">};</div><div class="line"></div><div class="line"><span class="keyword">var</span> $btn = <span class="built_in">document</span>.querySelector(<span class="string">&apos;#btn&apos;</span>);</div><div class="line">grabMooncake($btn);</div></pre></td></tr></table></figure>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/chrome插件/">chrome插件</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/javascript/">javascript</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="http://www.paradeto.com/2016/09/13/chrome-ext-mooncake/" data-title="chrome插件开发（模拟抢月饼） | Ayou" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/10/10/page-switch/" title="jquery轮播图插件">
+  <strong>PREVIOUS:</strong><br/>
+  <span>
+  jquery轮播图插件</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/09/13/angularjs2-dropdown/"  title="Angularjs2-下拉列表实现(父子组件通信)">
+ <strong>NEXT:</strong><br/> 
+ <span>Angularjs2-下拉列表实现(父子组件通信)
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	<div class="ds-thread"></div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+  <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#抢月饼页"><span class="toc-number">1.</span> <span class="toc-text">抢月饼页</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#chrome插件"><span class="toc-number">2.</span> <span class="toc-text">chrome插件</span></a></li></ol>
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+			<li><a href="/categories/html-css/" title="html/css">html/css<sup>3</sup></a></li>
+		
+			<li><a href="/categories/javascript/" title="javascript">javascript<sup>4</sup></a></li>
+		
+			<li><a href="/categories/nodejs/" title="nodejs">nodejs<sup>2</sup></a></li>
+		
+			<li><a href="/categories/前端工具/" title="前端工具">前端工具<sup>1</sup></a></li>
+		
+			<li><a href="/categories/前端框架/" title="前端框架">前端框架<sup>3</sup></a></li>
+		
+			<li><a href="/categories/前端理论/" title="前端理论">前端理论<sup>1</sup></a></li>
+		
+			<li><a href="/categories/算法/" title="算法">算法<sup>1</sup></a></li>
+		
+			<li><a href="/categories/读书笔记/" title="读书笔记">读书笔记<sup>3</sup></a></li>
+		
+			<li><a href="/categories/转载/" title="转载">转载<sup>1</sup></a></li>
+		
+			<li><a href="/categories/项目实战/" title="项目实战">项目实战<sup>2</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			<li><a href="/tags/WEB安全/" title="WEB安全">WEB安全<sup>2</sup></a></li>
+		
+			<li><a href="/tags/angularjs/" title="angularjs">angularjs<sup>2</sup></a></li>
+		
+			<li><a href="/tags/angularjs2/" title="angularjs2">angularjs2<sup>1</sup></a></li>
+		
+			<li><a href="/tags/canvas/" title="canvas">canvas<sup>2</sup></a></li>
+		
+			<li><a href="/tags/chrome插件/" title="chrome插件">chrome插件<sup>1</sup></a></li>
+		
+			<li><a href="/tags/css/" title="css">css<sup>1</sup></a></li>
+		
+			<li><a href="/tags/helmet/" title="helmet">helmet<sup>1</sup></a></li>
+		
+			<li><a href="/tags/html/" title="html">html<sup>2</sup></a></li>
+		
+			<li><a href="/tags/http/" title="http">http<sup>2</sup></a></li>
+		
+			<li><a href="/tags/https/" title="https">https<sup>1</sup></a></li>
+		
+			<li><a href="/tags/javascript/" title="javascript">javascript<sup>5</sup></a></li>
+		
+			<li><a href="/tags/jquery插件/" title="jquery插件">jquery插件<sup>1</sup></a></li>
+		
+			<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>4</sup></a></li>
+		
+			<li><a href="/tags/promise/" title="promise">promise<sup>1</sup></a></li>
+		
+			<li><a href="/tags/slb/" title="slb">slb<sup>1</sup></a></li>
+		
+			<li><a href="/tags/webpack/" title="webpack">webpack<sup>1</sup></a></li>
+		
+			<li><a href="/tags/事件/" title="事件">事件<sup>1</sup></a></li>
+		
+			<li><a href="/tags/仿原生APP/" title="仿原生APP">仿原生APP<sup>1</sup></a></li>
+		
+			<li><a href="/tags/密码/" title="密码">密码<sup>1</sup></a></li>
+		
+			<li><a href="/tags/异步编程/" title="异步编程">异步编程<sup>1</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  <div class="rsspart">
+	<a href="null" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+	</div>
+		<p class="copyright">Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/zhyu/yaht" target="_blank" title="YAHT">YAHT</a> © 2016 
+		
+		<a href="http://www.paradeto.com" target="_blank" title="Ayou">Ayou</a>
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<!--canvas-->
+
+<script src="/js/canvas.js"></script>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.navbar').click(function(){
+      $('header nav').toggleClass('shownav');
+    });
+    var myWidth = 0;
+    function getSize(){
+      if( typeof( window.innerWidth ) == 'number' ) {
+        myWidth = window.innerWidth;
+      } else if( document.documentElement && document.documentElement.clientWidth) {
+        myWidth = document.documentElement.clientWidth;
+      };
+    };
+    var m = $('#main'),
+    a = $('#asidepart'),
+    c = $('.closeaside'),
+    o = $('.openaside');
+    $(window).resize(function(){
+      getSize();
+      if (myWidth >= 1024) {
+        $('header nav').removeClass('shownav');
+      }else
+      {
+        m.removeClass('moveMain');
+        a.css('display', 'block').removeClass('fadeOut');
+        o.css('display', 'none');
+        
+            $('#toc.toc-aside').css('display', 'none');
+          
+      }
+    });
+    c.click(function(){
+      a.addClass('fadeOut').css('display', 'none');
+      o.css('display', 'block').addClass('fadeIn');
+      m.addClass('moveMain');
+    });
+    o.click(function(){
+      o.css('display', 'none').removeClass('beforeFadeIn');
+      a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');
+      m.removeClass('moveMain');
+    });
+    $(window).scroll(function(){
+      o.css("top",Math.max(80,260-$(this).scrollTop()));
+    });
+  });
+</script>
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+      var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+      if(ai.length>0){
+        ai.wrap('<div class="video-container" />');
+      };
+      if(ae.length>0){
+        ae.wrap('<div class="video-container" />');
+      };
+      if(ah.length==0){
+        t.css('display','none');
+      }else{
+        c.click(function(){
+          ta.css('display', 'block').addClass('fadeIn');
+        });
+        o.click(function(){
+          ta.css('display', 'none');
+        });
+        $(window).scroll(function(){
+          ta.css("top",Math.max(140,320-$(this).scrollTop()));
+        });
+      };
+    });
+  </script>
+
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+      var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+      var html = [
+        '<a href="#" class="overlay" id="qrcode"></a>',
+        '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+        '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+        '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+        '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+        '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+        '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+        '<span title="Share to"></span>'
+        ].join('');
+        $this.append(html);
+        $('.article-share-qrcode').click(function(){
+          var imgSrc = $('#qrcode-pic').attr('data-src');
+          $('#qrcode-pic').attr('src', imgSrc);
+          $('#qrcode-pic').load(function(){
+            $('.qrcode strong').text(' ');
+          });
+        });
+    });
+  </script>
+
+
+  
+    <script type="text/javascript">
+      var duoshuoQuery = {short_name:"paradeto"};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0]
+        || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+    </script>
+  
+  
+
+
+
+
+
+
+
+
+
+  <div id="back-to-top">
+    <a title="返回顶部"><img src="/img/scrollup.png"/></a>
+  </div>
+  <script src="/js/back_to_top.js"></script>
+
+
+
+  </body>
+</html>
+
