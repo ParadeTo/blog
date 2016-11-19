@@ -6,21 +6,19 @@
     
     
   <url>
-    <loc>http://www.paradeto.com/2016/07/01/imitate-app-pwd/</loc>
+    <loc>http://www.paradeto.com/2016/06/20/angular-1/</loc>
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     <data>
         <display>
-        <title>H5仿原生APP密码输入</title>
-        <pubTime>2016-07-01T01:07:41.000Z</pubTime>
+        <title>AngularJS学习笔记(一)</title>
+        <pubTime>2016-06-20T06:12:01.000Z</pubTime>
         
-        <tag>仿原生APP</tag>
-         
-        <tag>密码</tag>
+        <tag>angularjs</tag>
          
          
            
              
-              <breadCrumb title="javascript" url="http://www.paradeto.com/categories/javascript/"/>
+              <breadCrumb title="前端框架" url="http://www.paradeto.com/categories/%E5%89%8D%E7%AB%AF%E6%A1%86%E6%9E%B6/"/>
           
         </display>
     </data>
@@ -48,6 +46,26 @@
 
     
   <url>
+    <loc>http://www.paradeto.com/2016/09/13/chrome-ext-mooncake/</loc>
+    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
+    <data>
+        <display>
+        <title>chrome插件开发（模拟抢月饼）</title>
+        <pubTime>2016-09-13T11:59:46.000Z</pubTime>
+        
+        <tag>chrome插件</tag>
+         
+         
+           
+             
+              <breadCrumb title="javascript" url="http://www.paradeto.com/categories/javascript/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>http://www.paradeto.com/2016/06/07/cavas-1/</loc>
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     <data>
@@ -63,26 +81,6 @@
            
              
               <breadCrumb title="html/css" url="http://www.paradeto.com/categories/html-css/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://www.paradeto.com/2016/09/13/chrome-ext-mooncake/</loc>
-    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
-    <data>
-        <display>
-        <title>chrome插件开发（模拟抢月饼）</title>
-        <pubTime>2016-09-13T11:59:46.000Z</pubTime>
-        
-        <tag>chrome插件</tag>
-         
-         
-           
-             
-              <breadCrumb title="javascript" url="http://www.paradeto.com/categories/javascript/"/>
           
         </display>
     </data>
@@ -231,12 +229,12 @@
 
     
   <url>
-    <loc>http://www.paradeto.com/2016/06/20/angular-1/</loc>
+    <loc>http://www.paradeto.com/2016/07/11/angular-2/</loc>
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     <data>
         <display>
-        <title>AngularJS学习笔记(一)</title>
-        <pubTime>2016-06-20T06:12:01.000Z</pubTime>
+        <title>AngularJS学习笔记(二)</title>
+        <pubTime>2016-07-11T06:12:01.000Z</pubTime>
         
         <tag>angularjs</tag>
          
@@ -427,26 +425,6 @@
     
     
   <url>
-    <loc>http://www.paradeto.com/2016/07/11/angular-2/</loc>
-    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
-    <data>
-        <display>
-        <title>AngularJS学习笔记(二)</title>
-        <pubTime>2016-07-11T06:12:01.000Z</pubTime>
-        
-        <tag>angularjs</tag>
-         
-         
-           
-             
-              <breadCrumb title="前端框架" url="http://www.paradeto.com/categories/%E5%89%8D%E7%AB%AF%E6%A1%86%E6%9E%B6/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>http://www.paradeto.com/2016/09/13/angularjs2-dropdown/</loc>
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     <data>
@@ -466,4 +444,26 @@
     </url>
 
     
+    
+  <url>
+    <loc>http://www.paradeto.com/2016/07/01/imitate-app-pwd/</loc>
+    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
+    <data>
+        <display>
+        <title>H5仿原生APP密码输入</title>
+        <pubTime>2016-07-01T01:07:41.000Z</pubTime>
+        
+        <tag>仿原生APP</tag>
+         
+        <tag>密码</tag>
+         
+         
+           
+             
+              <breadCrumb title="javascript" url="http://www.paradeto.com/categories/javascript/"/>
+          
+        </display>
+    </data>
+    </url>
+
 </urlset>
