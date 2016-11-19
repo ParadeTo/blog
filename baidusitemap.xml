@@ -6,14 +6,14 @@
     
     
   <url>
-    <loc>http://www.paradeto.com/2016/06/20/angular-1/</loc>
+    <loc>http://www.paradeto.com/2016/09/13/angularjs2-dropdown/</loc>
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     <data>
         <display>
-        <title>AngularJS学习笔记(一)</title>
-        <pubTime>2016-06-20T06:12:01.000Z</pubTime>
+        <title>Angularjs2-下拉列表实现(父子组件通信)</title>
+        <pubTime>2016-09-13T03:06:06.000Z</pubTime>
         
-        <tag>angularjs</tag>
+        <tag>angularjs2</tag>
          
          
            
@@ -46,26 +46,6 @@
 
     
   <url>
-    <loc>http://www.paradeto.com/2016/09/13/chrome-ext-mooncake/</loc>
-    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
-    <data>
-        <display>
-        <title>chrome插件开发（模拟抢月饼）</title>
-        <pubTime>2016-09-13T11:59:46.000Z</pubTime>
-        
-        <tag>chrome插件</tag>
-         
-         
-           
-             
-              <breadCrumb title="javascript" url="http://www.paradeto.com/categories/javascript/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>http://www.paradeto.com/2016/06/07/cavas-1/</loc>
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     <data>
@@ -81,6 +61,26 @@
            
              
               <breadCrumb title="html/css" url="http://www.paradeto.com/categories/html-css/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://www.paradeto.com/2016/09/13/chrome-ext-mooncake/</loc>
+    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
+    <data>
+        <display>
+        <title>chrome插件开发（模拟抢月饼）</title>
+        <pubTime>2016-09-13T11:59:46.000Z</pubTime>
+        
+        <tag>chrome插件</tag>
+         
+         
+           
+             
+              <breadCrumb title="javascript" url="http://www.paradeto.com/categories/javascript/"/>
           
         </display>
     </data>
@@ -269,6 +269,30 @@
 
     
   <url>
+    <loc>http://www.paradeto.com/2016/06/11/nodejs-1/</loc>
+    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
+    <data>
+        <display>
+        <title>异步编程解决方案-事件发布/订阅模式</title>
+        <pubTime>2016-06-11T14:10:25.000Z</pubTime>
+        
+        <tag>nodejs</tag>
+         
+        <tag>事件</tag>
+         
+        <tag>异步编程</tag>
+         
+         
+           
+             
+              <breadCrumb title="nodejs" url="http://www.paradeto.com/categories/nodejs/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>http://www.paradeto.com/2016/08/15/js-hld-13/</loc>
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     <data>
@@ -309,30 +333,6 @@
 
     
   <url>
-    <loc>http://www.paradeto.com/2016/06/11/nodejs-1/</loc>
-    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
-    <data>
-        <display>
-        <title>异步编程解决方案-事件发布/订阅模式</title>
-        <pubTime>2016-06-11T14:10:25.000Z</pubTime>
-        
-        <tag>nodejs</tag>
-         
-        <tag>事件</tag>
-         
-        <tag>异步编程</tag>
-         
-         
-           
-             
-              <breadCrumb title="nodejs" url="http://www.paradeto.com/categories/nodejs/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>http://www.paradeto.com/2016/10/10/page-switch/</loc>
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     <data>
@@ -348,28 +348,6 @@
            
              
               <breadCrumb title="javascript" url="http://www.paradeto.com/categories/javascript/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://www.paradeto.com/2016/10/10/promise-frame/</loc>
-    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
-    <data>
-        <display>
-        <title>实现一个简单的Promise/Deferred框架</title>
-        <pubTime>2016-10-10T08:31:06.000Z</pubTime>
-        
-        <tag>nodejs</tag>
-         
-        <tag>promise</tag>
-         
-         
-           
-             
-              <breadCrumb title="nodejs" url="http://www.paradeto.com/categories/nodejs/"/>
           
         </display>
     </data>
@@ -403,6 +381,28 @@
 
     
   <url>
+    <loc>http://www.paradeto.com/2016/10/10/promise-frame/</loc>
+    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
+    <data>
+        <display>
+        <title>实现一个简单的Promise/Deferred框架</title>
+        <pubTime>2016-10-10T08:31:06.000Z</pubTime>
+        
+        <tag>nodejs</tag>
+         
+        <tag>promise</tag>
+         
+         
+           
+             
+              <breadCrumb title="nodejs" url="http://www.paradeto.com/categories/nodejs/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>http://www.paradeto.com/2016/06/29/webpack-1/</loc>
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     <data>
@@ -425,14 +425,14 @@
     
     
   <url>
-    <loc>http://www.paradeto.com/2016/09/13/angularjs2-dropdown/</loc>
+    <loc>http://www.paradeto.com/2016/06/20/angular-1/</loc>
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     <data>
         <display>
-        <title>Angularjs2-下拉列表实现(父子组件通信)</title>
-        <pubTime>2016-09-13T03:06:06.000Z</pubTime>
+        <title>AngularJS学习笔记(一)</title>
+        <pubTime>2016-06-20T06:12:01.000Z</pubTime>
         
-        <tag>angularjs2</tag>
+        <tag>angularjs</tag>
          
          
            
