@@ -3,27 +3,33 @@
 
 
     
-    
-    
   <url>
-    <loc>http://www.paradeto.com/2016/09/13/angularjs2-dropdown/</loc>
-    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
+    <loc>http://www.paradeto.com/2016/06/30/slb-http-https/</loc>
+    <lastmod>2016-11-20T08:45:09.000Z</lastmod>
     <data>
         <display>
-        <title>Angularjs2-下拉列表实现(父子组件通信)</title>
-        <pubTime>2016-09-13T03:06:06.000Z</pubTime>
+        <title>利用阿里云SLB和node实现http自动跳转https</title>
+        <pubTime>2016-06-30T06:12:01.000Z</pubTime>
         
-        <tag>angularjs2</tag>
+        <tag>http</tag>
+         
+        <tag>nodejs</tag>
+         
+        <tag>slb</tag>
+         
+        <tag>https</tag>
          
          
            
              
-              <breadCrumb title="前端框架" url="http://www.paradeto.com/categories/%E5%89%8D%E7%AB%AF%E6%A1%86%E6%9E%B6/"/>
+              <breadCrumb title="项目实战" url="http://www.paradeto.com/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%98/"/>
           
         </display>
     </data>
     </url>
 
+    
+    
     
   <url>
     <loc>http://www.paradeto.com/2016/06/10/canvas-count-down/</loc>
@@ -209,21 +215,19 @@
 
     
   <url>
-    <loc>http://www.paradeto.com/2016/07/01/imitate-app-pwd/</loc>
+    <loc>http://www.paradeto.com/2016/06/17/hsts/</loc>
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     <data>
         <display>
-        <title>H5仿原生APP密码输入</title>
-        <pubTime>2016-07-01T01:07:41.000Z</pubTime>
+        <title>为什么我们要使用HTTP Strict Transport Security？（转）</title>
+        <pubTime>2016-06-17T07:50:41.000Z</pubTime>
         
-        <tag>仿原生APP</tag>
-         
-        <tag>密码</tag>
+        <tag>WEB安全</tag>
          
          
            
              
-              <breadCrumb title="javascript" url="http://www.paradeto.com/categories/javascript/"/>
+              <breadCrumb title="转载" url="http://www.paradeto.com/categories/%E8%BD%AC%E8%BD%BD/"/>
           
         </display>
     </data>
@@ -251,19 +255,39 @@
 
     
   <url>
-    <loc>http://www.paradeto.com/2016/06/17/hsts/</loc>
+    <loc>http://www.paradeto.com/2016/06/06/js-hld-10/</loc>
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     <data>
         <display>
-        <title>为什么我们要使用HTTP Strict Transport Security？（转）</title>
-        <pubTime>2016-06-17T07:50:41.000Z</pubTime>
+        <title>笔记-javascript高级程序设计（第3版）第10章</title>
+        <pubTime>2016-06-06T07:56:49.000Z</pubTime>
         
-        <tag>WEB安全</tag>
+        <tag>javascript</tag>
          
          
            
              
-              <breadCrumb title="转载" url="http://www.paradeto.com/categories/%E8%BD%AC%E8%BD%BD/"/>
+              <breadCrumb title="读书笔记" url="http://www.paradeto.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://www.paradeto.com/2016/08/15/js-hld-13/</loc>
+    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
+    <data>
+        <display>
+        <title>笔记-javascript高级程序设计（第3版）第13章</title>
+        <pubTime>2016-08-15T07:56:49.000Z</pubTime>
+        
+        <tag>javascript</tag>
+         
+         
+           
+             
+              <breadCrumb title="读书笔记" url="http://www.paradeto.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
           
         </display>
     </data>
@@ -295,12 +319,12 @@
 
     
   <url>
-    <loc>http://www.paradeto.com/2016/08/15/js-hld-13/</loc>
+    <loc>http://www.paradeto.com/2016/06/06/js-hld-6/</loc>
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     <data>
         <display>
-        <title>笔记-javascript高级程序设计（第3版）第13章</title>
-        <pubTime>2016-08-15T07:56:49.000Z</pubTime>
+        <title>笔记-javascript高级程序设计（第3版）第6章</title>
+        <pubTime>2016-06-06T07:56:49.000Z</pubTime>
         
         <tag>javascript</tag>
          
@@ -337,19 +361,21 @@
 
     
   <url>
-    <loc>http://www.paradeto.com/2016/06/06/js-hld-6/</loc>
+    <loc>http://www.paradeto.com/2016/10/10/promise-frame/</loc>
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     <data>
         <display>
-        <title>笔记-javascript高级程序设计（第3版）第6章</title>
-        <pubTime>2016-06-06T07:56:49.000Z</pubTime>
+        <title>实现一个简单的Promise/Deferred框架</title>
+        <pubTime>2016-10-10T08:31:06.000Z</pubTime>
         
-        <tag>javascript</tag>
+        <tag>nodejs</tag>
+         
+        <tag>promise</tag>
          
          
            
              
-              <breadCrumb title="读书笔记" url="http://www.paradeto.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
+              <breadCrumb title="nodejs" url="http://www.paradeto.com/categories/nodejs/"/>
           
         </display>
     </data>
@@ -357,25 +383,19 @@
 
     
   <url>
-    <loc>http://www.paradeto.com/2016/06/30/slb-http-https/</loc>
+    <loc>http://www.paradeto.com/2016/06/20/angular-1/</loc>
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     <data>
         <display>
-        <title>利用阿里云SLB和node实现http自动跳转https</title>
-        <pubTime>2016-06-30T06:12:01.000Z</pubTime>
+        <title>AngularJS学习笔记(一)</title>
+        <pubTime>2016-06-20T06:12:01.000Z</pubTime>
         
-        <tag>http</tag>
-         
-        <tag>nodejs</tag>
-         
-        <tag>slb</tag>
-         
-        <tag>https</tag>
+        <tag>angularjs</tag>
          
          
            
              
-              <breadCrumb title="项目实战" url="http://www.paradeto.com/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%98/"/>
+              <breadCrumb title="前端框架" url="http://www.paradeto.com/categories/%E5%89%8D%E7%AB%AF%E6%A1%86%E6%9E%B6/"/>
           
         </display>
     </data>
@@ -402,39 +422,17 @@
     </url>
 
     
-  <url>
-    <loc>http://www.paradeto.com/2016/10/10/promise-frame/</loc>
-    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
-    <data>
-        <display>
-        <title>实现一个简单的Promise/Deferred框架</title>
-        <pubTime>2016-10-10T08:31:06.000Z</pubTime>
-        
-        <tag>nodejs</tag>
-         
-        <tag>promise</tag>
-         
-         
-           
-             
-              <breadCrumb title="nodejs" url="http://www.paradeto.com/categories/nodejs/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
     
     
   <url>
-    <loc>http://www.paradeto.com/2016/06/20/angular-1/</loc>
+    <loc>http://www.paradeto.com/2016/09/13/angularjs2-dropdown/</loc>
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     <data>
         <display>
-        <title>AngularJS学习笔记(一)</title>
-        <pubTime>2016-06-20T06:12:01.000Z</pubTime>
+        <title>Angularjs2-下拉列表实现(父子组件通信)</title>
+        <pubTime>2016-09-13T03:06:06.000Z</pubTime>
         
-        <tag>angularjs</tag>
+        <tag>angularjs2</tag>
          
          
            
@@ -448,19 +446,21 @@
     
     
   <url>
-    <loc>http://www.paradeto.com/2016/06/06/js-hld-10/</loc>
+    <loc>http://www.paradeto.com/2016/07/01/imitate-app-pwd/</loc>
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     <data>
         <display>
-        <title>笔记-javascript高级程序设计（第3版）第10章</title>
-        <pubTime>2016-06-06T07:56:49.000Z</pubTime>
+        <title>H5仿原生APP密码输入</title>
+        <pubTime>2016-07-01T01:07:41.000Z</pubTime>
         
-        <tag>javascript</tag>
+        <tag>仿原生APP</tag>
+         
+        <tag>密码</tag>
          
          
            
              
-              <breadCrumb title="读书笔记" url="http://www.paradeto.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
+              <breadCrumb title="javascript" url="http://www.paradeto.com/categories/javascript/"/>
           
         </display>
     </data>
