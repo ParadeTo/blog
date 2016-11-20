@@ -6,26 +6,6 @@
     
     
   <url>
-    <loc>http://www.paradeto.com/2016/09/13/angularjs2-dropdown/</loc>
-    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
-    <data>
-        <display>
-        <title>Angularjs2-下拉列表实现(父子组件通信)</title>
-        <pubTime>2016-09-13T03:06:06.000Z</pubTime>
-        
-        <tag>angularjs2</tag>
-         
-         
-           
-             
-              <breadCrumb title="前端框架" url="http://www.paradeto.com/categories/%E5%89%8D%E7%AB%AF%E6%A1%86%E6%9E%B6/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>http://www.paradeto.com/2016/06/10/canvas-count-down/</loc>
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     <data>
@@ -34,28 +14,6 @@
         <pubTime>2016-06-10T14:07:05.000Z</pubTime>
         
         <tag>canvas</tag>
-         
-         
-           
-             
-              <breadCrumb title="html/css" url="http://www.paradeto.com/categories/html-css/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://www.paradeto.com/2016/06/07/cavas-1/</loc>
-    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
-    <data>
-        <display>
-        <title>cavas基本绘图</title>
-        <pubTime>2016-06-07T01:29:36.000Z</pubTime>
-        
-        <tag>canvas</tag>
-         
-        <tag>html</tag>
          
          
            
@@ -110,21 +68,19 @@
 
     
   <url>
-    <loc>http://www.paradeto.com/2016/06/04/css-background-issue/</loc>
+    <loc>http://www.paradeto.com/2016/06/04/csrf-1/</loc>
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     <data>
         <display>
-        <title>css背景图片上添加文字的问题</title>
-        <pubTime>2016-06-04T01:31:42.000Z</pubTime>
+        <title>CSRF亲测</title>
+        <pubTime>2016-06-04T08:43:12.000Z</pubTime>
         
-        <tag>html</tag>
-         
-        <tag>css</tag>
+        <tag>WEB安全</tag>
          
          
            
              
-              <breadCrumb title="html/css" url="http://www.paradeto.com/categories/html-css/"/>
+              <breadCrumb title="前端理论" url="http://www.paradeto.com/categories/%E5%89%8D%E7%AB%AF%E7%90%86%E8%AE%BA/"/>
           
         </display>
     </data>
@@ -161,26 +117,6 @@
         
          
            
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://www.paradeto.com/2016/06/04/csrf-1/</loc>
-    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
-    <data>
-        <display>
-        <title>CSRF亲测</title>
-        <pubTime>2016-06-04T08:43:12.000Z</pubTime>
-        
-        <tag>WEB安全</tag>
-         
-         
-           
-             
-              <breadCrumb title="前端理论" url="http://www.paradeto.com/categories/%E5%89%8D%E7%AB%AF%E7%90%86%E8%AE%BA/"/>
-          
         </display>
     </data>
     </url>
@@ -229,6 +165,48 @@
 
     
   <url>
+    <loc>http://www.paradeto.com/2016/07/01/imitate-app-pwd/</loc>
+    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
+    <data>
+        <display>
+        <title>H5仿原生APP密码输入</title>
+        <pubTime>2016-07-01T01:07:41.000Z</pubTime>
+        
+        <tag>仿原生APP</tag>
+         
+        <tag>密码</tag>
+         
+         
+           
+             
+              <breadCrumb title="javascript" url="http://www.paradeto.com/categories/javascript/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://www.paradeto.com/2016/06/06/js-hld-10/</loc>
+    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
+    <data>
+        <display>
+        <title>笔记-javascript高级程序设计（第3版）第10章</title>
+        <pubTime>2016-06-06T07:56:49.000Z</pubTime>
+        
+        <tag>javascript</tag>
+         
+         
+           
+             
+              <breadCrumb title="读书笔记" url="http://www.paradeto.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>http://www.paradeto.com/2016/07/11/angular-2/</loc>
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     <data>
@@ -249,12 +227,54 @@
 
     
   <url>
-    <loc>http://www.paradeto.com/2016/06/06/js-hld-10/</loc>
+    <loc>http://www.paradeto.com/2016/09/13/angularjs2-dropdown/</loc>
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     <data>
         <display>
-        <title>笔记-javascript高级程序设计（第3版）第10章</title>
-        <pubTime>2016-06-06T07:56:49.000Z</pubTime>
+        <title>Angularjs2-下拉列表实现(父子组件通信)</title>
+        <pubTime>2016-09-13T03:06:06.000Z</pubTime>
+        
+        <tag>angularjs2</tag>
+         
+         
+           
+             
+              <breadCrumb title="前端框架" url="http://www.paradeto.com/categories/%E5%89%8D%E7%AB%AF%E6%A1%86%E6%9E%B6/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://www.paradeto.com/2016/06/04/css-background-issue/</loc>
+    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
+    <data>
+        <display>
+        <title>css背景图片上添加文字的问题</title>
+        <pubTime>2016-06-04T01:31:42.000Z</pubTime>
+        
+        <tag>html</tag>
+         
+        <tag>css</tag>
+         
+         
+           
+             
+              <breadCrumb title="html/css" url="http://www.paradeto.com/categories/html-css/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://www.paradeto.com/2016/08/15/js-hld-13/</loc>
+    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
+    <data>
+        <display>
+        <title>笔记-javascript高级程序设计（第3版）第13章</title>
+        <pubTime>2016-08-15T07:56:49.000Z</pubTime>
         
         <tag>javascript</tag>
          
@@ -289,26 +309,6 @@
 
     
   <url>
-    <loc>http://www.paradeto.com/2016/08/15/js-hld-13/</loc>
-    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
-    <data>
-        <display>
-        <title>笔记-javascript高级程序设计（第3版）第13章</title>
-        <pubTime>2016-08-15T07:56:49.000Z</pubTime>
-        
-        <tag>javascript</tag>
-         
-         
-           
-             
-              <breadCrumb title="读书笔记" url="http://www.paradeto.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>http://www.paradeto.com/2016/10/10/promise-frame/</loc>
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     <data>
@@ -324,52 +324,6 @@
            
              
               <breadCrumb title="nodejs" url="http://www.paradeto.com/categories/nodejs/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://www.paradeto.com/2016/06/11/nodejs-1/</loc>
-    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
-    <data>
-        <display>
-        <title>异步编程解决方案-事件发布/订阅模式</title>
-        <pubTime>2016-06-11T14:10:25.000Z</pubTime>
-        
-        <tag>nodejs</tag>
-         
-        <tag>事件</tag>
-         
-        <tag>异步编程</tag>
-         
-         
-           
-             
-              <breadCrumb title="nodejs" url="http://www.paradeto.com/categories/nodejs/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://www.paradeto.com/2016/10/10/page-switch/</loc>
-    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
-    <data>
-        <display>
-        <title>jquery轮播图插件</title>
-        <pubTime>2016-10-10T08:25:41.000Z</pubTime>
-        
-        <tag>javascript</tag>
-         
-        <tag>jquery插件</tag>
-         
-         
-           
-             
-              <breadCrumb title="javascript" url="http://www.paradeto.com/categories/javascript/"/>
           
         </display>
     </data>
@@ -422,6 +376,52 @@
     </url>
 
     
+  <url>
+    <loc>http://www.paradeto.com/2016/06/11/nodejs-1/</loc>
+    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
+    <data>
+        <display>
+        <title>异步编程解决方案-事件发布/订阅模式</title>
+        <pubTime>2016-06-11T14:10:25.000Z</pubTime>
+        
+        <tag>nodejs</tag>
+         
+        <tag>事件</tag>
+         
+        <tag>异步编程</tag>
+         
+         
+           
+             
+              <breadCrumb title="nodejs" url="http://www.paradeto.com/categories/nodejs/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://www.paradeto.com/2016/10/10/page-switch/</loc>
+    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
+    <data>
+        <display>
+        <title>jquery轮播图插件</title>
+        <pubTime>2016-10-10T08:25:41.000Z</pubTime>
+        
+        <tag>javascript</tag>
+         
+        <tag>jquery插件</tag>
+         
+         
+           
+             
+              <breadCrumb title="javascript" url="http://www.paradeto.com/categories/javascript/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
     
     
     
@@ -446,21 +446,21 @@
 
     
   <url>
-    <loc>http://www.paradeto.com/2016/07/01/imitate-app-pwd/</loc>
+    <loc>http://www.paradeto.com/2016/06/07/cavas-1/</loc>
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     <data>
         <display>
-        <title>H5仿原生APP密码输入</title>
-        <pubTime>2016-07-01T01:07:41.000Z</pubTime>
+        <title>cavas基本绘图</title>
+        <pubTime>2016-06-07T01:29:36.000Z</pubTime>
         
-        <tag>仿原生APP</tag>
+        <tag>canvas</tag>
          
-        <tag>密码</tag>
+        <tag>html</tag>
          
          
            
              
-              <breadCrumb title="javascript" url="http://www.paradeto.com/categories/javascript/"/>
+              <breadCrumb title="html/css" url="http://www.paradeto.com/categories/html-css/"/>
           
         </display>
     </data>
