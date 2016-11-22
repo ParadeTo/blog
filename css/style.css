@@ -464,22 +464,26 @@ body >header a {
   }
 }
 .navbar {
-  position: absolute;
-  width: 2em;
-  right: 0em;
-  top: 1em;
+  position: fixed;
+  width: 1em;
+  height: 1em;
+  right: 0.4em;
+  top: 20%;
   padding: 0.5em;
+  background: url("/img/heart.png") no-repeat center;
+  -webkit-background-size: contain;
+  -moz-background-size: contain;
+  background-size: contain;
+  -webkit-animation: bounce 2s cubic-bezier(0.3, 2.4, 0.85, 2.5) infinite;
+  -moz-animation: bounce 2s cubic-bezier(0.3, 2.4, 0.85, 2.5) infinite;
+  -o-animation: bounce 2s cubic-bezier(0.3, 2.4, 0.85, 2.5) infinite;
+  -ms-animation: bounce 2s cubic-bezier(0.3, 2.4, 0.85, 2.5) infinite;
+  animation: bounce 2s cubic-bezier(0.3, 2.4, 0.85, 2.5) infinite;
 }
 @media only screen and (min-width: 1024px) {
   .navbar {
     display: none;
   }
-}
-.navbutton::before {
-  font-family: "FontAwesome";
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  content: "\f0c9";
 }
 .navmobile::before {
   padding-left: 1em;
@@ -560,6 +564,70 @@ header nav ul li a:hover {
 }
 .search label {
   display: none;
+}
+@-moz-keyframes bounce {
+  from, to {
+    -webkit-transform: scale(0.9);
+    -moz-transform: scale(0.9);
+    -o-transform: scale(0.9);
+    -ms-transform: scale(0.9);
+    transform: scale(0.9);
+  }
+  80% {
+    -webkit-transform: scale(1);
+    -moz-transform: scale(1);
+    -o-transform: scale(1);
+    -ms-transform: scale(1);
+    transform: scale(1);
+  }
+}
+@-webkit-keyframes bounce {
+  from, to {
+    -webkit-transform: scale(0.9);
+    -moz-transform: scale(0.9);
+    -o-transform: scale(0.9);
+    -ms-transform: scale(0.9);
+    transform: scale(0.9);
+  }
+  80% {
+    -webkit-transform: scale(1);
+    -moz-transform: scale(1);
+    -o-transform: scale(1);
+    -ms-transform: scale(1);
+    transform: scale(1);
+  }
+}
+@-o-keyframes bounce {
+  from, to {
+    -webkit-transform: scale(0.9);
+    -moz-transform: scale(0.9);
+    -o-transform: scale(0.9);
+    -ms-transform: scale(0.9);
+    transform: scale(0.9);
+  }
+  80% {
+    -webkit-transform: scale(1);
+    -moz-transform: scale(1);
+    -o-transform: scale(1);
+    -ms-transform: scale(1);
+    transform: scale(1);
+  }
+}
+@keyframes bounce {
+  from, to {
+    -webkit-transform: scale(0.9);
+    -moz-transform: scale(0.9);
+    -o-transform: scale(0.9);
+    -ms-transform: scale(0.9);
+    transform: scale(0.9);
+  }
+  80% {
+    -webkit-transform: scale(1);
+    -moz-transform: scale(1);
+    -o-transform: scale(1);
+    -ms-transform: scale(1);
+    transform: scale(1);
+  }
 }
 /* index layout */
 #container {
