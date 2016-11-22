@@ -73,19 +73,32 @@ body
     @media tablet
       font-size font-size+10
 
+@keyframes bounce
+  from, to {
+    transform: scale(0.9);
+  }
+  80% {
+    transform:  scale(1);
+  }
+
+
 .navbar
-  position absolute
-  width 2em
-  right 0em
-  top 1em
+  position fixed
+  width 1em
+  height 1em
+  right 0.4em
+  top 20%
   padding 0.5em
+  background: url('/img/heart.png') no-repeat center;
+  background-size:contain;
+  animation: bounce 2s cubic-bezier(0.3,2.4,0.85,2.5) infinite;
   @media tablet
     display none
 
 .navbutton::before
-  font-family font-icon-family
-  font-smoothing()
-  content "\f0c9"
+  // font-family font-icon-family
+  // font-smoothing()
+  // content "\f0c9"
 
 .navmobile::before
   padding-left 1em
