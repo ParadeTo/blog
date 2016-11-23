@@ -172,7 +172,7 @@ window.url = {
  	'discoverDetail': window.apiBase + '/discover/detailPage.htm', // 发现详情
  }
 ```
-这样，此时在浏览器中访问``http://localhost/#/discover/index.htm``则会到本地前端调试的服务，在该页面中访问``http://localhost/discover/getIndexJson.htm``则会访问后台的接口
+这样，此时在浏览器中访问``http://localhost/#/discover/index.htm``则会到本地前端调试的服务，在该页面中访问``http://localhost/house-web-web/discover/getIndexJson.htm``则会访问后台的接口
 
 # 前端路由
 react的前端路由有两种方式``hashHistory``和``browserHistory``
