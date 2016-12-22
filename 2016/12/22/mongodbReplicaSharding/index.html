@@ -1,0 +1,479 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>mongodb replica sharding 实战 | Ayou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="Ayou">
+    
+    <meta name="description" itemprop="description" content="mongodb replica sharding 实战">
+    
+    
+    
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/yaht.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/yaht.jpg">
+    
+    
+        <link rel="stylesheet" href="/css/style.css">
+    
+    
+    
+<script type="text/javascript">
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "//hm.baidu.com/hm.js?bc27adb5eec6cd3b858ecca2a190876a";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+
+</head>
+
+  <body>
+    <header>
+      <canvas id="headerCanvas">
+
+</canvas>
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Ayou" title="Ayou"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Ayou">Ayou</a></h1>
+				<h2 class="blog-motto">Good Good Study, Day Day Up!</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/resume">Resume</a></li>
+					
+						<li><a href="/demo">Demo</a></li>
+					
+					<li>
+					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:www.paradeto.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/22/mongodbReplicaSharding/" title="mongodb replica sharding 实战" itemprop="url">mongodb replica sharding 实战</a>
+  </h1>
+  <p class="article-author">By
+    
+      <a href="http://www.paradeto.com" title="Ayou">Ayou</a>
+    </p>
+  <p class="article-time">
+    <time datetime="2016-12-22T13:42:55.000Z" itemprop="datePublished">2016-12-22</time>
+    更新日期:<time datetime="2016-12-22T13:50:49.000Z" itemprop="dateModified">2016-12-22</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#环境说明"><span class="toc-number">1.</span> <span class="toc-text">环境说明</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#三台机器-centos6-4"><span class="toc-number">1.1.</span> <span class="toc-text">三台机器(centos6.4)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mongdb版本"><span class="toc-number">1.2.</span> <span class="toc-text">mongdb版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#服务规划"><span class="toc-number">1.3.</span> <span class="toc-text">服务规划</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#配置文件"><span class="toc-number">2.</span> <span class="toc-text">配置文件</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#host1"><span class="toc-number">2.1.</span> <span class="toc-text">host1</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#数据节点"><span class="toc-number">2.1.1.</span> <span class="toc-text">数据节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#配置节点"><span class="toc-number">2.1.2.</span> <span class="toc-text">配置节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#表决节点"><span class="toc-number">2.1.3.</span> <span class="toc-text">表决节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#路由节点"><span class="toc-number">2.1.4.</span> <span class="toc-text">路由节点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#host2"><span class="toc-number">2.2.</span> <span class="toc-text">host2</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#数据节点-1"><span class="toc-number">2.2.1.</span> <span class="toc-text">数据节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#配置节点-1"><span class="toc-number">2.2.2.</span> <span class="toc-text">配置节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#表决节点-1"><span class="toc-number">2.2.3.</span> <span class="toc-text">表决节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#路由节点-1"><span class="toc-number">2.2.4.</span> <span class="toc-text">路由节点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#host3"><span class="toc-number">2.3.</span> <span class="toc-text">host3</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#数据节点-2"><span class="toc-number">2.3.1.</span> <span class="toc-text">数据节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#配置节点-2"><span class="toc-number">2.3.2.</span> <span class="toc-text">配置节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#表决节点-2"><span class="toc-number">2.3.3.</span> <span class="toc-text">表决节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#路由节点-2"><span class="toc-number">2.3.4.</span> <span class="toc-text">路由节点</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#启动服务"><span class="toc-number">3.</span> <span class="toc-text">启动服务</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#host1-1"><span class="toc-number">3.1.</span> <span class="toc-text">host1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#host2-1"><span class="toc-number">3.2.</span> <span class="toc-text">host2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#host3-1"><span class="toc-number">3.3.</span> <span class="toc-text">host3</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#启动路由"><span class="toc-number">4.</span> <span class="toc-text">启动路由</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#查看运行状态"><span class="toc-number">5.</span> <span class="toc-text">查看运行状态</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#配置分片"><span class="toc-number">6.</span> <span class="toc-text">配置分片</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#添加分片"><span class="toc-number">7.</span> <span class="toc-text">添加分片</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#测试"><span class="toc-number">8.</span> <span class="toc-text">测试</span></a></li></ol>
+		</div>
+		
+		<h1 id="&#x73AF;&#x5883;&#x8BF4;&#x660E;"><a href="#&#x73AF;&#x5883;&#x8BF4;&#x660E;" class="headerlink" title="&#x73AF;&#x5883;&#x8BF4;&#x660E;"></a>&#x73AF;&#x5883;&#x8BF4;&#x660E;</h1><h2 id="&#x4E09;&#x53F0;&#x673A;&#x5668;-centos6-4"><a href="#&#x4E09;&#x53F0;&#x673A;&#x5668;-centos6-4" class="headerlink" title="&#x4E09;&#x53F0;&#x673A;&#x5668;(centos6.4)"></a>&#x4E09;&#x53F0;&#x673A;&#x5668;(centos6.4)</h2><ul>
+<li>host1 192.168.1.201</li>
+<li>host2 192.168.1.202</li>
+<li>host3 192.168.1.203</li>
+</ul>
+<h2 id="mongdb&#x7248;&#x672C;"><a href="#mongdb&#x7248;&#x672C;" class="headerlink" title="mongdb&#x7248;&#x672C;"></a>mongdb&#x7248;&#x672C;</h2><p>2.4.0</p>
+<h2 id="&#x670D;&#x52A1;&#x89C4;&#x5212;"><a href="#&#x670D;&#x52A1;&#x89C4;&#x5212;" class="headerlink" title="&#x670D;&#x52A1;&#x89C4;&#x5212;"></a>&#x670D;&#x52A1;&#x89C4;&#x5212;</h2><p><img src="/2016/12/22/mongodbReplicaSharding/outline.jpg" alt="outline.jpg"></p>
+<ul>
+<li>shard1 28017&#xFF1A;shard1&#x7684;&#x6570;&#x636E;&#x670D;&#x52A1;</li>
+<li>shard2 28018&#xFF1A;shard2&#x7684;&#x6570;&#x636E;&#x670D;&#x52A1;</li>
+<li>config 20000&#xFF1A;&#x5B58;&#x50A8;&#x5206;&#x7247;&#x96C6;&#x7FA4;&#x7684;&#x7684;&#x5143;&#x6570;&#x636E;&#xFF0C;&#x5176;&#x4E2D;&#x5305;&#x62EC;&#x5728;&#x6BCF;&#x4E2A;mongod&#x5B9E;&#x4F8B;&#x7684;&#x57FA;&#x672C;&#x4FE1;&#x606F;&#x548C;&#x5757;&#x4FE1;&#x606F;</li>
+<li>arbiter1 28031&#xFF1A;shard1&#x7684;&#x4EF2;&#x88C1;&#x8282;&#x70B9;</li>
+<li>arbiter2 28032&#xFF1A;shard2&#x7684;&#x4EF2;&#x88C1;&#x8282;&#x70B9;</li>
+<li>mongos 28885&#xFF1A;&#x6570;&#x636E;&#x548C;&#x8BF7;&#x6C42;&#x5206;&#x53D1;&#x7684;&#x4E2D;&#x5FC3;&#xFF0C;&#x4F7F;&#x5355;&#x4E00;&#x7684;mongod&#x5B9E;&#x4F8B;&#x7EC4;&#x6210;&#x4E92;&#x76F8;&#x5173;&#x8054;&#x7684;&#x96C6;&#x7FA4;</li>
+</ul>
+<p><em>&#x4EF2;&#x88C1;&#x8282;&#x70B9;&#x662F;&#x4E00;&#x79CD;&#x7279;&#x6B8A;&#x7684;&#x8282;&#x70B9;&#xFF0C;&#x5B83;&#x672C;&#x8EAB;&#x4E0D;&#x5B58;&#x50A8;&#x6570;&#x636E;&#xFF0C;&#x4E3B;&#x8981;&#x7684;&#x4F5C;&#x7528;&#x662F;&#x51B3;&#x5B9A;&#x54EA;&#x4E00;&#x4E2A;&#x5907;&#x7528;&#x8282;&#x70B9;&#x5728;&#x4E3B;&#x8282;&#x70B9;&#x6302;&#x6389;&#x4E4B;&#x540E;&#x63D0;&#x5347;&#x4E3A;&#x4E3B;&#x8282;&#x70B9;&#x3002;</em></p>
+<h1 id="&#x914D;&#x7F6E;&#x6587;&#x4EF6;"><a href="#&#x914D;&#x7F6E;&#x6587;&#x4EF6;" class="headerlink" title="&#x914D;&#x7F6E;&#x6587;&#x4EF6;"></a>&#x914D;&#x7F6E;&#x6587;&#x4EF6;</h1><h2 id="host1"><a href="#host1" class="headerlink" title="host1"></a>host1</h2><h3 id="&#x6570;&#x636E;&#x8282;&#x70B9;"><a href="#&#x6570;&#x636E;&#x8282;&#x70B9;" class="headerlink" title="&#x6570;&#x636E;&#x8282;&#x70B9;"></a>&#x6570;&#x636E;&#x8282;&#x70B9;</h3><p>shard11&#x8868;&#x793A;&#x5206;&#x7247;&#x4E00;&#x7684;&#x7B2C;&#x4E00;&#x4E2A;&#x8282;&#x70B9;<br>shard21&#x8868;&#x793A;&#x5206;&#x7247;&#x4E8C;&#x7684;&#x7B2C;&#x4E00;&#x4E2A;&#x8282;&#x70B9;<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">mkdir -p /home/ayou/mongodb/shard11</div><div class="line">cat &gt; <span class="regexp">/home/</span>ayou/mongodb/shard11.conf &lt;&lt;EOF</div><div class="line">shardsvr=<span class="literal">true</span></div><div class="line">replSet=shard1</div><div class="line">port=<span class="number">28017</span></div><div class="line">dbpath=<span class="regexp">/home/</span>ayou/mongodb/shard11</div><div class="line">oplogSize=<span class="number">2048</span></div><div class="line">logpath=<span class="regexp">/home/</span>ayou/mongodb/shard11.log</div><div class="line">logappend=<span class="literal">true</span></div><div class="line">fork=<span class="literal">true</span></div><div class="line">rest=<span class="literal">true</span></div><div class="line">nojournal=<span class="literal">true</span></div><div class="line">EOF</div></pre></td></tr></table></figure></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">mkdir -p /home/ayou/mongodb/shard21</div><div class="line">cat &gt; <span class="regexp">/home/</span>ayou/mongodb/shard21.conf &lt;&lt;EOF</div><div class="line">shardsvr=<span class="literal">true</span></div><div class="line">replSet=shard2</div><div class="line">port=<span class="number">28018</span></div><div class="line">dbpath=<span class="regexp">/home/</span>ayou/mongodb/shard21</div><div class="line">oplogSize=<span class="number">2048</span></div><div class="line">logpath=<span class="regexp">/home/</span>ayou/mongodb/shard21.log</div><div class="line">logappend=<span class="literal">true</span></div><div class="line">fork=<span class="literal">true</span></div><div class="line">rest=<span class="literal">true</span></div><div class="line">nojournal=<span class="literal">true</span></div><div class="line">EOF</div></pre></td></tr></table></figure>
+<h3 id="&#x914D;&#x7F6E;&#x8282;&#x70B9;"><a href="#&#x914D;&#x7F6E;&#x8282;&#x70B9;" class="headerlink" title="&#x914D;&#x7F6E;&#x8282;&#x70B9;"></a>&#x914D;&#x7F6E;&#x8282;&#x70B9;</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">mkdir -p /home/ayou/mongodb/config</div><div class="line">cat &gt; <span class="regexp">/home/</span>ayou/mongodb/config1.conf &lt;&lt;EOF</div><div class="line">configsvr=<span class="literal">true</span></div><div class="line">dbpath=<span class="regexp">/home/</span>ayou/mongodb/config/</div><div class="line">port=<span class="number">20000</span></div><div class="line">logpath=<span class="regexp">/home/</span>ayou/mongodb/config1.log</div><div class="line">logappend=<span class="literal">true</span></div><div class="line">fork=<span class="literal">true</span></div><div class="line">nojournal=<span class="literal">true</span></div><div class="line">EOF</div></pre></td></tr></table></figure>
+<h3 id="&#x8868;&#x51B3;&#x8282;&#x70B9;"><a href="#&#x8868;&#x51B3;&#x8282;&#x70B9;" class="headerlink" title="&#x8868;&#x51B3;&#x8282;&#x70B9;"></a>&#x8868;&#x51B3;&#x8282;&#x70B9;</h3><p>arbiter1&#x8868;&#x793A;&#x4E3A;&#x5206;&#x7247;&#x4E00;&#x7684;&#x4EF2;&#x88C1;&#x8282;&#x70B9;<br>arbiter2&#x8868;&#x793A;&#x4E3A;&#x5206;&#x7247;&#x4E8C;&#x7684;&#x4EF2;&#x88C1;&#x8282;&#x70B9;<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">mkdir -p /home/ayou/mongodb/arbiter1</div><div class="line">cat &gt; <span class="regexp">/home/</span>ayou/mongodb/arbiter1.conf &lt;&lt;EOF</div><div class="line">shardsvr=<span class="literal">true</span></div><div class="line">replSet=shard1</div><div class="line">port=<span class="number">28031</span></div><div class="line">dbpath=<span class="regexp">/home/</span>ayou/mongodb/arbiter1</div><div class="line">oplogSize=<span class="number">100</span></div><div class="line">logpath=<span class="regexp">/home/</span>ayou/mongodb/arbiter1.log</div><div class="line">logappend=<span class="literal">true</span></div><div class="line">fork=<span class="literal">true</span></div><div class="line">rest=<span class="literal">true</span></div><div class="line">nojournal=<span class="literal">true</span></div><div class="line">EOF</div></pre></td></tr></table></figure></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">mkdir -p /home/ayou/mongodb/arbiter2</div><div class="line">cat &gt; <span class="regexp">/home/</span>ayou/mongodb/arbiter2.conf &lt;&lt;EOF</div><div class="line">shardsvr=<span class="literal">true</span></div><div class="line">replSet=shard2</div><div class="line">port=<span class="number">28032</span></div><div class="line">dbpath=<span class="regexp">/home/</span>ayou/mongodb/arbiter2</div><div class="line">oplogSize=<span class="number">100</span></div><div class="line">logpath=<span class="regexp">/home/</span>ayou/mongodb/arbiter2.log</div><div class="line">logappend=<span class="literal">true</span></div><div class="line">fork=<span class="literal">true</span></div><div class="line">rest=<span class="literal">true</span></div><div class="line">nojournal=<span class="literal">true</span></div><div class="line">EOF</div></pre></td></tr></table></figure>
+<h3 id="&#x8DEF;&#x7531;&#x8282;&#x70B9;"><a href="#&#x8DEF;&#x7531;&#x8282;&#x70B9;" class="headerlink" title="&#x8DEF;&#x7531;&#x8282;&#x70B9;"></a>&#x8DEF;&#x7531;&#x8282;&#x70B9;</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">mkdir -p /home/ayou/mongodb/mongos1</div><div class="line">cat &gt; <span class="regexp">/home/</span>ayou/mongodb/mongos1.conf &lt;&lt;EOF</div><div class="line">configdb=host1:<span class="number">20000</span>,<span class="attr">host2</span>:<span class="number">20000</span>,<span class="attr">host3</span>:<span class="number">20000</span></div><div class="line">port=<span class="number">28885</span></div><div class="line">chunkSize=<span class="number">100</span></div><div class="line">logpath=<span class="regexp">/home/</span>ayou/mongodb/mongos1.log</div><div class="line">logappend=<span class="literal">true</span></div><div class="line">fork=<span class="literal">true</span></div><div class="line">EOF</div></pre></td></tr></table></figure>
+<h2 id="host2"><a href="#host2" class="headerlink" title="host2"></a>host2</h2><h3 id="&#x6570;&#x636E;&#x8282;&#x70B9;-1"><a href="#&#x6570;&#x636E;&#x8282;&#x70B9;-1" class="headerlink" title="&#x6570;&#x636E;&#x8282;&#x70B9;"></a>&#x6570;&#x636E;&#x8282;&#x70B9;</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">mkdir -p /home/ayou/mongodb/shard12</div><div class="line">cat &gt; <span class="regexp">/home/</span>ayou/mongodb/shard12.conf &lt;&lt;EOF</div><div class="line">shardsvr=<span class="literal">true</span></div><div class="line">replSet=shard1</div><div class="line">port=<span class="number">28017</span></div><div class="line">dbpath=<span class="regexp">/home/</span>ayou/mongodb/shard12</div><div class="line">oplogSize=<span class="number">2048</span></div><div class="line">logpath=<span class="regexp">/home/</span>ayou/mongodb/shard12.log</div><div class="line">logappend=<span class="literal">true</span></div><div class="line">fork=<span class="literal">true</span></div><div class="line">rest=<span class="literal">true</span></div><div class="line">nojournal=<span class="literal">true</span></div><div class="line">EOF</div></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">mkdir -p /home/ayou/mongodb/shard22</div><div class="line">cat &gt; <span class="regexp">/home/</span>ayou/mongodb/shard22.conf &lt;&lt;EOF</div><div class="line">shardsvr=<span class="literal">true</span></div><div class="line">replSet=shard2</div><div class="line">port=<span class="number">28018</span></div><div class="line">dbpath=<span class="regexp">/home/</span>ayou/mongodb/shard22</div><div class="line">oplogSize=<span class="number">2048</span></div><div class="line">logpath=<span class="regexp">/home/</span>ayou/mongodb/shard22.log</div><div class="line">logappend=<span class="literal">true</span></div><div class="line">fork=<span class="literal">true</span></div><div class="line">rest=<span class="literal">true</span></div><div class="line">nojournal=<span class="literal">true</span></div><div class="line">EOF</div></pre></td></tr></table></figure>
+<h3 id="&#x914D;&#x7F6E;&#x8282;&#x70B9;-1"><a href="#&#x914D;&#x7F6E;&#x8282;&#x70B9;-1" class="headerlink" title="&#x914D;&#x7F6E;&#x8282;&#x70B9;"></a>&#x914D;&#x7F6E;&#x8282;&#x70B9;</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">mkdir -p /home/ayou/mongodb/config</div><div class="line">cat &gt; <span class="regexp">/home/</span>ayou/mongodb/config2.conf &lt;&lt;EOF</div><div class="line">configsvr=<span class="literal">true</span></div><div class="line">dbpath=<span class="regexp">/home/</span>ayou/mongodb/config/</div><div class="line">port=<span class="number">20000</span></div><div class="line">logpath=<span class="regexp">/home/</span>ayou/mongodb/config2.log</div><div class="line">logappend=<span class="literal">true</span></div><div class="line">fork=<span class="literal">true</span></div><div class="line">EOF</div></pre></td></tr></table></figure>
+<h3 id="&#x8868;&#x51B3;&#x8282;&#x70B9;-1"><a href="#&#x8868;&#x51B3;&#x8282;&#x70B9;-1" class="headerlink" title="&#x8868;&#x51B3;&#x8282;&#x70B9;"></a>&#x8868;&#x51B3;&#x8282;&#x70B9;</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">mkdir -p /home/ayou/mongodb/arbiter1</div><div class="line">cat &gt; <span class="regexp">/home/</span>ayou/mongodb/arbiter1.conf &lt;&lt;EOF</div><div class="line">shardsvr=<span class="literal">true</span></div><div class="line">replSet=shard1</div><div class="line">port=<span class="number">28031</span></div><div class="line">dbpath=<span class="regexp">/home/</span>ayou/mongodb/arbiter1</div><div class="line">oplogSize=<span class="number">100</span></div><div class="line">logpath=<span class="regexp">/home/</span>ayou/mongodb/arbiter1.log</div><div class="line">logappend=<span class="literal">true</span></div><div class="line">fork=<span class="literal">true</span></div><div class="line">rest=<span class="literal">true</span></div><div class="line">nojournal=<span class="literal">true</span></div><div class="line">EOF</div></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">mkdir -p /home/ayou/mongodb/arbiter2</div><div class="line">cat &gt; <span class="regexp">/home/</span>ayou/mongodb/arbiter2.conf &lt;&lt;EOF</div><div class="line">shardsvr=<span class="literal">true</span></div><div class="line">replSet=shard2</div><div class="line">port=<span class="number">28032</span></div><div class="line">dbpath=<span class="regexp">/home/</span>ayou/mongodb/arbiter2</div><div class="line">oplogSize=<span class="number">100</span></div><div class="line">logpath=<span class="regexp">/home/</span>ayou/mongodb/arbiter2.log</div><div class="line">logappend=<span class="literal">true</span></div><div class="line">fork=<span class="literal">true</span></div><div class="line">rest=<span class="literal">true</span></div><div class="line">nojournal=<span class="literal">true</span></div><div class="line">EOF</div></pre></td></tr></table></figure>
+<h3 id="&#x8DEF;&#x7531;&#x8282;&#x70B9;-1"><a href="#&#x8DEF;&#x7531;&#x8282;&#x70B9;-1" class="headerlink" title="&#x8DEF;&#x7531;&#x8282;&#x70B9;"></a>&#x8DEF;&#x7531;&#x8282;&#x70B9;</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">mkdir -p /home/ayou/mongodb/mongos2</div><div class="line">cat &gt; <span class="regexp">/home/</span>ayou/mongodb/mongos2.conf &lt;&lt;EOF</div><div class="line">configdb=host1:<span class="number">20000</span>,<span class="attr">host2</span>:<span class="number">20000</span>,<span class="attr">host3</span>:<span class="number">20000</span></div><div class="line">port=<span class="number">28885</span></div><div class="line">chunkSize=<span class="number">100</span></div><div class="line">logpath=<span class="regexp">/home/</span>ayou/mongodb/mongos2.log</div><div class="line">logappend=<span class="literal">true</span></div><div class="line">fork=<span class="literal">true</span></div><div class="line">EOF</div></pre></td></tr></table></figure>
+<h2 id="host3"><a href="#host3" class="headerlink" title="host3"></a>host3</h2><h3 id="&#x6570;&#x636E;&#x8282;&#x70B9;-2"><a href="#&#x6570;&#x636E;&#x8282;&#x70B9;-2" class="headerlink" title="&#x6570;&#x636E;&#x8282;&#x70B9;"></a>&#x6570;&#x636E;&#x8282;&#x70B9;</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">mkdir -p /home/ayou/mongodb/shard13</div><div class="line">cat &gt; <span class="regexp">/home/</span>ayou/mongodb/shard13.conf &lt;&lt;EOF</div><div class="line">shardsvr=<span class="literal">true</span></div><div class="line">replSet=shard1</div><div class="line">port=<span class="number">28017</span></div><div class="line">dbpath=<span class="regexp">/home/</span>ayou/mongodb/shard13</div><div class="line">oplogSize=<span class="number">2048</span></div><div class="line">logpath=<span class="regexp">/home/</span>ayou/mongodb/shard13.log</div><div class="line">logappend=<span class="literal">true</span></div><div class="line">fork=<span class="literal">true</span></div><div class="line">rest=<span class="literal">true</span></div><div class="line">nojournal=<span class="literal">true</span></div><div class="line">EOF</div></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">mkdir -p /home/ayou/mongodb/shard23</div><div class="line">cat &gt; <span class="regexp">/home/</span>ayou/mongodb/shard23.conf &lt;&lt;EOF</div><div class="line">shardsvr=<span class="literal">true</span></div><div class="line">replSet=shard2</div><div class="line">port=<span class="number">28018</span></div><div class="line">dbpath=<span class="regexp">/home/</span>ayou/mongodb/shard23</div><div class="line">oplogSize=<span class="number">2048</span></div><div class="line">logpath=<span class="regexp">/home/</span>ayou/mongodb/shard23.log</div><div class="line">logappend=<span class="literal">true</span></div><div class="line">fork=<span class="literal">true</span></div><div class="line">rest=<span class="literal">true</span></div><div class="line">nojournal=<span class="literal">true</span></div><div class="line">EOF</div></pre></td></tr></table></figure>
+<h3 id="&#x914D;&#x7F6E;&#x8282;&#x70B9;-2"><a href="#&#x914D;&#x7F6E;&#x8282;&#x70B9;-2" class="headerlink" title="&#x914D;&#x7F6E;&#x8282;&#x70B9;"></a>&#x914D;&#x7F6E;&#x8282;&#x70B9;</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">mkdir -p /home/ayou/mongodb/config</div><div class="line">cat &gt; <span class="regexp">/home/</span>ayou/mongodb/config3.conf &lt;&lt;EOF</div><div class="line">configsvr=<span class="literal">true</span></div><div class="line">dbpath=<span class="regexp">/home/</span>ayou/mongodb/config/</div><div class="line">port=<span class="number">20000</span></div><div class="line">logpath=<span class="regexp">/home/</span>ayou/mongodb/config3.log</div><div class="line">logappend=<span class="literal">true</span></div><div class="line">fork=<span class="literal">true</span></div><div class="line">EOF</div></pre></td></tr></table></figure>
+<h3 id="&#x8868;&#x51B3;&#x8282;&#x70B9;-2"><a href="#&#x8868;&#x51B3;&#x8282;&#x70B9;-2" class="headerlink" title="&#x8868;&#x51B3;&#x8282;&#x70B9;"></a>&#x8868;&#x51B3;&#x8282;&#x70B9;</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">mkdir -p /home/ayou/mongodb/arbiter1</div><div class="line">cat &gt; <span class="regexp">/home/</span>ayou/mongodb/arbiter1.conf &lt;&lt;EOF</div><div class="line">shardsvr=<span class="literal">true</span></div><div class="line">replSet=shard1</div><div class="line">port=<span class="number">28031</span></div><div class="line">dbpath=<span class="regexp">/home/</span>ayou/mongodb/arbiter1</div><div class="line">oplogSize=<span class="number">100</span></div><div class="line">logpath=<span class="regexp">/home/</span>ayou/mongodb/arbiter1.log</div><div class="line">logappend=<span class="literal">true</span></div><div class="line">fork=<span class="literal">true</span></div><div class="line">rest=<span class="literal">true</span></div><div class="line">nojournal=<span class="literal">true</span></div><div class="line">EOF</div></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">mkdir -p /home/ayou/mongodb/arbiter2</div><div class="line">cat &gt; <span class="regexp">/home/</span>ayou/mongodb/arbiter2.conf &lt;&lt;EOF</div><div class="line">shardsvr=<span class="literal">true</span></div><div class="line">replSet=shard2</div><div class="line">port=<span class="number">28032</span></div><div class="line">dbpath=<span class="regexp">/home/</span>ayou/mongodb/arbiter2</div><div class="line">oplogSize=<span class="number">100</span></div><div class="line">logpath=<span class="regexp">/home/</span>ayou/mongodb/arbiter2.log</div><div class="line">logappend=<span class="literal">true</span></div><div class="line">fork=<span class="literal">true</span></div><div class="line">rest=<span class="literal">true</span></div><div class="line">nojournal=<span class="literal">true</span></div><div class="line">EOF</div></pre></td></tr></table></figure>
+<h3 id="&#x8DEF;&#x7531;&#x8282;&#x70B9;-2"><a href="#&#x8DEF;&#x7531;&#x8282;&#x70B9;-2" class="headerlink" title="&#x8DEF;&#x7531;&#x8282;&#x70B9;"></a>&#x8DEF;&#x7531;&#x8282;&#x70B9;</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">mkdir -p /home/ayou/mongodb/mongos3</div><div class="line">cat &gt; <span class="regexp">/home/</span>ayou/mongodb/mongos3.conf &lt;&lt;EOF</div><div class="line">configdb=host1:<span class="number">20000</span>,<span class="attr">host2</span>:<span class="number">20000</span>,<span class="attr">host3</span>:<span class="number">20000</span></div><div class="line">port=<span class="number">28885</span></div><div class="line">chunkSize=<span class="number">100</span></div><div class="line">logpath=<span class="regexp">/home/</span>ayou/mongodb/mongos3.log</div><div class="line">logappend=<span class="literal">true</span></div><div class="line">fork=<span class="literal">true</span></div><div class="line">EOF</div></pre></td></tr></table></figure>
+<h1 id="&#x542F;&#x52A8;&#x670D;&#x52A1;"><a href="#&#x542F;&#x52A8;&#x670D;&#x52A1;" class="headerlink" title="&#x542F;&#x52A8;&#x670D;&#x52A1;"></a>&#x542F;&#x52A8;&#x670D;&#x52A1;</h1><ul>
+<li>mongos&#x670D;&#x52A1;&#x53EF;&#x4EE5;&#x53EA;&#x542F;&#x52A8;&#x4E00;&#x53F0;&#xFF0C;&#x672C;&#x6587;&#x5728;host3&#x4E0A;&#x542F;&#x52A8;</li>
+<li>&#x5982;&#x679C;&#x542F;&#x52A8;&#x4E0D;&#x4E86;&#xFF0C;&#x53EF;&#x4EE5;&#x5C1D;&#x8BD5;&#x540C;&#x6B65;&#x65F6;&#x95F4;<code>/usr/sbin/ntpdate *</code> <code>*</code>&#x8868;&#x793A;&#x9700;&#x8981;&#x4E0E;&#x4E4B;&#x540C;&#x6B65;&#x7684;&#x673A;&#x5668;&#x540D;</li>
+</ul>
+<h2 id="host1-1"><a href="#host1-1" class="headerlink" title="host1"></a>host1</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">mongod --config /home/ayou/mongodb/shard11.conf</div><div class="line">mongod --config /home/ayou/mongodb/shard21.conf</div><div class="line">mongod --config /home/ayou/mongodb/arbiter1.conf</div><div class="line">mongod --config /home/ayou/mongodb/arbiter2.conf</div><div class="line">mongod --config /home/ayou/mongodb/config1.conf</div><div class="line">mongos --config /home/ayou/mongodb/mongos1.conf</div></pre></td></tr></table></figure>
+<h2 id="host2-1"><a href="#host2-1" class="headerlink" title="host2"></a>host2</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">mongod --config /home/ayou/mongodb/shard12.conf</div><div class="line">mongod --config /home/ayou/mongodb/shard22.conf</div><div class="line">mongod --config /home/ayou/mongodb/arbiter1.conf</div><div class="line">mongod --config /home/ayou/mongodb/arbiter2.conf</div><div class="line">mongod --config /home/ayou/mongodb/config2.conf</div><div class="line">mongos --config /home/ayou/mongodb/mongos2.conf</div></pre></td></tr></table></figure>
+<h2 id="host3-1"><a href="#host3-1" class="headerlink" title="host3"></a>host3</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">mongod --config /home/ayou/mongodb/shard13.conf</div><div class="line">mongod --config /home/ayou/mongodb/shard23.conf</div><div class="line">mongod --config /home/ayou/mongodb/arbiter1.conf</div><div class="line">mongod --config /home/ayou/mongodb/arbiter2.conf</div><div class="line">mongod --config /home/ayou/mongodb/config3.conf</div><div class="line">mongos --config /home/ayou/mongodb/mongos3.conf</div></pre></td></tr></table></figure>
+<h1 id="&#x542F;&#x52A8;&#x8DEF;&#x7531;"><a href="#&#x542F;&#x52A8;&#x8DEF;&#x7531;" class="headerlink" title="&#x542F;&#x52A8;&#x8DEF;&#x7531;"></a>&#x542F;&#x52A8;&#x8DEF;&#x7531;</h1><p>&#x4EFB;&#x9009;&#x4E00;&#x53F0;&#x673A;&#x5668;&#xFF0C;&#x6267;&#x884C;&#x5982;&#x4E0B;&#x547D;&#x4EE4;<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">cat &gt; <span class="regexp">/home/</span>ayou/mongodb/mongos.conf &lt;&lt;EOF</div><div class="line">configdb=host1:<span class="number">20000</span>,<span class="attr">host2</span>:<span class="number">20000</span>,<span class="attr">host3</span>:<span class="number">20000</span></div><div class="line">port=<span class="number">41000</span></div><div class="line">chunkSize=<span class="number">100</span></div><div class="line">logpath=<span class="regexp">/home/</span>ayou/mongodb/mongos.log</div><div class="line">logappend=<span class="literal">true</span></div><div class="line">fork=<span class="literal">true</span></div><div class="line">EOF</div><div class="line"></div><div class="line">mongos --config /home/ayou/mongodb/mongos.conf</div></pre></td></tr></table></figure></p>
+<h1 id="&#x67E5;&#x770B;&#x8FD0;&#x884C;&#x72B6;&#x6001;"><a href="#&#x67E5;&#x770B;&#x8FD0;&#x884C;&#x72B6;&#x6001;" class="headerlink" title="&#x67E5;&#x770B;&#x8FD0;&#x884C;&#x72B6;&#x6001;"></a>&#x67E5;&#x770B;&#x8FD0;&#x884C;&#x72B6;&#x6001;</h1><p><img src="/2016/12/22/mongodbReplicaSharding/host1.png" alt="host1.png"></p>
+<p><img src="/2016/12/22/mongodbReplicaSharding/host2.png" alt="host2.png"></p>
+<p><img src="/2016/12/22/mongodbReplicaSharding/host3.png" alt="host3.png"></p>
+<h1 id="&#x914D;&#x7F6E;&#x5206;&#x7247;"><a href="#&#x914D;&#x7F6E;&#x5206;&#x7247;" class="headerlink" title="&#x914D;&#x7F6E;&#x5206;&#x7247;"></a>&#x914D;&#x7F6E;&#x5206;&#x7247;</h1><ul>
+<li>&#x53EF;&#x4EE5;&#x5728;&#x4EFB;&#x610F;&#x53F0;&#x673A;&#x5668;&#x4E0A;&#x8FDB;&#x884C;&#x5982;&#x4E0B;&#x64CD;&#x4F5C;</li>
+<li>&#x53EF;&#x80FD;&#x9700;&#x8981;&#x5173;&#x95ED;&#x9632;&#x706B;&#x5899;</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">mongo host1:<span class="number">28017</span>/admin</div><div class="line"></div><div class="line">config = {<span class="attr">_id</span>:<span class="string">&apos;shard1&apos;</span>, <span class="attr">members</span>: [{<span class="attr">_id</span>: <span class="number">0</span>, <span class="attr">host</span>: <span class="string">&quot;host1:28017&quot;</span>},{<span class="attr">_id</span>: <span class="number">1</span>, <span class="attr">host</span>:<span class="string">&quot;host2:28017&quot;</span>},{ <span class="attr">_id</span> : <span class="number">2</span>,<span class="attr">host</span>:<span class="string">&quot;host3:28017&quot;</span>,<span class="attr">slaveDelay</span> :<span class="number">7200</span> ,<span class="attr">priority</span>:<span class="number">0</span>},{<span class="attr">_id</span>: <span class="number">3</span>, <span class="attr">host</span>: <span class="string">&apos;host1:28031&apos;</span>, <span class="attr">arbiterOnly</span> : <span class="literal">true</span>},{<span class="attr">_id</span>: <span class="number">4</span>,<span class="attr">host</span>: <span class="string">&apos;host2:28031&apos;</span>, <span class="attr">arbiterOnly</span> : <span class="literal">true</span>},{<span class="attr">_id</span>: <span class="number">5</span>, <span class="attr">host</span>: <span class="string">&apos;host3:28031&apos;</span>,<span class="attr">arbiterOnly</span> : <span class="literal">true</span>}]};</div><div class="line">rs.initiate(config);</div></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">mongo host2:<span class="number">28018</span>/admin</div><div class="line"></div><div class="line">config = {<span class="attr">_id</span>:<span class="string">&apos;shard2&apos;</span>, <span class="attr">members</span>: [{<span class="attr">_id</span>: <span class="number">0</span>, <span class="attr">host</span>: <span class="string">&quot;host1:28018&quot;</span>},{<span class="attr">_id</span>: <span class="number">1</span>, <span class="attr">host</span>:<span class="string">&quot;host2:28018&quot;</span>},{ <span class="attr">_id</span> : <span class="number">2</span>,<span class="attr">host</span>:<span class="string">&quot;host3:28018&quot;</span>,<span class="attr">slaveDelay</span> :<span class="number">7200</span> ,<span class="attr">priority</span>:<span class="number">0</span>},{<span class="attr">_id</span>: <span class="number">3</span>, <span class="attr">host</span>: <span class="string">&apos;host1:28032&apos;</span>, <span class="attr">arbiterOnly</span> : <span class="literal">true</span>},{<span class="attr">_id</span>: <span class="number">4</span>,<span class="attr">host</span>: <span class="string">&apos;host2:28032&apos;</span>, <span class="attr">arbiterOnly</span> : <span class="literal">true</span>},{<span class="attr">_id</span>: <span class="number">5</span>, <span class="attr">host</span>: <span class="string">&apos;host3:28032&apos;</span>,<span class="attr">arbiterOnly</span> : <span class="literal">true</span>}]};</div><div class="line">rs.initiate(config);</div></pre></td></tr></table></figure>
+<h1 id="&#x6DFB;&#x52A0;&#x5206;&#x7247;"><a href="#&#x6DFB;&#x52A0;&#x5206;&#x7247;" class="headerlink" title="&#x6DFB;&#x52A0;&#x5206;&#x7247;"></a>&#x6DFB;&#x52A0;&#x5206;&#x7247;</h1><p>&#x4EFB;&#x9009;&#x4E00;&#x53F0;&#x673A;&#x5668;<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">mongo host3:<span class="number">28885</span>/admin</div><div class="line">db.runCommand({<span class="string">&quot;addshard&quot;</span> : <span class="string">&quot;shard1/host1:28017,host2:28017&quot;</span>})</div><div class="line"></div><div class="line">db.runCommand({<span class="string">&quot;addshard&quot;</span> : <span class="string">&quot;shard2/host1:28018,host2:28018&quot;</span>})</div><div class="line"></div><div class="line">db.runCommand( { <span class="string">&quot;enablesharding&quot;</span> : <span class="string">&quot;test-shard&quot;</span>})</div><div class="line"></div><div class="line">db.runCommand( { <span class="attr">shardcollection</span> : <span class="string">&quot;test-shard.test&quot;</span>,<span class="attr">key</span> : {<span class="attr">_id</span>: <span class="number">1</span>} } )</div></pre></td></tr></table></figure></p>
+<h1 id="&#x6D4B;&#x8BD5;"><a href="#&#x6D4B;&#x8BD5;" class="headerlink" title="&#x6D4B;&#x8BD5;"></a>&#x6D4B;&#x8BD5;</h1><p>&#x5F80;test-shard.test&#x4E2D;&#x63D2;&#x5165;&#x5927;&#x91CF;&#x6570;&#x636E;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">for(var i=0;i&lt;1000000;i++) db.test.insert({name:&quot;no&quot;+i})</div></pre></td></tr></table></figure></p>
+<p>&#x67E5;&#x770B;&#x5206;&#x7247;&#x72B6;&#x6001;</p>
+<p><img src="/2016/12/22/mongodbReplicaSharding/sharding1.png" alt="sharding1.png"></p>
+<p><img src="/2016/12/22/mongodbReplicaSharding/sharding2.png" alt="sharding2.png"></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/replica/">replica</a><a href="/tags/sharding/">sharding</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/mongodb/">mongodb</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="http://www.paradeto.com/2016/12/22/mongodbReplicaSharding/" data-title="mongodb replica sharding 实战 | Ayou" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2016/12/15/reactOptimize/"  title="React性能优化（译）">
+ <strong>NEXT:</strong><br/> 
+ <span>React性能优化（译）
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	<div class="ds-thread"></div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+  <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#环境说明"><span class="toc-number">1.</span> <span class="toc-text">环境说明</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#三台机器-centos6-4"><span class="toc-number">1.1.</span> <span class="toc-text">三台机器(centos6.4)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mongdb版本"><span class="toc-number">1.2.</span> <span class="toc-text">mongdb版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#服务规划"><span class="toc-number">1.3.</span> <span class="toc-text">服务规划</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#配置文件"><span class="toc-number">2.</span> <span class="toc-text">配置文件</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#host1"><span class="toc-number">2.1.</span> <span class="toc-text">host1</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#数据节点"><span class="toc-number">2.1.1.</span> <span class="toc-text">数据节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#配置节点"><span class="toc-number">2.1.2.</span> <span class="toc-text">配置节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#表决节点"><span class="toc-number">2.1.3.</span> <span class="toc-text">表决节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#路由节点"><span class="toc-number">2.1.4.</span> <span class="toc-text">路由节点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#host2"><span class="toc-number">2.2.</span> <span class="toc-text">host2</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#数据节点-1"><span class="toc-number">2.2.1.</span> <span class="toc-text">数据节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#配置节点-1"><span class="toc-number">2.2.2.</span> <span class="toc-text">配置节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#表决节点-1"><span class="toc-number">2.2.3.</span> <span class="toc-text">表决节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#路由节点-1"><span class="toc-number">2.2.4.</span> <span class="toc-text">路由节点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#host3"><span class="toc-number">2.3.</span> <span class="toc-text">host3</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#数据节点-2"><span class="toc-number">2.3.1.</span> <span class="toc-text">数据节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#配置节点-2"><span class="toc-number">2.3.2.</span> <span class="toc-text">配置节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#表决节点-2"><span class="toc-number">2.3.3.</span> <span class="toc-text">表决节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#路由节点-2"><span class="toc-number">2.3.4.</span> <span class="toc-text">路由节点</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#启动服务"><span class="toc-number">3.</span> <span class="toc-text">启动服务</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#host1-1"><span class="toc-number">3.1.</span> <span class="toc-text">host1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#host2-1"><span class="toc-number">3.2.</span> <span class="toc-text">host2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#host3-1"><span class="toc-number">3.3.</span> <span class="toc-text">host3</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#启动路由"><span class="toc-number">4.</span> <span class="toc-text">启动路由</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#查看运行状态"><span class="toc-number">5.</span> <span class="toc-text">查看运行状态</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#配置分片"><span class="toc-number">6.</span> <span class="toc-text">配置分片</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#添加分片"><span class="toc-number">7.</span> <span class="toc-text">添加分片</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#测试"><span class="toc-number">8.</span> <span class="toc-text">测试</span></a></li></ol>
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+			<li><a href="/categories/html-css/" title="html/css">html/css<sup>3</sup></a></li>
+		
+			<li><a href="/categories/javascript/" title="javascript">javascript<sup>4</sup></a></li>
+		
+			<li><a href="/categories/mongodb/" title="mongodb">mongodb<sup>1</sup></a></li>
+		
+			<li><a href="/categories/nodejs/" title="nodejs">nodejs<sup>2</sup></a></li>
+		
+			<li><a href="/categories/前端工具/" title="前端工具">前端工具<sup>1</sup></a></li>
+		
+			<li><a href="/categories/前端框架/" title="前端框架">前端框架<sup>4</sup></a></li>
+		
+			<li><a href="/categories/前端理论/" title="前端理论">前端理论<sup>1</sup></a></li>
+		
+			<li><a href="/categories/算法/" title="算法">算法<sup>2</sup></a></li>
+		
+			<li><a href="/categories/读书笔记/" title="读书笔记">读书笔记<sup>3</sup></a></li>
+		
+			<li><a href="/categories/转载/" title="转载">转载<sup>1</sup></a></li>
+		
+			<li><a href="/categories/项目实战/" title="项目实战">项目实战<sup>3</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			<li><a href="/tags/WEB安全/" title="WEB安全">WEB安全<sup>2</sup></a></li>
+		
+			<li><a href="/tags/angularjs/" title="angularjs">angularjs<sup>2</sup></a></li>
+		
+			<li><a href="/tags/angularjs2/" title="angularjs2">angularjs2<sup>1</sup></a></li>
+		
+			<li><a href="/tags/canvas/" title="canvas">canvas<sup>2</sup></a></li>
+		
+			<li><a href="/tags/chrome插件/" title="chrome插件">chrome插件<sup>1</sup></a></li>
+		
+			<li><a href="/tags/css/" title="css">css<sup>1</sup></a></li>
+		
+			<li><a href="/tags/helmet/" title="helmet">helmet<sup>1</sup></a></li>
+		
+			<li><a href="/tags/html/" title="html">html<sup>2</sup></a></li>
+		
+			<li><a href="/tags/http/" title="http">http<sup>2</sup></a></li>
+		
+			<li><a href="/tags/https/" title="https">https<sup>1</sup></a></li>
+		
+			<li><a href="/tags/javascript/" title="javascript">javascript<sup>5</sup></a></li>
+		
+			<li><a href="/tags/jquery插件/" title="jquery插件">jquery插件<sup>1</sup></a></li>
+		
+			<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>4</sup></a></li>
+		
+			<li><a href="/tags/promise/" title="promise">promise<sup>1</sup></a></li>
+		
+			<li><a href="/tags/react/" title="react">react<sup>2</sup></a></li>
+		
+			<li><a href="/tags/replica/" title="replica">replica<sup>1</sup></a></li>
+		
+			<li><a href="/tags/sharding/" title="sharding">sharding<sup>1</sup></a></li>
+		
+			<li><a href="/tags/slb/" title="slb">slb<sup>1</sup></a></li>
+		
+			<li><a href="/tags/webpack/" title="webpack">webpack<sup>2</sup></a></li>
+		
+			<li><a href="/tags/事件/" title="事件">事件<sup>1</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  <div class="rsspart">
+	<a href="null" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+	</div>
+		<p class="copyright">Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/zhyu/yaht" target="_blank" title="YAHT">YAHT</a> © 2016 
+		
+		<a href="http://www.paradeto.com" target="_blank" title="Ayou">Ayou</a>
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<!--canvas-->
+
+<script src="/js/canvas.js"></script>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.navbar').click(function(){
+      $('header nav').toggleClass('shownav');
+    });
+    var myWidth = 0;
+    function getSize(){
+      if( typeof( window.innerWidth ) == 'number' ) {
+        myWidth = window.innerWidth;
+      } else if( document.documentElement && document.documentElement.clientWidth) {
+        myWidth = document.documentElement.clientWidth;
+      };
+    };
+    var m = $('#main'),
+    a = $('#asidepart'),
+    c = $('.closeaside'),
+    o = $('.openaside');
+    $(window).resize(function(){
+      getSize();
+      if (myWidth >= 1024) {
+        $('header nav').removeClass('shownav');
+      }else
+      {
+        m.removeClass('moveMain');
+        a.css('display', 'block').removeClass('fadeOut');
+        o.css('display', 'none');
+        
+            $('#toc.toc-aside').css('display', 'none');
+          
+      }
+    });
+    c.click(function(){
+      a.addClass('fadeOut').css('display', 'none');
+      o.css('display', 'block').addClass('fadeIn');
+      m.addClass('moveMain');
+    });
+    o.click(function(){
+      o.css('display', 'none').removeClass('beforeFadeIn');
+      a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');
+      m.removeClass('moveMain');
+    });
+    $(window).scroll(function(){
+      o.css("top",Math.max(80,260-$(this).scrollTop()));
+    });
+  });
+</script>
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+      var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+      if(ai.length>0){
+        ai.wrap('<div class="video-container" />');
+      };
+      if(ae.length>0){
+        ae.wrap('<div class="video-container" />');
+      };
+      if(ah.length==0){
+        t.css('display','none');
+      }else{
+        c.click(function(){
+          ta.css('display', 'block').addClass('fadeIn');
+        });
+        o.click(function(){
+          ta.css('display', 'none');
+        });
+        $(window).scroll(function(){
+          ta.css("top",Math.max(140,320-$(this).scrollTop()));
+        });
+      };
+    });
+  </script>
+
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+      var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+      var html = [
+        '<a href="#" class="overlay" id="qrcode"></a>',
+        '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+        '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+        '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+        '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+        '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+        '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+        '<span title="Share to"></span>'
+        ].join('');
+        $this.append(html);
+        $('.article-share-qrcode').click(function(){
+          var imgSrc = $('#qrcode-pic').attr('data-src');
+          $('#qrcode-pic').attr('src', imgSrc);
+          $('#qrcode-pic').load(function(){
+            $('.qrcode strong').text(' ');
+          });
+        });
+    });
+  </script>
+
+
+  
+    <script type="text/javascript">
+      var duoshuoQuery = {short_name:"paradeto"};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0]
+        || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+    </script>
+  
+  
+
+
+
+
+
+
+
+
+
+  <div id="back-to-top">
+    <a title="返回顶部"><img src="/img/scrollup.png"/></a>
+  </div>
+  <script src="/js/back_to_top.js"></script>
+
+
+
+  </body>
+</html>
+
