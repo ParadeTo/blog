@@ -1,0 +1,10 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+#cubilosePage .banner {
+  width: 100%;
+  height: 500px;
+  background: url("/img/cubilose/img1.jpeg") no-repeat center;
+  background-size: cover;
+}
