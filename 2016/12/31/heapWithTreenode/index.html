@@ -1,0 +1,440 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>树节点实现堆 | Ayou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="Ayou">
+    
+    <meta name="description" itemprop="description" content="利用树节点实现一个堆">
+    
+    
+    
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/yaht.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/yaht.jpg">
+    
+    
+        <link rel="stylesheet" href="/css/style.css">
+    
+    
+<script type="text/javascript">
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "//hm.baidu.com/hm.js?bc27adb5eec6cd3b858ecca2a190876a";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+
+</head>
+
+  <body>
+    <header>
+      <canvas id="headerCanvas">
+
+</canvas>
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Ayou" title="Ayou"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Ayou">Ayou</a></h1>
+				<h2 class="blog-motto">Good Good Study, Day Day Up!</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/resume">Resume</a></li>
+					
+						<li><a href="/demo">Demo</a></li>
+					
+					<li>
+					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:www.paradeto.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/31/heapWithTreenode/" title="树节点实现堆" itemprop="url">树节点实现堆</a>
+  </h1>
+  <p class="article-author">By
+    
+      <a href="http://www.paradeto.com" title="Ayou">Ayou</a>
+    </p>
+  <p class="article-time">
+    <time datetime="2016-12-31T08:36:38.000Z" itemprop="datePublished">2016-12-31</time>
+    更新日期:<time datetime="2017-01-14T14:42:31.000Z" itemprop="dateModified">2017-01-14</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#构建堆的树节点"><span class="toc-number">1.</span> <span class="toc-text">构建堆的树节点</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#堆"><span class="toc-number">2.</span> <span class="toc-text">堆</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#示例"><span class="toc-number">2.1.</span> <span class="toc-text">示例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#如何根据结点的序号快速的定位结点"><span class="toc-number">2.2.</span> <span class="toc-text">如何根据结点的序号快速的定位结点</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#代码实现"><span class="toc-number">3.</span> <span class="toc-text">代码实现</span></a></li></ol>
+		</div>
+		
+		<h1 id="&#x6784;&#x5EFA;&#x5806;&#x7684;&#x6811;&#x8282;&#x70B9;"><a href="#&#x6784;&#x5EFA;&#x5806;&#x7684;&#x6811;&#x8282;&#x70B9;" class="headerlink" title="&#x6784;&#x5EFA;&#x5806;&#x7684;&#x6811;&#x8282;&#x70B9;"></a>&#x6784;&#x5EFA;&#x5806;&#x7684;&#x6811;&#x8282;&#x70B9;</h1><p>&#x7528;&#x4E8E;&#x6784;&#x5EFA;&#x5806;&#x7684;&#x6811;&#x8282;&#x70B9;&#x9700;&#x8981;&#x6709;&#x5982;&#x4E0B;&#x51E0;&#x4E2A;&#x5C5E;&#x6027;&#xFF1A;</p>
+<ul>
+<li>value &#x503C;</li>
+<li>parent &#x6307;&#x5411;&#x7236;&#x8282;&#x70B9;</li>
+<li>leftchild &#x6307;&#x5411;&#x5DE6;&#x5B50;&#x8282;&#x70B9;</li>
+<li>rightchild &#x6307;&#x5411;&#x53F3;&#x5B50;&#x8282;&#x70B9;</li>
+</ul>
+<p><img src="/2016/12/31/heapWithTreenode/treenode.png" alt="treenode"></p>
+<h1 id="&#x5806;"><a href="#&#x5806;" class="headerlink" title="&#x5806;"></a>&#x5806;</h1><p>&#x4E00;&#x4E2A;&#x5806;&#x6700;&#x91CD;&#x8981;&#x7684;&#x4E24;&#x4E2A;&#x65B9;&#x6CD5;&#x662F;&#xFF1A;</p>
+<ul>
+<li>push &#x589E;&#x52A0;&#x4E00;&#x4E2A;&#x5143;&#x7D20;&#x5230;&#x5806;&#x5C3E;&#xFF0C;&#x5E76;&#x6CBF;&#x7740;&#x8DEF;&#x5F84;&#x4E0A;&#x884C;&#x5230;&#x5408;&#x9002;&#x4F4D;&#x7F6E;</li>
+<li>pop &#x4EA4;&#x6362;&#x5806;&#x9996;&#x5C3E;&#x5143;&#x7D20;&#xFF0C;&#x53D6;&#x51FA;&#x961F;&#x5C3E;&#x5143;&#x7D20;&#xFF0C;&#x5C06;&#x5806;&#x9876;&#x5143;&#x7D20;&#x4E0B;&#x884C;&#x5230;&#x5408;&#x9002;&#x4F4D;&#x7F6E;</li>
+</ul>
+<h2 id="&#x793A;&#x4F8B;"><a href="#&#x793A;&#x4F8B;" class="headerlink" title="&#x793A;&#x4F8B;"></a>&#x793A;&#x4F8B;</h2><p><img src="/2016/12/31/heapWithTreenode/heap.png" alt="heap"></p>
+<h2 id="&#x5982;&#x4F55;&#x6839;&#x636E;&#x7ED3;&#x70B9;&#x7684;&#x5E8F;&#x53F7;&#x5FEB;&#x901F;&#x7684;&#x5B9A;&#x4F4D;&#x7ED3;&#x70B9;"><a href="#&#x5982;&#x4F55;&#x6839;&#x636E;&#x7ED3;&#x70B9;&#x7684;&#x5E8F;&#x53F7;&#x5FEB;&#x901F;&#x7684;&#x5B9A;&#x4F4D;&#x7ED3;&#x70B9;" class="headerlink" title="&#x5982;&#x4F55;&#x6839;&#x636E;&#x7ED3;&#x70B9;&#x7684;&#x5E8F;&#x53F7;&#x5FEB;&#x901F;&#x7684;&#x5B9A;&#x4F4D;&#x7ED3;&#x70B9;"></a>&#x5982;&#x4F55;&#x6839;&#x636E;&#x7ED3;&#x70B9;&#x7684;&#x5E8F;&#x53F7;&#x5FEB;&#x901F;&#x7684;&#x5B9A;&#x4F4D;&#x7ED3;&#x70B9;</h2><p>&#x5728;&#x5806;&#x7684;&#x4E24;&#x4E2A;&#x65B9;&#x6CD5;<code>push</code> <code>pop</code>&#x9700;&#x8981;&#x89E3;&#x51B3;&#x5982;&#x4F55;&#x5FEB;&#x901F;&#x5730;&#x5BFB;&#x627E;&#x961F;&#x5C3E;&#x5143;&#x7D20;&#xFF0C;&#x53EF;&#x4EE5;&#x91C7;&#x53D6;&#x5982;&#x4E0B;&#x7684;&#x65B9;&#x6CD5;&#xFF1A;<br><img src="/2016/12/31/heapWithTreenode/3.png" alt="3"><br>&#x5982;&#x4E0A;&#x56FE;&#xFF0C;&#x82E5;&#x73B0;&#x5728;&#x5806;&#x5927;&#x5C0F;&#x4E3A;4&#xFF0C;&#x5219;&#x63D2;&#x5165;&#x5143;&#x7D20;&#x4F4D;&#x7F6E;&#x5E94;&#x8BE5;&#x5728;5&#xFF0C;&#x5176;&#x4E8C;&#x8FDB;&#x5236;101&#x8868;&#x793A;&#x5176;&#x8DEF;&#x5F84;&#x4E3A;&#xFF1A;&#x6839;&#x8282;&#x70B9;-&gt;&#x5DE6;&#x5B50;&#x6811;-&gt;&#x53F3;&#x5B50;&#x6811;</p>
+<h1 id="&#x4EE3;&#x7801;&#x5B9E;&#x73B0;"><a href="#&#x4EE3;&#x7801;&#x5B9E;&#x73B0;" class="headerlink" title="&#x4EE3;&#x7801;&#x5B9E;&#x73B0;"></a>&#x4EE3;&#x7801;&#x5B9E;&#x73B0;</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div><div class="line">190</div><div class="line">191</div><div class="line">192</div><div class="line">193</div><div class="line">194</div><div class="line">195</div><div class="line">196</div><div class="line">197</div><div class="line">198</div><div class="line">199</div><div class="line">200</div><div class="line">201</div><div class="line">202</div><div class="line">203</div><div class="line">204</div><div class="line">205</div><div class="line">206</div><div class="line">207</div><div class="line">208</div><div class="line">209</div><div class="line">210</div><div class="line">211</div><div class="line">212</div><div class="line">213</div><div class="line">214</div><div class="line">215</div><div class="line">216</div><div class="line">217</div><div class="line">218</div><div class="line">219</div><div class="line">220</div><div class="line">221</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;list&gt;</span></span></div><div class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</div><div class="line"></div><div class="line"><span class="comment">// &#x6574;&#x6570;&#x8F6C;&#x4E8C;&#x8FDB;&#x5236;</span></div><div class="line"><span class="built_in">list</span>&lt;<span class="keyword">int</span>&gt; BinaryVector(<span class="keyword">int</span> n) {</div><div class="line">	<span class="keyword">int</span> temp;  </div><div class="line">	temp=n;  </div><div class="line">	<span class="built_in">list</span>&lt;<span class="keyword">int</span>&gt; L;  </div><div class="line">	<span class="keyword">while</span>(temp!=<span class="number">0</span>)  </div><div class="line">	{  </div><div class="line">		L.push_front(temp%<span class="number">2</span>);  </div><div class="line">		temp=temp &gt;&gt; <span class="number">1</span>;  </div><div class="line">	}  </div><div class="line">	<span class="keyword">return</span> L;</div><div class="line">}</div><div class="line"></div><div class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</div><div class="line"><span class="keyword">class</span> treenode {</div><div class="line">	<span class="keyword">public</span>:</div><div class="line">		treenode() ;</div><div class="line">		treenode(T newelem){</div><div class="line">			value = newelem;</div><div class="line">			parent = leftchild = rightchild = <span class="literal">NULL</span>;</div><div class="line">		}</div><div class="line">		T value;</div><div class="line">		treenode *parent, *leftchild, *rightchild;</div><div class="line">};</div><div class="line"></div><div class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</div><div class="line"><span class="keyword">class</span> heap {</div><div class="line">	<span class="keyword">public</span>:</div><div class="line">		heap() {</div><div class="line">			root = <span class="literal">NULL</span>;</div><div class="line">			size = <span class="number">0</span>;</div><div class="line">		}</div><div class="line">		~heap(){</div><div class="line">		}</div><div class="line">		<span class="function"><span class="keyword">bool</span> <span class="title">push</span><span class="params">(T newelem)</span></span>;</div><div class="line">		<span class="function">T <span class="title">pop</span><span class="params">()</span></span>;</div><div class="line">		<span class="function"><span class="keyword">void</span> <span class="title">recursion_inorder_traversal</span><span class="params">()</span></span>;</div><div class="line">		<span class="function"><span class="keyword">void</span> <span class="title">recursion_preorder_traversal</span><span class="params">()</span></span>;</div><div class="line">	<span class="keyword">private</span>:</div><div class="line">		<span class="keyword">int</span> size;</div><div class="line">		treenode&lt;T&gt; *root;</div><div class="line">		<span class="keyword">void</span> _recursion_inorder_traversal(treenode&lt;T&gt; *p);</div><div class="line">		<span class="keyword">void</span> _recursion_preorder_traversal(treenode&lt;T&gt; *p);</div><div class="line">};</div><div class="line"></div><div class="line"></div><div class="line"><span class="comment">// &#x4E2D;&#x5E8F;&#x904D;&#x5386;</span></div><div class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;  </div><div class="line"><span class="keyword">void</span> heap&lt;T&gt;::_recursion_inorder_traversal(treenode&lt;T&gt; *p) {</div><div class="line">	<span class="keyword">if</span> (p==<span class="literal">NULL</span>) <span class="keyword">return</span>;</div><div class="line">	_recursion_inorder_traversal(p-&gt;leftchild);</div><div class="line">	<span class="built_in">cout</span> &lt;&lt; p-&gt;value &lt;&lt; <span class="string">&apos; &apos;</span>;</div><div class="line">	_recursion_inorder_traversal(p-&gt;rightchild);</div><div class="line">	<span class="keyword">return</span> ;</div><div class="line">}</div><div class="line"></div><div class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;  </div><div class="line"><span class="keyword">void</span> heap&lt;T&gt;::recursion_inorder_traversal() {</div><div class="line">	_recursion_inorder_traversal(root);</div><div class="line">}</div><div class="line"></div><div class="line"><span class="comment">// &#x524D;&#x5E8F;&#x904D;&#x5386;</span></div><div class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;  </div><div class="line"><span class="keyword">void</span> heap&lt;T&gt;::_recursion_preorder_traversal(treenode&lt;T&gt; *p) {</div><div class="line">	<span class="keyword">if</span> (p==<span class="literal">NULL</span>) <span class="keyword">return</span>;</div><div class="line">	<span class="built_in">cout</span> &lt;&lt; p-&gt;value &lt;&lt; <span class="string">&quot; &quot;</span>;</div><div class="line">	_recursion_preorder_traversal(p-&gt;leftchild);</div><div class="line">	_recursion_preorder_traversal(p-&gt;rightchild);</div><div class="line">	<span class="keyword">return</span> ;</div><div class="line">}</div><div class="line"></div><div class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;  </div><div class="line"><span class="keyword">void</span> heap&lt;T&gt;::recursion_preorder_traversal() {</div><div class="line">	_recursion_preorder_traversal(root);</div><div class="line">}</div><div class="line"></div><div class="line"><span class="comment">//  &#x63D2;&#x5165;</span></div><div class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;  </div><div class="line"><span class="keyword">bool</span> heap&lt;T&gt;::push(T newelem) {</div><div class="line">	<span class="comment">// &#x6570;&#x91CF;+1</span></div><div class="line">	size += <span class="number">1</span>;</div><div class="line">	<span class="comment">// &#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x8282;&#x70B9;</span></div><div class="line">	treenode&lt;T&gt; *p = <span class="keyword">new</span> treenode&lt;T&gt;(newelem);</div><div class="line"></div><div class="line">	<span class="comment">// &#x7B2C;&#x4E00;&#x4E2A;&#x8282;&#x70B9;&#x4E3A;&#x6839;&#x8282;&#x70B9;</span></div><div class="line">	<span class="keyword">if</span> (size == <span class="number">1</span>) {</div><div class="line">		root = p;</div><div class="line">		<span class="keyword">return</span> <span class="literal">true</span>;</div><div class="line">	}</div><div class="line"></div><div class="line">	<span class="comment">// &#x63D2;&#x5165;&#x5230;&#x5806;&#x5C3E;</span></div><div class="line">	<span class="built_in">list</span>&lt;<span class="keyword">int</span>&gt; L = BinaryVector(size);</div><div class="line">	<span class="built_in">list</span>&lt;<span class="keyword">int</span>&gt;::iterator iter=L.begin();</div><div class="line">	treenode&lt;T&gt; *rec = root;</div><div class="line">	<span class="keyword">for</span> (iter++;iter!=L.end();iter++) {</div><div class="line">		<span class="comment">// &#x5F80;&#x5DE6;&#x8D70;</span></div><div class="line">		<span class="keyword">if</span> (*iter == <span class="number">0</span>) {</div><div class="line">			<span class="keyword">if</span> (rec-&gt;leftchild == <span class="literal">NULL</span>) {</div><div class="line">				rec-&gt;leftchild = p;</div><div class="line">				p-&gt;parent = rec;</div><div class="line">				<span class="keyword">break</span>;</div><div class="line">			}</div><div class="line">			rec = rec-&gt;leftchild;</div><div class="line">		}</div><div class="line">		<span class="comment">// &#x5F80;&#x53F3;&#x8D70;</span></div><div class="line">		<span class="keyword">if</span> (*iter == <span class="number">1</span>) {</div><div class="line">			<span class="keyword">if</span> (rec-&gt;rightchild == <span class="literal">NULL</span>) {</div><div class="line">				rec-&gt;rightchild = p;</div><div class="line">				p-&gt;parent = rec;</div><div class="line">				<span class="keyword">break</span>;</div><div class="line">			}</div><div class="line">			rec = rec-&gt;rightchild;</div><div class="line">		}</div><div class="line">	}</div><div class="line"></div><div class="line">	<span class="comment">// &#x4E0A;&#x884C;</span></div><div class="line">	<span class="keyword">while</span>(p-&gt;parent != <span class="literal">NULL</span> &amp;&amp; p-&gt;value &gt; p-&gt;parent-&gt;value) {</div><div class="line">		T tmp = p-&gt;value;</div><div class="line">		p-&gt;value = p-&gt;parent-&gt;value;</div><div class="line">		p-&gt;parent-&gt;value = tmp;</div><div class="line">		p = p-&gt;parent;</div><div class="line">	}</div><div class="line">}</div><div class="line"></div><div class="line"><span class="comment">// &#x5F39;&#x51FA;</span></div><div class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;  </div><div class="line">T heap&lt;T&gt;::pop() {</div><div class="line">	<span class="keyword">if</span>(size == <span class="number">0</span>) {</div><div class="line">		T nil;</div><div class="line">		<span class="keyword">return</span> nil;</div><div class="line">	}</div><div class="line"></div><div class="line"></div><div class="line">	T res = root-&gt;value;</div><div class="line">	<span class="keyword">if</span> (size == <span class="number">1</span>) {</div><div class="line">		<span class="keyword">delete</span> root;</div><div class="line">		<span class="keyword">return</span> res;</div><div class="line">	}</div><div class="line"></div><div class="line">	<span class="comment">// &#x4EA4;&#x6362;&#x9996;&#x5C3E;&#x5143;&#x7D20;&#x5E76;&#x5220;&#x9664;&#x5C3E;&#x90E8;</span></div><div class="line">	<span class="built_in">list</span>&lt;<span class="keyword">int</span>&gt; L = BinaryVector(size);</div><div class="line">	<span class="built_in">list</span>&lt;<span class="keyword">int</span>&gt;::iterator iter=L.begin();</div><div class="line">	treenode&lt;T&gt; *rec = root;</div><div class="line">	<span class="keyword">for</span> (iter++;iter!=L.end();iter++) {</div><div class="line">		<span class="comment">// &#x5F80;&#x5DE6;&#x8D70;</span></div><div class="line">		<span class="keyword">if</span> (*iter == <span class="number">0</span>) {</div><div class="line">			rec = rec-&gt;leftchild;</div><div class="line">			<span class="comment">// &#x5230;&#x8FBE;&#x4E86;&#x53F6;&#x5B50;&#x8282;&#x70B9;</span></div><div class="line">			<span class="keyword">if</span>(rec-&gt;leftchild == <span class="literal">NULL</span> &amp;&amp; rec-&gt;rightchild == <span class="literal">NULL</span>)</div><div class="line">				rec-&gt;parent-&gt;leftchild = <span class="literal">NULL</span>;</div><div class="line">		}</div><div class="line">		<span class="comment">// &#x5F80;&#x53F3;&#x8D70;</span></div><div class="line">		<span class="keyword">if</span> (*iter == <span class="number">1</span>) {</div><div class="line">			rec = rec-&gt;rightchild;</div><div class="line">			<span class="comment">// &#x5230;&#x8FBE;&#x4E86;&#x53F6;&#x5B50;&#x8282;&#x70B9;</span></div><div class="line">			<span class="keyword">if</span>(rec-&gt;leftchild == <span class="literal">NULL</span> &amp;&amp; rec-&gt;rightchild == <span class="literal">NULL</span>)</div><div class="line">				rec-&gt;parent-&gt;rightchild = <span class="literal">NULL</span>;</div><div class="line">		}</div><div class="line">	}</div><div class="line">	T tmp = rec-&gt;value;</div><div class="line">	rec-&gt;value = root-&gt;value;</div><div class="line">	root-&gt;value = tmp;</div><div class="line">	<span class="keyword">delete</span> rec;</div><div class="line"></div><div class="line">	size -= <span class="number">1</span>;</div><div class="line"></div><div class="line">	<span class="comment">// &#x9876;&#x90E8;&#x5143;&#x7D20;&#x4E0B;&#x884C;</span></div><div class="line">	L = BinaryVector(size);</div><div class="line">	treenode&lt;T&gt; *p = root;</div><div class="line">	<span class="keyword">for</span> (iter=L.begin();iter!=L.end();iter++) {</div><div class="line">		<span class="keyword">if</span> (p-&gt;leftchild == <span class="literal">NULL</span> &amp;&amp; p-&gt;rightchild == <span class="literal">NULL</span>) <span class="keyword">break</span>;</div><div class="line">		<span class="comment">// &#x627E;&#x5230;&#x5B50;&#x6811;&#x4E2D;&#x8F83;&#x5927;&#x7684;</span></div><div class="line">		treenode&lt;T&gt; *maxChild;</div><div class="line">		<span class="keyword">if</span> (p-&gt;leftchild == <span class="literal">NULL</span>) {</div><div class="line">			maxChild = p-&gt;rightchild;</div><div class="line">		} <span class="keyword">else</span> <span class="keyword">if</span> (p-&gt;rightchild == <span class="literal">NULL</span>) {</div><div class="line">			maxChild = p-&gt;leftchild;</div><div class="line">		} <span class="keyword">else</span> {</div><div class="line">			maxChild = (p-&gt;leftchild-&gt;value &gt; p-&gt;rightchild-&gt;value) ? p-&gt;leftchild : p-&gt;rightchild;</div><div class="line">		}</div><div class="line">		<span class="comment">// &#x6BD4;&#x8F83;&#x7236;&#x8282;&#x70B9;&#x4E0E;&#x5B50;&#x8282;&#x70B9;&#x4E2D;&#x8F83;&#x5927;&#x8005;&#x5E76;&#x4EA4;&#x6362;</span></div><div class="line">		<span class="keyword">if</span> (p-&gt;value &lt; maxChild-&gt;value) {</div><div class="line">			T tmp = p-&gt;value;</div><div class="line">			p-&gt;value = maxChild-&gt;value;</div><div class="line">			maxChild-&gt;value = tmp;</div><div class="line">		}</div><div class="line">		p = maxChild;</div><div class="line">	}</div><div class="line">	<span class="keyword">return</span> res;</div><div class="line">}</div><div class="line"></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>** argv)</span> </span>{</div><div class="line"></div><div class="line">	heap&lt;<span class="keyword">int</span>&gt; *h = <span class="keyword">new</span> heap&lt;<span class="keyword">int</span>&gt;();</div><div class="line">	h-&gt;push(<span class="number">2</span>);</div><div class="line">	h-&gt;push(<span class="number">1</span>);</div><div class="line">	h-&gt;push(<span class="number">3</span>);</div><div class="line">	h-&gt;push(<span class="number">4</span>);</div><div class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">&quot;&#x4E2D;&#x5E8F;&#x904D;&#x5386;&quot;</span> &lt;&lt; <span class="built_in">endl</span>;</div><div class="line">	h-&gt;recursion_inorder_traversal();</div><div class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="built_in">endl</span>;</div><div class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">&quot;&#x524D;&#x5E8F;&#x904D;&#x5386;&quot;</span> &lt;&lt; <span class="built_in">endl</span>;</div><div class="line">	h-&gt;recursion_preorder_traversal();</div><div class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="built_in">endl</span>;</div><div class="line">	<span class="keyword">int</span> a = h-&gt;pop();</div><div class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="built_in">endl</span>;</div><div class="line">	<span class="built_in">cout</span> &lt;&lt; a &lt;&lt; <span class="built_in">endl</span>;</div><div class="line">	a = h-&gt;pop();</div><div class="line">	<span class="built_in">cout</span> &lt;&lt; a &lt;&lt; <span class="built_in">endl</span>;</div><div class="line">	a = h-&gt;pop();</div><div class="line">	<span class="built_in">cout</span> &lt;&lt; a &lt;&lt; <span class="built_in">endl</span>;</div><div class="line">	a = h-&gt;pop();</div><div class="line">	<span class="built_in">cout</span> &lt;&lt; a &lt;&lt; <span class="built_in">endl</span>;</div><div class="line"></div><div class="line">	<span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">}</div></pre></td></tr></table></figure>
+<p>&#x8F93;&#x51FA;&#x7ED3;&#x679C;&#xFF1A;<br>&#x4E2D;&#x5E8F;&#x904D;&#x5386;<br>1 3 4 2<br>&#x524D;&#x5E8F;&#x904D;&#x5386;<br>4 3 1 2</p>
+<p>4<br>3<br>2<br>1</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/算法/">算法</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/算法/">算法</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="http://www.paradeto.com/2016/12/31/heapWithTreenode/" data-title="树节点实现堆 | Ayou" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2016/12/22/mongodbReplicaSharding/"  title="mongodb replica sharding 实战">
+ <strong>NEXT:</strong><br/> 
+ <span>mongodb replica sharding 实战
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	<div class="ds-thread"></div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+  <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#构建堆的树节点"><span class="toc-number">1.</span> <span class="toc-text">构建堆的树节点</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#堆"><span class="toc-number">2.</span> <span class="toc-text">堆</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#示例"><span class="toc-number">2.1.</span> <span class="toc-text">示例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#如何根据结点的序号快速的定位结点"><span class="toc-number">2.2.</span> <span class="toc-text">如何根据结点的序号快速的定位结点</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#代码实现"><span class="toc-number">3.</span> <span class="toc-text">代码实现</span></a></li></ol>
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+			<li><a href="/categories/html-css/" title="html/css">html/css<sup>3</sup></a></li>
+		
+			<li><a href="/categories/javascript/" title="javascript">javascript<sup>4</sup></a></li>
+		
+			<li><a href="/categories/mongodb/" title="mongodb">mongodb<sup>1</sup></a></li>
+		
+			<li><a href="/categories/nodejs/" title="nodejs">nodejs<sup>2</sup></a></li>
+		
+			<li><a href="/categories/前端工具/" title="前端工具">前端工具<sup>1</sup></a></li>
+		
+			<li><a href="/categories/前端框架/" title="前端框架">前端框架<sup>4</sup></a></li>
+		
+			<li><a href="/categories/前端理论/" title="前端理论">前端理论<sup>1</sup></a></li>
+		
+			<li><a href="/categories/算法/" title="算法">算法<sup>3</sup></a></li>
+		
+			<li><a href="/categories/读书笔记/" title="读书笔记">读书笔记<sup>3</sup></a></li>
+		
+			<li><a href="/categories/转载/" title="转载">转载<sup>1</sup></a></li>
+		
+			<li><a href="/categories/项目实战/" title="项目实战">项目实战<sup>3</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			<li><a href="/tags/WEB安全/" title="WEB安全">WEB安全<sup>2</sup></a></li>
+		
+			<li><a href="/tags/angularjs/" title="angularjs">angularjs<sup>2</sup></a></li>
+		
+			<li><a href="/tags/angularjs2/" title="angularjs2">angularjs2<sup>1</sup></a></li>
+		
+			<li><a href="/tags/canvas/" title="canvas">canvas<sup>2</sup></a></li>
+		
+			<li><a href="/tags/chrome插件/" title="chrome插件">chrome插件<sup>1</sup></a></li>
+		
+			<li><a href="/tags/css/" title="css">css<sup>1</sup></a></li>
+		
+			<li><a href="/tags/helmet/" title="helmet">helmet<sup>1</sup></a></li>
+		
+			<li><a href="/tags/html/" title="html">html<sup>2</sup></a></li>
+		
+			<li><a href="/tags/http/" title="http">http<sup>2</sup></a></li>
+		
+			<li><a href="/tags/https/" title="https">https<sup>1</sup></a></li>
+		
+			<li><a href="/tags/javascript/" title="javascript">javascript<sup>5</sup></a></li>
+		
+			<li><a href="/tags/jquery插件/" title="jquery插件">jquery插件<sup>1</sup></a></li>
+		
+			<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>4</sup></a></li>
+		
+			<li><a href="/tags/promise/" title="promise">promise<sup>1</sup></a></li>
+		
+			<li><a href="/tags/react/" title="react">react<sup>2</sup></a></li>
+		
+			<li><a href="/tags/replica/" title="replica">replica<sup>1</sup></a></li>
+		
+			<li><a href="/tags/sharding/" title="sharding">sharding<sup>1</sup></a></li>
+		
+			<li><a href="/tags/slb/" title="slb">slb<sup>1</sup></a></li>
+		
+			<li><a href="/tags/webpack/" title="webpack">webpack<sup>2</sup></a></li>
+		
+			<li><a href="/tags/事件/" title="事件">事件<sup>1</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  <div class="rsspart">
+	<a href="null" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+	</div>
+		<p class="copyright">Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/zhyu/yaht" target="_blank" title="YAHT">YAHT</a> © 2017 
+		
+		<a href="http://www.paradeto.com" target="_blank" title="Ayou">Ayou</a>
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<!--canvas-->
+
+<script src="/js/canvas.js"></script>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.navbar').click(function(){
+      $('header nav').toggleClass('shownav');
+    });
+    var myWidth = 0;
+    function getSize(){
+      if( typeof( window.innerWidth ) == 'number' ) {
+        myWidth = window.innerWidth;
+      } else if( document.documentElement && document.documentElement.clientWidth) {
+        myWidth = document.documentElement.clientWidth;
+      };
+    };
+    var m = $('#main'),
+    a = $('#asidepart'),
+    c = $('.closeaside'),
+    o = $('.openaside');
+    $(window).resize(function(){
+      getSize();
+      if (myWidth >= 1024) {
+        $('header nav').removeClass('shownav');
+      }else
+      {
+        m.removeClass('moveMain');
+        a.css('display', 'block').removeClass('fadeOut');
+        o.css('display', 'none');
+        
+            $('#toc.toc-aside').css('display', 'none');
+          
+      }
+    });
+    c.click(function(){
+      a.addClass('fadeOut').css('display', 'none');
+      o.css('display', 'block').addClass('fadeIn');
+      m.addClass('moveMain');
+    });
+    o.click(function(){
+      o.css('display', 'none').removeClass('beforeFadeIn');
+      a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');
+      m.removeClass('moveMain');
+    });
+    $(window).scroll(function(){
+      o.css("top",Math.max(80,260-$(this).scrollTop()));
+    });
+  });
+</script>
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+      var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+      if(ai.length>0){
+        ai.wrap('<div class="video-container" />');
+      };
+      if(ae.length>0){
+        ae.wrap('<div class="video-container" />');
+      };
+      if(ah.length==0){
+        t.css('display','none');
+      }else{
+        c.click(function(){
+          ta.css('display', 'block').addClass('fadeIn');
+        });
+        o.click(function(){
+          ta.css('display', 'none');
+        });
+        $(window).scroll(function(){
+          ta.css("top",Math.max(140,320-$(this).scrollTop()));
+        });
+      };
+    });
+  </script>
+
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+      var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+      var html = [
+        '<a href="#" class="overlay" id="qrcode"></a>',
+        '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+        '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+        '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+        '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+        '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+        '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+        '<span title="Share to"></span>'
+        ].join('');
+        $this.append(html);
+        $('.article-share-qrcode').click(function(){
+          var imgSrc = $('#qrcode-pic').attr('data-src');
+          $('#qrcode-pic').attr('src', imgSrc);
+          $('#qrcode-pic').load(function(){
+            $('.qrcode strong').text(' ');
+          });
+        });
+    });
+  </script>
+
+
+  
+    <script type="text/javascript">
+      var duoshuoQuery = {short_name:"paradeto"};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0]
+        || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+    </script>
+  
+  
+
+
+
+
+
+
+
+
+
+  <div id="back-to-top">
+    <a title="返回顶部"><img src="/img/scrollup.png"/></a>
+  </div>
+  <script src="/js/back_to_top.js"></script>
+
+
+
+  </body>
+</html>
+
