@@ -4,12 +4,12 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>css背景图片上添加文字的问题 | Ayou</title>
+    <title>贪心算法-卡片游戏 | Ayou</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
     
     <meta name="author" content="Ayou">
     
-    <meta name="description" itemprop="description" content="在css设置的背景图片上添加文字时，文字与图片相对位置不固定的问题解决">
+    <meta name="description" itemprop="description" content="贪心算法题目">
     
     
     
@@ -87,15 +87,15 @@
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2016/06/04/css-background-issue/" title="css背景图片上添加文字的问题" itemprop="url">css背景图片上添加文字的问题</a>
+      <a href="/2017/02/18/greedyAlgoCardGame/" title="贪心算法-卡片游戏" itemprop="url">贪心算法-卡片游戏</a>
   </h1>
   <p class="article-author">By
     
       <a href="http://www.paradeto.com" title="Ayou">Ayou</a>
     </p>
   <p class="article-time">
-    <time datetime="2016-06-04T01:31:42.000Z" itemprop="datePublished">2016-06-04</time>
-    更新日期:<time datetime="2016-11-19T08:25:18.000Z" itemprop="dateModified">2016-11-19</time>
+    <time datetime="2017-02-18T04:31:23.000Z" itemprop="datePublished">2017-02-18</time>
+    更新日期:<time datetime="2017-02-19T13:18:40.000Z" itemprop="dateModified">2017-02-19</time>
     
   </p>
 </header>
@@ -104,35 +104,31 @@
 		
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">文章目录</strong>
-		
+		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#题目"><span class="toc-number">1.</span> <span class="toc-text">题目</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#js解法"><span class="toc-number">2.</span> <span class="toc-text">js解法</span></a></li></ol>
 		</div>
 		
-		<p>&#x6628;&#x5929;&#x5728;&#x505A;&#x524D;&#x7AEF;&#x9875;&#x9762;&#x65F6;&#xFF0C;&#x53D1;&#x73B0;&#x8FD9;&#x6837;&#x4E00;&#x4E2A;&#x95EE;&#x9898;&#x3002;</p>
-<p>&#x6211;&#x7ED9;banner&#x8BBE;&#x7F6E;&#x4E86;&#x80CC;&#x666F;&#x56FE;&#x7247;&#xFF0C;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">position: relative;</div><div class="line">height: 1148px;</div><div class="line">width: 100%;</div><div class="line">background: url(&apos;/images/portal/portal_letter_bg.png&apos;) no-repeat center top;</div><div class="line">background-size: cover;</div></pre></td></tr></table></figure></p>
-<p>&#x9700;&#x8981;&#x5728;&#x80CC;&#x666F;&#x4E0A;&#x6DFB;&#x52A0;&#x4E00;&#x4E9B;&#x6587;&#x5B57;&#xFF0C;&#x8FD9;&#x91CC;&#x6211;&#x7528;&#x4E86;&#x7EDD;&#x5BF9;&#x5B9A;&#x4F4D;&#xFF1A;<br><figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="selector-tag">position</span>: <span class="selector-tag">absolute</span>;</div><div class="line"><span class="selector-tag">font-size</span>: 14<span class="selector-tag">px</span>;</div><div class="line"><span class="selector-tag">top</span>: 216<span class="selector-tag">px</span>;</div><div class="line"><span class="selector-tag">left</span>: 460<span class="selector-tag">px</span>;</div><div class="line"><span class="selector-tag">color</span>: <span class="selector-id">#7e7e7e</span>;</div></pre></td></tr></table></figure></p>
-<p>&#x7136;&#x540E;&#xFF0C;&#x5F53;&#x6211;&#x6539;&#x53D8;&#x6D4F;&#x89C8;&#x5668;&#x7A97;&#x53E3;&#x7684;&#x5BBD;&#x5EA6;&#x65F6;&#xFF0C;&#x51FA;&#x73B0;&#x4E86;&#x4EE5;&#x4E0B;&#x73B0;&#x8C61;&#xFF1A;<br><img src="/2016/06/04/css-background-issue/move-1.png" alt="move-1"><br><img src="/2016/06/04/css-background-issue/move-2.png" alt="move-2"><br>&#x51FA;&#x73B0;&#x8FD9;&#x4E2A;&#x73B0;&#x8C61;&#x7684;&#x539F;&#x56E0;&#x662F;&#x80CC;&#x666F;&#x5BB9;&#x5668;&#x6CA1;&#x6709;&#x8BBE;&#x7F6E;&#x56FA;&#x5B9A;&#x5BBD;&#x5EA6;&#xFF0C;&#x5BFC;&#x81F4;&#x6D4F;&#x89C8;&#x5668;&#x7A97;&#x53E3;&#x5BBD;&#x5EA6;&#x53D1;&#x751F;&#x53D8;&#x5316;&#x65F6;&#xFF0C;&#x80CC;&#x666F;&#x56FE;&#x7247;&#x4F1A;&#x53BB;&#x81EA;&#x52A8;&#x8C03;&#x6574;&#x4EE5;&#x5C45;&#x4E2D;&#xFF0C;&#x800C;&#x6587;&#x5B57;&#x76F8;&#x5BF9;&#x6D4F;&#x89C8;&#x5668;&#x8FB9;&#x6846;&#x7684;&#x4F4D;&#x7F6E;&#x662F;&#x56FA;&#x5B9A;&#x7684;&#x3002;</p>
-<p>&#x89E3;&#x51B3;&#x529E;&#x6CD5;&#xFF0C;&#x589E;&#x52A0;&#x4E00;&#x4E2A;&#x5BB9;&#x5668;&#xFF0C;&#x5E76;&#x8BBE;&#x7F6E;&#x5BBD;&#x5EA6;&#xFF0C;&#x5C45;&#x4E2D;&#xFF1A;<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">position: relative;</div><div class="line">margin: 0 auto;</div><div class="line">background-color: rgb(1,0,0); // &#x8C03;&#x8BD5;&#x7528;</div><div class="line">opacity: 0.6; // &#x8C03;&#x8BD5;&#x7528;</div><div class="line">width: 980px;</div><div class="line">height: 922px;</div></pre></td></tr></table></figure></p>
-<p>&#x4FEE;&#x6539;&#x540E;&#x7684;&#x6548;&#x679C;&#xFF1A;<br><img src="/2016/06/04/css-background-issue/fix-1.png" alt="fix-1"><br><img src="/2016/06/04/css-background-issue/fix-2.png" alt="fix-2"></p>
+		<h1 id="&#x9898;&#x76EE;"><a href="#&#x9898;&#x76EE;" class="headerlink" title="&#x9898;&#x76EE;"></a>&#x9898;&#x76EE;</h1><p>&#x5C0F;&#x660E;&#x6700;&#x8FD1;&#x5B85;&#x5728;&#x5BB6;&#x91CC;&#x65E0;&#x804A;&#xFF0C;&#x4E8E;&#x662F;&#x4ED6;&#x53D1;&#x660E;&#x4E86;&#x4E00;&#x79CD;&#x6709;&#x8DA3;&#x7684;&#x6E38;&#x620F;&#xFF0C;&#x6E38;&#x620F;&#x9053;&#x5177;&#x662F;N&#x5F20;&#x53E0;&#x5728;&#x4E00;&#x8D77;&#x7684;&#x5361;&#x7247;&#xFF0C;&#x6BCF;&#x5F20;&#x5361;&#x7247;&#x4E0A;&#x90FD;&#x6709;&#x4E00;&#x4E2A;&#x6570;&#x5B57;&#xFF0C;&#x6570;&#x5B57;&#x7684;&#x8303;&#x56F4;&#x662F;0~9&#xFF0C;&#x6E38;&#x620F;&#x89C4;&#x5219;&#x5982;&#x4E0B;&#xFF1A;<br>&#x9996;&#x5148;&#x53D6;&#x6700;&#x4E0A;&#x65B9;&#x7684;&#x5361;&#x7247;&#x653E;&#x5230;&#x684C;&#x5B50;&#x4E0A;&#xFF0C;&#x7136;&#x540E;&#x6BCF;&#x6B21;&#x53D6;&#x6700;&#x4E0A;&#x65B9;&#x7684;&#x5361;&#x7247;&#xFF0C;&#x653E;&#x5230;&#x684C;&#x5B50;&#x4E0A;&#x5DF2;&#x6709;&#x5361;&#x7247;&#x5E8F;&#x5217;&#x7684;&#x6700;&#x53F3;&#x8FB9;&#x6216;&#x8005;&#x6700;&#x5DE6;&#x8FB9;&#x3002;&#x5F53;N&#x5F20;&#x5361;&#x7247;&#x5168;&#x90E8;&#x90FD;&#x653E;&#x5230;&#x684C;&#x5B50;&#x4E0A;&#x540E;&#xFF0C;&#x684C;&#x5B50;&#x4E0A;&#x7684;N&#x5F20;&#x5361;&#x7247;&#x6784;&#x6210;&#x4E86;&#x4E00;&#x4E2A;&#x6570;&#x3002;&#x8FD9;&#x4E2A;&#x6570;&#x4E0D;&#x80FD;&#x6709;&#x524D;&#x5BFC;0&#xFF0C;&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#x6700;&#x5DE6;&#x8FB9;&#x7684;&#x5361;&#x7247;&#x4E0A;&#x7684;&#x6570;&#x5B57;&#x4E0D;&#x80FD;&#x662F;0&#x3002;&#x6E38;&#x620F;&#x7684;&#x76EE;&#x6807;&#x662F;&#x4F7F;&#x8FD9;&#x4E2A;&#x6570;&#x6700;&#x5C0F;&#x3002;<br>&#x73B0;&#x5728;&#x4F60;&#x7684;&#x4EFB;&#x52A1;&#x662F;&#x5E2E;&#x5C0F;&#x660E;&#x5199;&#x6BB5;&#x7A0B;&#x5E8F;&#xFF0C;&#x6C42;&#x51FA;&#x8FD9;&#x4E2A;&#x6700;&#x5C0F;&#x6570;&#x3002;</p>
+<h1 id="js&#x89E3;&#x6CD5;"><a href="#js&#x89E3;&#x6CD5;" class="headerlink" title="js&#x89E3;&#x6CD5;"></a>js&#x89E3;&#x6CD5;</h1><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">getMinNum</span>(<span class="params">str</span>) </span>{</div><div class="line">    <span class="comment">// &#x627E;&#x5230;&#x6700;&#x53F3;&#x8FB9;&#x6700;&#x5C0F;&#x975E;0&#x6570;&#x7684;&#x4F4D;&#x7F6E;&#xFF0C;&#x8BE5;&#x6570;&#x4E00;&#x5B9A;&#x8981;&#x653E;&#x5230;&#x6700;&#x5DE6;&#x8FB9;</span></div><div class="line">    <span class="keyword">var</span> rightMinPos, rightMin=<span class="number">9</span>;</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> i=<span class="number">0</span>;i&lt;str.length;i++) {</div><div class="line">        <span class="keyword">if</span> (str[i] != <span class="string">&apos;0&apos;</span> &amp;&amp; rightMin &gt;= <span class="built_in">parseInt</span>(str[i])) rightMin = str[rightMinPos = i];</div><div class="line">    }</div><div class="line"></div><div class="line">    <span class="comment">// &#x904D;&#x5386;str</span></div><div class="line">    <span class="keyword">var</span> ret = str[<span class="number">0</span>];</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> i=<span class="number">1</span>;i&lt;str.length;i++) {</div><div class="line">        <span class="comment">// &#x6700;&#x53F3;&#x8FB9;&#x6700;&#x5C0F;&#x975E;0&#x6570;&#x653E;&#x5230;&#x7ED3;&#x679C;&#x7684;&#x5DE6;&#x8FB9;</span></div><div class="line">        <span class="keyword">if</span> (i===rightMinPos) ret = str[i] + ret;</div><div class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (i &lt; rightMinPos) {</div><div class="line">            <span class="comment">// &#x5F53;&#x524D;&#x6570;&#x5C0F;&#x4E8E;&#x7B2C;&#x4E00;&#x4F4D;&#xFF0C;&#x653E;&#x5230;&#x5DE6;&#x8FB9;</span></div><div class="line">            <span class="keyword">if</span> (str[i] &lt;= ret[<span class="number">0</span>]) ret = str[i] + ret;</div><div class="line">            <span class="keyword">else</span> ret = ret + str[i];</div><div class="line">        }</div><div class="line">        <span class="comment">// &#x6700;&#x53F3;&#x8FB9;&#x6700;&#x5C0F;&#x975E;0&#x6570;&#x53F3;&#x8FB9;&#x7684;&#x6570;&#x5168;&#x90E8;&#x653E;&#x5230;&#x7ED3;&#x679C;&#x53F3;&#x8FB9;</span></div><div class="line">        <span class="keyword">else</span> ret = ret + str[i];</div><div class="line">    }</div><div class="line">    <span class="keyword">return</span> ret;</div><div class="line">}</div><div class="line"></div><div class="line"><span class="built_in">console</span>.log(getMinNum(<span class="string">&apos;98754610123&apos;</span>));</div><div class="line"><span class="built_in">console</span>.log(getMinNum(<span class="string">&apos;98754610243&apos;</span>));</div></pre></td></tr></table></figure>
   
 	</div>
 		<footer class="article-footer clearfix">
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/html/">html</a><a href="/tags/css/">css</a>
+  <span></span> <a href="/tags/算法/">算法</a><a href="/tags/贪心/">贪心</a>
   </div>
 
 
 <div class="article-categories">
   <span></span>
-  <a class="article-category-link" href="/categories/html-css/">html/css</a>
+  <a class="article-category-link" href="/categories/算法/">算法</a>
 </div>
 
 
 
 <div class="article-share" id="share">
 
-  <div data-url="http://www.paradeto.com/2016/06/04/css-background-issue/" data-title="css背景图片上添加文字的问题 | Ayou" data-tsina="null" class="share clearfix">
+  <div data-url="http://www.paradeto.com/2017/02/18/greedyAlgoCardGame/" data-title="贪心算法-卡片游戏 | Ayou" data-tsina="null" class="share clearfix">
   </div>
 
 </div>
@@ -141,19 +137,11 @@
 	
 <nav class="article-nav clearfix">
  
- <div class="prev" >
- <a href="/2016/06/04/csrf-1/" title="CSRF亲测">
-  <strong>PREVIOUS:</strong><br/>
-  <span>
-  CSRF亲测</span>
-</a>
-</div>
-
 
 <div class="next">
-<a href="/2016/06/03/first-blog/"  title="第一篇博客">
+<a href="/2016/12/31/heapWithTreenode/"  title="树节点实现堆">
  <strong>NEXT:</strong><br/> 
- <span>第一篇博客
+ <span>树节点实现堆
 </span>
 </a>
 </div>
@@ -172,7 +160,7 @@
 
   <div id="toc" class="toc-aside">
   <strong class="toc-title">文章目录</strong>
-  
+  <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#题目"><span class="toc-number">1.</span> <span class="toc-text">题目</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#js解法"><span class="toc-number">2.</span> <span class="toc-text">js解法</span></a></li></ol>
   </div>
 
 <div id="asidepart">
