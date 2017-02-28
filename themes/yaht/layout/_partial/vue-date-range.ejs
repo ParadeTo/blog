@@ -1,0 +1,91 @@
+<div class="vue-date-range-wrapper">
+	<section>
+		<h2>calendar</h2>
+		<div id="calendar">
+			<span class="date">Date:{{date}}</span>
+			<calendar :lang="lang" @change="onChange"></calendar>
+		</div>
+		<pre>
+
+&ltdiv id="calendar">
+	&ltspan class="date"&gtDate:{{date}}&lt/span&gt
+	&ltcalendar :lang="lang" @change="onChange"&gt&lt/calendar&gt
+&lt/div>
+&ltscript src="//cdn.bootcss.com/moment.js/2.17.1/moment.min.js"&gt&lt/script&gt
+&ltscript src="https://unpkg.com/vue/dist/vue.js"&gt&lt/script&gt
+&ltscript src="<%- config.root %>js/vue-date-range/vue-date-range.js"&gt&lt/script&gt
+&ltscript&gt
+	new Vue({
+		el: '#calendar',
+		components: {
+			'calendar':daterange.Calendar
+		},
+		data: {
+			lang: 'en',
+			date: moment().format('YYYY-MM-DD')
+		},
+		methods: {
+			onChange(date) {
+				this.date = date.format('YYYY-MM-DD');
+			}
+		}
+	});
+&lt/script&gt
+		</pre>
+	</section>
+	<section>
+		<h2>date-range</h2>
+		<div id="range">
+			<span class="date">Date range:{{range.startDate.format('YYYY-MM-DD') + '~' + range.endDate.format('YYYY-MM-DD')}}</span>
+			<daterange :range="range" :lang="lang" @change="onChange"></daterange>
+		</div>
+	</section>
+	<pre>
+&ltdiv id="range">
+	&ltspan class="date"&gtDate range:{{range.startDate.format('YYYY-MM-DD') + '~' + range.endDate.format('YYYY-MM-DD')}}&lt/span&gt
+	&ltdaterange :range="range" :lang="lang" @change="onChange"&gt&lt/daterange&gt
+&lt/div>
+&ltscript src="//cdn.bootcss.com/moment.js/2.17.1/moment.min.js"&gt&lt/script&gt
+&ltscript src="https://unpkg.com/vue/dist/vue.js"&gt&lt/script&gt
+&ltscript src="<%- config.root %>js/vue-date-range/vue-date-range.js"&gt&lt/script&gt
+&ltscript&gt
+	new Vue({
+		el: '#range',
+		components: {
+			'daterange':daterange.DateRange
+		},
+		data: {
+			lang: 'en',
+			range: {
+				startDate: moment(),
+				endDate: moment().add(7, 'days')
+			}
+		},
+		methods: {
+			onChange(range) {
+				this.range = range;
+			}
+		}
+	});
+&lt/script&gt
+	</pre>
+	<section>
+		<h2>custom style</h2>
+		<div id="custom-style">
+			<span class="date">Date range:{{range.startDate.format('YYYY-MM-DD') + '~' + range.endDate.format('YYYY-MM-DD')}}</span>
+			<daterange :range="range" :lang="lang" @change="onChange"></daterange>
+		</div>
+		<div>You can rewrite the style to create your own component like this:</div>
+		<pre>
+#custom-style .ayou-day-cell .selected {
+	background-color orange
+}
+#custom-style .ayou-day-cell .in-range {
+	background-color orange
+}
+		</pre>
+
+	</section>
+</div>
+
+

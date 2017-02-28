@@ -195,6 +195,12 @@
 <script src="<%- config.root %>js/game2048/showanimation2048.js"></script>
 <script src="<%- config.root %>js/game2048/main2048.js"></script>
 <% }%>
+<% if (page.layout=='vue-date-range'){ %>
+<script src="//cdn.bootcss.com/moment.js/2.17.1/moment.min.js"></script>
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<script src="<%- config.root %>js/vue-date-range/vue-date-range.js"></script>
+<script src="<%- config.root %>js/vue-date-range/index.js"></script>
+<% }%>
 <%- partial('google_analytics') %>
 
 <%- partial('back_to_top') %>

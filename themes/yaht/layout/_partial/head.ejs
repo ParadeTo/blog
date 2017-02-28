@@ -58,5 +58,8 @@
     <% } else { %>
         <%- css('css/style') %>
     <% } %>
+    <% if(page.layout === 'vue-date-range') { %>
+    <%- css('css/vue-date-range') %>
+    <% } %>
     <%- partial("baidu_tongji") %>
 </head>

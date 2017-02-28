@@ -8,6 +8,9 @@ layout: page
 # 生日祝福
 送给女朋友的生日祝福，博主开嗓了，哈哈！
 [看一看](/birthday)
+# vue-date-range
+基于vue2.0的日期选择组件
+[试一试](/vue-date-range)
 # CMS（内容管理系统）
 基于[SB-Admin-BS4-Angular-2](https://github.com/start-angular/SB-Admin-BS4-Angular-2)开发的cms系统
 [项目地址](https://github.com/ParadeTo/ng2-cms)
