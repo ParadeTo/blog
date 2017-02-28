@@ -51,11 +51,12 @@
     <link rel="apple-touch-icon" href="<%- config.root %><%- theme.apple_icon %>">
     <link rel="apple-touch-icon-precomposed" href="<%- config.root %><%- theme.apple_icon %>">
     <% } %>
-    <% if(page.layout!=='game2048') { %>
-        <%- css('css/style') %>
-    <% } %>
     <% if(page.layout === 'game2048') { %>
         <%- css('css/game2048') %>
+    <% } else if (page.layout === 'cubilose') { %>
+        <%- css('css/cubilose') %>
+    <% } else { %>
+        <%- css('css/style') %>
     <% } %>
     <%- partial("baidu_tongji") %>
 </head>

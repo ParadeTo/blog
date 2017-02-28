@@ -57,7 +57,8 @@ C1和C3的``shouldComponentUpdate``返回``true``，所以React必需往下继�
 
 ## 例子
 如果你的组件更新的唯一条件是当``props.color``和``state.count``发生了变化，你可以在``shouldComponentUpdate``中进行检查
-```javascript
+
+```c
 class CounterButton extends React.Component {
   constructor(props) {
     super(props);
@@ -86,7 +87,7 @@ class CounterButton extends React.Component {
 
 如果你的组件变得更加复杂了，你可以在所有的``props``和``state``中使用“浅比较”来决定组件是否需要更新。你可以通过继承``React.PureComponent``来让React自动为你做这个事情:
 
-```javascript
+```c
 class CounterButton extends React.PureComponent {
   constructor(props) {
     super(props);
