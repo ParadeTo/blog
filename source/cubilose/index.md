@@ -1,5 +1,5 @@
 ---
-title: 阿玲阿游燕窝店
+title: N.L 燕窝
 layout: cubilose
 module: demo
 ---
