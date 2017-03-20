@@ -73,5 +73,4 @@ deploy:
     type: git
     repo:
                 github: https://github.com/ParadeTo/ParadeTo.github.io.git,master
-                coding: https://git.coding.net/youxingzhi/youxingzhi.git,master
-
+                coding: https://git.coding.net/youxingzhi/youxingzhi.git,coding-pages
