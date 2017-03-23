@@ -3,6 +3,7 @@ title: 树节点实现堆
 date: 2016-12-31 16:36:38
 tags:
 - 算法
+- 堆
 categories:
 - 算法
 description: 利用树节点实现一个堆
