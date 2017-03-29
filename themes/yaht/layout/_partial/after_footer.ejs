@@ -125,6 +125,20 @@
       })();
     </script>
   <% } %>
+  <% if (theme.netease.enable){ %>
+    <script type="text/javascript">
+      // TODO
+      var duoshuoQuery = {short_name:"<%= theme.duoshuo.short_name %>"};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0]
+        || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+    </script>
+  <% } %>
   <% if ((config.disqus_shortname || theme.disqus.enable) && page.comments) { %>
     <script type="text/javascript">
       <% if(config.disqus_shortname){ %>

@@ -616,3 +616,61 @@ inheritPrototype(SubType, SuperType);
 
 ![Paste_Image.png](js-hld-6/6-6.png)
 
+
+# 后记
+书要越读越薄，现在可以做个归纳了：
+
+1.类式继承：
+
+``SubType.prototype = new SuperType()``
+
+问题：
+
+* 子类公用父类中的引用类型。
+
+* 无法向父类传参数。
+
+2.构造函数继承：
+
+``SuperType.call(this,args)``
+
+问题：父类原型中的方法无法继承
+
+3.组合继承
+
+上述两者综合
+
+问题：父类构造函数执行了两次
+
+4.原型式继承
+
+这种方式错误：
+
+``SubType.prototype = SuperType.prototype;``
+
+（如果子类在原型上添加了自己的方法后，会影响父类）
+
+需要增加中间过渡对象：
+
+```
+function inheritObject(o){
+  function F(){}
+  F.prototype = o;
+  return new F();
+}
+```
+
+5.寄生式
+
+```
+function (SubType, SuperType) {
+  var p = inheritObject(SuperType.prototype)
+  p.constructor = SubType;
+  SubType.prototype = p;
+}
+```
+
+可以这么理解：
+
+``SubType.prototype = new F() ----> SuperType.prototype``
+

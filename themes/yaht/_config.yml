@@ -76,6 +76,9 @@ duoshuo:
   enable: true  ## duoshuo.com
   short_name: paradeto  ## duoshuo short name.
 
+netease:
+  enable: false ## 网易云跟帖
+
 disqus:
   enable: false  ## disqus.com
   short_name:    ## for disqus short name.
