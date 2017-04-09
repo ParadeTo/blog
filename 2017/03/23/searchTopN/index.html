@@ -1,0 +1,457 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>模拟实现十大热门搜索 | Ayou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="Ayou">
+    
+    <meta name="description" itemprop="description" content="模拟实现类似百度、google的十大热门搜索">
+    
+    
+    
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/yaht.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/yaht.jpg">
+    
+    
+        <link rel="stylesheet" href="/css/style.css">
+    
+    
+    
+<script type="text/javascript">
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "//hm.baidu.com/hm.js?bc27adb5eec6cd3b858ecca2a190876a";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+
+</head>
+
+  <body>
+    <header>
+      <canvas id="headerCanvas">
+
+</canvas>
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Ayou" title="Ayou"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Ayou">Ayou</a></h1>
+				<h2 class="blog-motto">Good Good Study, Day Day Up!</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/resume">Resume</a></li>
+					
+						<li><a href="/demo">Demo</a></li>
+					
+					<li>
+					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:www.paradeto.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/03/23/searchTopN/" title="模拟实现十大热门搜索" itemprop="url">模拟实现十大热门搜索</a>
+  </h1>
+  <p class="article-author">By
+    
+      <a href="http://www.paradeto.com" title="Ayou">Ayou</a>
+    </p>
+  <p class="article-time">
+    <time datetime="2017-03-23T10:57:38.000Z" itemprop="datePublished">2017-03-23</time>
+    更新日期:<time datetime="2017-04-09T15:20:13.000Z" itemprop="dateModified">2017-04-09</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#十大热门搜索"><span class="toc-number">1.</span> <span class="toc-text">十大热门搜索</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#1-产生测试数据"><span class="toc-number">2.</span> <span class="toc-text">1. 产生测试数据</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-前缀匹配"><span class="toc-number">3.</span> <span class="toc-text">2. 前缀匹配</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-根据前缀匹配的结果"><span class="toc-number">4.</span> <span class="toc-text">3. 根据前缀匹配的结果</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#4-前端展示"><span class="toc-number">5.</span> <span class="toc-text">4. 前端展示</span></a></li></ol>
+		</div>
+		
+		<h1 id="&#x5341;&#x5927;&#x70ED;&#x95E8;&#x641C;&#x7D22;"><a href="#&#x5341;&#x5927;&#x70ED;&#x95E8;&#x641C;&#x7D22;" class="headerlink" title="&#x5341;&#x5927;&#x70ED;&#x95E8;&#x641C;&#x7D22;"></a>&#x5341;&#x5927;&#x70ED;&#x95E8;&#x641C;&#x7D22;</h1><p>&#x6211;&#x4EEC;&#x5728;&#x4F7F;&#x7528;&#x767E;&#x5EA6;&#x6216;&#x8005;google&#x641C;&#x7D22;&#x65F6;&#xFF0C;&#x4ED6;&#x4EEC;&#x4F1A;&#x7ED9;&#x6211;&#x4EEC;&#x5217;&#x51FA;&#x4EE5;&#x641C;&#x7D22;&#x8BCD;&#x4E3A;&#x524D;&#x7F00;&#x7684;&#x5341;&#x5927;&#x70ED;&#x95E8;&#x641C;&#x7D22;&#x8BCD;&#xFF0C;<br>&#x73B0;&#x5728;&#x6211;&#x4EEC;&#x5C31;&#x6765;&#x4E00;&#x6B65;&#x6B65;&#x5B9E;&#x73B0;&#x8FD9;&#x4E2A;&#x529F;&#x80FD;&#x3002;&#x601D;&#x8003;&#x4E86;&#x4E00;&#x4E0B;&#xFF0C;&#x4E3B;&#x8981;&#x5206;&#x4E3A;&#x4EE5;&#x4E0B;&#x51E0;&#x6B65;&#xFF1A;</p>
+<ol>
+<li><p>&#x4EA7;&#x751F;&#x6D4B;&#x8BD5;&#x6570;&#x636E;</p>
+</li>
+<li><p>&#x6839;&#x636E;&#x641C;&#x7D22;&#x8BCD;&#x6765;&#x627E;&#x51FA;&#x4EE5;&#x5176;&#x4E3A;&#x524D;&#x7F00;&#x7684;&#x8BCD;&#xFF0C;&#x524D;&#x7F00;&#x5339;&#x914D;</p>
+</li>
+<li><p>&#x6839;&#x636E;&#x7B2C;2&#x6B65;&#x7684;&#x7ED3;&#x679C;&#xFF0C;&#x627E;&#x51FA;&#x524D;10&#x4E2A;&#x8BCD;</p>
+</li>
+<li><p>&#x524D;&#x7AEF;&#x5C55;&#x793A;</p>
+</li>
+</ol>
+<h1 id="1-&#x4EA7;&#x751F;&#x6D4B;&#x8BD5;&#x6570;&#x636E;"><a href="#1-&#x4EA7;&#x751F;&#x6D4B;&#x8BD5;&#x6570;&#x636E;" class="headerlink" title="1. &#x4EA7;&#x751F;&#x6D4B;&#x8BD5;&#x6570;&#x636E;"></a>1. &#x4EA7;&#x751F;&#x6D4B;&#x8BD5;&#x6570;&#x636E;</h1><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">&apos;fs&apos;</span>);</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">randomString</span>(<span class="params">len</span>) </span>{</div><div class="line">  len = len || <span class="number">32</span>;</div><div class="line">  <span class="keyword">var</span> $chars = <span class="string">&apos;ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678&apos;</span>;</div><div class="line">  <span class="keyword">var</span> maxPos = $chars.length;</div><div class="line">  <span class="keyword">var</span> pwd = <span class="string">&apos;&apos;</span>;</div><div class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; len; i++) {</div><div class="line">    pwd += $chars.charAt(<span class="built_in">Math</span>.floor(<span class="built_in">Math</span>.random() * maxPos));</div><div class="line">  }</div><div class="line">  <span class="keyword">return</span> pwd;</div><div class="line">}</div><div class="line"></div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"> * &#x6BCF;&#x4E00;&#x8F6E;&#x751F;&#x6210;&#x4E00;&#x4E2A;&#x968F;&#x673A;&#x5B57;&#x7B26;&#x4E32;&#xFF0C;&#x7136;&#x540E;&#x751F;&#x6210;&#x4E00;&#x7CFB;&#x5217;[0,_l]&#x7684;&#x5B50;&#x4E32; _l &lt; l</div><div class="line"> * &#x6BCF;&#x4E2A;&#x5B50;&#x4E32;&#x8F93;&#x51FA;_n&#x6B21; _n &lt; n</div><div class="line"> * &#x6BCF;&#x4E00;&#x8F6E;&#x8F93;&#x51FA;&#x4E0D;&#x8D85;&#x8FC7;N&#x6761;</div><div class="line"> * @param N &#x6BCF;&#x6B21;&#x751F;&#x6210;&#x7684;&#x884C;&#x6570;</div><div class="line"> * @param n &#x5B57;&#x7B26;&#x4E32;&#x6700;&#x5927;&#x8F93;&#x51FA;&#x6B21;&#x6570;</div><div class="line"> * @param l &#x5B57;&#x7B26;&#x4E32;&#x6700;&#x5927;&#x957F;&#x5EA6;</div><div class="line"> * @params t &#x8F6E;&#x6570;</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">genData</span>(<span class="params">N, n, l, t</span>) </span>{</div><div class="line">  <span class="keyword">var</span> writeStream = fs.createWriteStream(<span class="string">&apos;./data.csv&apos;</span>);</div><div class="line">  <span class="function"><span class="keyword">function</span> <span class="title">_gen</span>(<span class="params">N, n, l</span>) </span>{</div><div class="line">    <span class="keyword">var</span> str = randomString(l);</div><div class="line">    <span class="keyword">var</span> i = <span class="number">0</span>;</div><div class="line">    <span class="keyword">while</span> (i &lt; N) {</div><div class="line">      <span class="keyword">var</span> _l = <span class="built_in">Math</span>.floor(<span class="built_in">Math</span>.random() * l + <span class="number">1</span>);</div><div class="line">      <span class="keyword">var</span> _n = <span class="built_in">Math</span>.floor(<span class="built_in">Math</span>.random() * n + <span class="number">1</span>);</div><div class="line">      <span class="keyword">var</span> _str = str.substr(<span class="number">0</span>, _l);</div><div class="line">      <span class="keyword">for</span> (<span class="keyword">var</span> j = <span class="number">0</span>; j &lt; _n; j++) {</div><div class="line">        writeStream.write(_str + <span class="string">&apos;\r\n&apos;</span>, <span class="string">&quot;utf-8&quot;</span>);</div><div class="line">      }</div><div class="line">      i += _n;</div><div class="line">    }</div><div class="line">  }</div><div class="line"></div><div class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; t; i++) {</div><div class="line">    _gen(N, n, l);</div><div class="line">  }</div><div class="line">  writeStream.end();</div><div class="line">  writeStream = <span class="literal">null</span>;</div><div class="line">}</div><div class="line"></div><div class="line"></div><div class="line">genData(<span class="number">1000</span>, <span class="number">100</span>, <span class="number">30</span>, <span class="number">50</span>);</div></pre></td></tr></table></figure>
+<h1 id="2-&#x524D;&#x7F00;&#x5339;&#x914D;"><a href="#2-&#x524D;&#x7F00;&#x5339;&#x914D;" class="headerlink" title="2. &#x524D;&#x7F00;&#x5339;&#x914D;"></a>2. &#x524D;&#x7F00;&#x5339;&#x914D;</h1><p>&#x8FD9;&#x91CC;&#x6211;&#x91C7;&#x7528;&#x4E86;&#x5B57;&#x5178;&#x6811;&#xFF0C;&#x6BCF;&#x4E2A;&#x8282;&#x70B9;&#x8BB0;&#x5F55;&#x8BE5;&#x8282;&#x70B9;&#x7684;&#x5B57;&#x7B26;<code>ch</code>&#x4EE5;&#x53CA;&#x8BCD;&#x9891;<code>num</code>&#xFF0C;<br>&#x5728;&#x8FDB;&#x884C;&#x524D;&#x7F00;&#x5339;&#x914D;&#x7684;&#x65F6;&#x5019;&#x5C06;&#x4ECE;&#x6839;&#x8282;&#x70B9;&#x5230;&#x5F53;&#x524D;&#x8282;&#x70B9;&#x5F62;&#x6210;&#x7684;&#x8BCD;&#x8BB0;&#x5F55;&#x5728;<code>prefix</code>&#x4E2D;</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">TreeNode</span>(<span class="params">ch</span>) </span>{</div><div class="line">  <span class="keyword">this</span>.children = [];</div><div class="line">  <span class="keyword">this</span>.ch = ch;</div><div class="line">  <span class="keyword">this</span>.num = <span class="number">0</span>; <span class="comment">// &#x8BCD;&#x9891;</span></div><div class="line">};</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">TrieTree</span>(<span class="params"></span>) </span>{</div><div class="line">  <span class="keyword">this</span>.root = <span class="keyword">new</span> TreeNode(<span class="literal">null</span>);</div><div class="line">};</div><div class="line"></div><div class="line">TrieTree.prototype.push = <span class="function"><span class="keyword">function</span> (<span class="params">str</span>) </span>{</div><div class="line">  <span class="keyword">var</span> p = <span class="keyword">this</span>.root;</div><div class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; str.length; i++) {</div><div class="line">    pChildren = p.children;</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> j = <span class="number">0</span>; j &lt; pChildren.length; j++) {</div><div class="line">      <span class="keyword">if</span> (pChildren[j].ch === str[i]) {</div><div class="line">        <span class="keyword">if</span> (i === str.length - <span class="number">1</span>) p.children[j].num++;</div><div class="line">        p = p.children[j];</div><div class="line">        <span class="keyword">break</span>;</div><div class="line">      }</div><div class="line">    }</div><div class="line">    <span class="keyword">if</span> (j === pChildren.length) <span class="keyword">break</span>;</div><div class="line">  }</div><div class="line">  <span class="keyword">for</span> (; i &lt; str.length; i++) {</div><div class="line">    <span class="keyword">var</span> newChild = <span class="keyword">new</span> TreeNode(str[i]);</div><div class="line">    <span class="keyword">if</span> (i === str.length - <span class="number">1</span>) newChild.num++;</div><div class="line">    p.children.push(newChild);</div><div class="line">    p = newChild;</div><div class="line">  }</div><div class="line">};</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"> * &#x627E;&#x5230;str&#x6700;&#x540E;&#x4E00;&#x4E2A;&#x5B57;&#x7B26;&#x7684;&#x8282;&#x70B9;</div><div class="line"> * @param str</div><div class="line"> * @returns {*}</div><div class="line"> */</div><div class="line">TrieTree.prototype.search = <span class="function"><span class="keyword">function</span> (<span class="params">str</span>) </span>{</div><div class="line">  <span class="keyword">var</span> p = <span class="keyword">this</span>.root;</div><div class="line">  <span class="keyword">var</span> num = <span class="number">0</span>;</div><div class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; str.length; i++) {</div><div class="line">    pChildren = p.children;</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> j = <span class="number">0</span>; j &lt; pChildren.length; j++) {</div><div class="line">      <span class="keyword">if</span> (pChildren[j].ch === str[i]) {</div><div class="line">        p = p.children[j];</div><div class="line">        <span class="keyword">break</span>;</div><div class="line">      }</div><div class="line">    }</div><div class="line">    <span class="keyword">if</span> (j === pChildren.length) <span class="keyword">break</span>;</div><div class="line">  }</div><div class="line">  <span class="keyword">if</span> (i === str.length) <span class="keyword">return</span> p;</div><div class="line">  <span class="keyword">else</span> <span class="keyword">return</span> <span class="literal">null</span>;</div><div class="line">};</div><div class="line"></div><div class="line">TrieTree.prototype.prefixSearch = <span class="function"><span class="keyword">function</span> (<span class="params">str</span>) </span>{</div><div class="line">  <span class="keyword">var</span> p = <span class="keyword">this</span>.root;</div><div class="line">  <span class="keyword">var</span> res = [];</div><div class="line"></div><div class="line">  <span class="keyword">var</span> node = <span class="keyword">this</span>.search(str);</div><div class="line"></div><div class="line">  <span class="keyword">if</span> (node === <span class="literal">null</span>) <span class="keyword">return</span> [];</div><div class="line"></div><div class="line">  <span class="keyword">if</span> (node.num &gt; <span class="number">0</span>) res.push({<span class="attr">word</span>: str, <span class="attr">num</span>: node.num});</div><div class="line"></div><div class="line">  node.prefix = str;</div><div class="line">  res = res.concat(<span class="keyword">this</span>.bfs(node, str));</div><div class="line">  <span class="keyword">return</span> res;</div><div class="line">}</div><div class="line"></div><div class="line">TrieTree.prototype.bfs = <span class="function"><span class="keyword">function</span> (<span class="params">p</span>) </span>{</div><div class="line">  <span class="keyword">var</span> res = [];</div><div class="line">  <span class="keyword">var</span> que = [];</div><div class="line">  que.push(p);</div><div class="line">  <span class="keyword">while</span> (que.length &gt; <span class="number">0</span>) {</div><div class="line">    <span class="keyword">var</span> node = que.shift();</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; node.children.length; i++) {</div><div class="line">      node.children[i].prefix = node.prefix + node.children[i].ch;</div><div class="line">      <span class="keyword">if</span> (node.children[i].num &gt; <span class="number">0</span>) {</div><div class="line">        res.push({<span class="attr">word</span>: node.children[i].prefix, <span class="attr">num</span>: node.children[i].num});</div><div class="line">      }</div><div class="line">      que.push(node.children[i]);</div><div class="line">    }</div><div class="line">  }</div><div class="line">  <span class="keyword">return</span> res;</div><div class="line">}</div><div class="line"></div><div class="line">TrieTree.prototype.create = <span class="function"><span class="keyword">function</span> (<span class="params">filename</span>) </span>{</div><div class="line">  <span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">&apos;fs&apos;</span>);</div><div class="line">  <span class="keyword">var</span> content = fs.readFileSync(filename,<span class="string">&apos;utf-8&apos;</span>);</div><div class="line">  <span class="keyword">var</span> lines = content.split(<span class="string">&apos;\r\n&apos;</span>);</div><div class="line">  <span class="keyword">var</span> len = lines.length;</div><div class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span> ; i &lt; len; i++) {</div><div class="line">    <span class="keyword">this</span>.push(lines[i]);</div><div class="line">  }</div><div class="line">}</div></pre></td></tr></table></figure>
+<h1 id="3-&#x6839;&#x636E;&#x524D;&#x7F00;&#x5339;&#x914D;&#x7684;&#x7ED3;&#x679C;"><a href="#3-&#x6839;&#x636E;&#x524D;&#x7F00;&#x5339;&#x914D;&#x7684;&#x7ED3;&#x679C;" class="headerlink" title="3. &#x6839;&#x636E;&#x524D;&#x7F00;&#x5339;&#x914D;&#x7684;&#x7ED3;&#x679C;"></a>3. &#x6839;&#x636E;&#x524D;&#x7F00;&#x5339;&#x914D;&#x7684;&#x7ED3;&#x679C;</h1><p>&#x627E;&#x51FA;&#x4E00;&#x4E2A;&#x6570;&#x7EC4;&#xFF08;&#x5927;&#x5C0F;&#x4E3A;k&#xFF09;&#x7684;&#x524D;n&#x4E2A;&#x6700;&#x5927;&#x503C;&#x6709;&#x51E0;&#x79CD;&#x65B9;&#x6CD5;&#xFF0C;&#x6700;&#x5BB9;&#x6613;&#x60F3;&#x5230;&#x7684;&#x5C31;&#x662F;&#x6392;&#x5E8F;&#xFF0C;<br>&#x4F46;&#x662F;&#x5176;&#x65F6;&#x95F4;&#x590D;&#x6742;&#x5EA6;&#x4E3A;<code>O(k*k)</code>&#x3002;&#x8FD9;&#x91CC;&#x6253;&#x7B97;&#x501F;&#x7528;&#x5806;&#x6765;&#x5B9E;&#x73B0;&#xFF0C;&#x7B97;&#x6CD5;&#x590D;&#x6742;&#x5EA6;&#x4E3A;<code>O(k*logn)</code>&#xFF1A;</p>
+<ol>
+<li>&#x82E5;&#x662F;&#x6570;&#x7EC4;&#x5927;&#x5C0F;&#x5C0F;&#x4E8E;&#x7B49;&#x4E8E;n&#xFF0C;&#x5219;&#x76F4;&#x63A5;&#x8FD4;&#x56DE;&#x6570;&#x7EC4;</li>
+<li>&#x7528;&#x6570;&#x7EC4;&#x524D;n&#x4E2A;&#x6570;&#x5EFA;&#x7ACB;&#x5C0F;&#x9876;&#x5806;</li>
+<li>&#x5C06;&#x6570;&#x7EC4;&#x5269;&#x4E0B;&#x7684;&#x5143;&#x7D20;&#x4E0E;&#x5806;&#x9876;&#x5143;&#x7D20;&#x6BD4;&#x8F83;&#xFF0C;&#x82E5;&#x662F;&#x5927;&#x4E8E;&#x5806;&#x9876;&#x5143;&#x7D20;&#xFF0C;&#x5219;&#x8FDB;&#x884C;&#x66FF;&#x6362;&#xFF0C;&#x5E76;&#x8C03;&#x6574;&#x5806;&#x4E3A;&#x5C0F;&#x9876;&#x5806;</li>
+<li>&#x8FD4;&#x56DE;&#x5806;&#x4E2D;&#x6240;&#x6709;&#x7684;&#x5143;&#x7D20;</li>
+</ol>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * &#x5C0F;&#x9876;&#x5806;</div><div class="line"> * @constructor</div><div class="line"> */</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">Heap</span>(<span class="params">fn</span>) </span>{</div><div class="line">  <span class="comment">// &#x7528;&#x6570;&#x7EC4;&#x6765;&#x505A;&#x5806;&#x7684;&#x5185;&#x90E8;&#x5B58;&#x50A8;</span></div><div class="line">  <span class="keyword">this</span>.arr = [];</div><div class="line">  <span class="comment">// &#x5F53;&#x524D;&#x5806;&#x7684;&#x5927;&#x5C0F;</span></div><div class="line">  <span class="keyword">this</span>.k = <span class="number">0</span>;</div><div class="line">  <span class="comment">// &#x6BD4;&#x8F83;&#x51FD;&#x6570;</span></div><div class="line">  <span class="keyword">this</span>.fn = fn;</div><div class="line">}</div><div class="line"></div><div class="line">Heap.prototype.push = <span class="function"><span class="keyword">function</span> (<span class="params">ele</span>) </span>{</div><div class="line">  <span class="comment">// &#x653E;&#x5230;&#x5806;&#x5C3E;</span></div><div class="line">  <span class="keyword">this</span>.arr[<span class="keyword">this</span>.k++] = ele;</div><div class="line">  <span class="comment">// &#x4E0A;&#x884C;&#x5230;&#x5408;&#x9002;&#x4F4D;&#x7F6E;</span></div><div class="line">  <span class="keyword">var</span> currentIndex = <span class="keyword">this</span>.k - <span class="number">1</span>;</div><div class="line">  <span class="keyword">var</span> parentIndex = <span class="built_in">Math</span>.floor((currentIndex - <span class="number">1</span>) / <span class="number">2</span>);</div><div class="line">  <span class="keyword">while</span>( parentIndex &gt;= <span class="number">0</span> &amp;&amp; <span class="keyword">this</span>.fn(<span class="keyword">this</span>.arr[parentIndex], <span class="keyword">this</span>.arr[currentIndex]) &gt; <span class="number">0</span>) {</div><div class="line">    <span class="keyword">var</span> tmp = <span class="keyword">this</span>.arr[currentIndex];</div><div class="line">    <span class="keyword">this</span>.arr[currentIndex] = <span class="keyword">this</span>.arr[parentIndex];</div><div class="line">    <span class="keyword">this</span>.arr[parentIndex] = tmp;</div><div class="line">    currentIndex = parentIndex;</div><div class="line">    parentIndex = <span class="built_in">Math</span>.floor((currentIndex - <span class="number">1</span>) / <span class="number">2</span>);</div><div class="line">  }</div><div class="line">}</div><div class="line"></div><div class="line">Heap.prototype.pushFront = <span class="function"><span class="keyword">function</span> (<span class="params">ele</span>) </span>{</div><div class="line">  <span class="comment">// &#x4E0E;&#x5806;&#x9876;&#x5143;&#x7D20;&#x6BD4;&#x8F83;&#xFF0C;&#x5982;&#x679C;&#x6BD4;&#x5806;&#x9876;&#x5927;&#xFF0C;&#x5C31;&#x66FF;&#x6362;&#xFF0C;&#x5E76;&#x5411;&#x4E0B;&#x79FB;&#x52A8;</span></div><div class="line">  <span class="keyword">if</span> (ele &gt; <span class="keyword">this</span>.arr[<span class="number">0</span>]) {</div><div class="line">    <span class="keyword">this</span>.arr[<span class="number">0</span>] = ele;</div><div class="line">    <span class="keyword">this</span>.upToDown(<span class="number">0</span>);</div><div class="line">  }</div><div class="line">}</div><div class="line"></div><div class="line">Heap.prototype.upToDown = <span class="function"><span class="keyword">function</span> (<span class="params">index</span>) </span>{</div><div class="line">  <span class="keyword">var</span> currentIndex = index;</div><div class="line">  <span class="keyword">while</span>(currentIndex &lt; <span class="keyword">this</span>.k/<span class="number">2</span>) {</div><div class="line">    <span class="keyword">var</span> lIndex = currentIndex * <span class="number">2</span> + <span class="number">1</span>;</div><div class="line">    <span class="keyword">var</span> rIndex = currentIndex * <span class="number">2</span> + <span class="number">2</span>;</div><div class="line">    <span class="comment">// &#x9009;&#x53D6;&#x5DE6;&#x53F3;&#x5B50;&#x6811;&#x6700;&#x5C0F;&#x8005;</span></div><div class="line">    <span class="keyword">var</span> minIndex = <span class="number">0</span>;</div><div class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.fn(<span class="keyword">this</span>.arr[lIndex], <span class="keyword">this</span>.arr[rIndex]) &lt; <span class="number">1</span>) {</div><div class="line">      minIndex = lIndex;</div><div class="line">    } <span class="keyword">else</span> {</div><div class="line">      minIndex = rIndex;</div><div class="line">    }</div><div class="line">    <span class="comment">// &#x4EA4;&#x6362;&#x7236;&#x5B50;</span></div><div class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.fn(<span class="keyword">this</span>.arr[currentIndex], <span class="keyword">this</span>.arr[minIndex]) &gt; <span class="number">0</span>) {</div><div class="line">      <span class="keyword">var</span> tmp = <span class="keyword">this</span>.arr[currentIndex];</div><div class="line">      <span class="keyword">this</span>.arr[currentIndex] = <span class="keyword">this</span>.arr[minIndex];</div><div class="line">      <span class="keyword">this</span>.arr[minIndex] = tmp;</div><div class="line">      currentIndex = minIndex;</div><div class="line">    } <span class="keyword">else</span> {</div><div class="line">      <span class="keyword">break</span>;</div><div class="line">    }</div><div class="line">  }</div><div class="line">}</div><div class="line"></div><div class="line">Heap.prototype.clean = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>{</div><div class="line">  <span class="keyword">this</span>.k = <span class="number">0</span>;</div><div class="line">  <span class="keyword">this</span>.arr = [];</div><div class="line">}</div><div class="line"></div><div class="line">Heap.prototype.topN = <span class="function"><span class="keyword">function</span> (<span class="params">arr, n</span>) </span>{</div><div class="line">  <span class="keyword">var</span> len = arr.length;</div><div class="line"></div><div class="line">  <span class="keyword">this</span>.clean();</div><div class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; n &amp;&amp; i &lt; len; i++) {</div><div class="line">    <span class="keyword">this</span>.push(arr[i]);</div><div class="line">  }</div><div class="line"></div><div class="line">  <span class="keyword">for</span> (; i &lt; len; i++) {</div><div class="line">    <span class="keyword">this</span>.pushFront(arr[i])</div><div class="line">  }</div><div class="line">  <span class="keyword">return</span> <span class="keyword">this</span>.arr;</div><div class="line">}</div></pre></td></tr></table></figure>
+<h1 id="4-&#x524D;&#x7AEF;&#x5C55;&#x793A;"><a href="#4-&#x524D;&#x7AEF;&#x5C55;&#x793A;" class="headerlink" title="4. &#x524D;&#x7AEF;&#x5C55;&#x793A;"></a>4. &#x524D;&#x7AEF;&#x5C55;&#x793A;</h1><p><img src="/2017/03/23/searchTopN/1.png" alt=""></p>
+<p>&#x66F4;&#x591A;&#x8BE6;&#x89C1;<a href="https://github.com/ParadeTo/dataguru-algorithm/tree/master/lesson13" target="_blank" rel="external">github</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/算法/">算法</a><a href="/tags/堆/">堆</a><a href="/tags/搜索/">搜索</a><a href="/tags/字典树/">字典树</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/算法/">算法</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="http://www.paradeto.com/2017/03/23/searchTopN/" data-title="模拟实现十大热门搜索 | Ayou" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/04/08/feInterview/" title="前端面试题汇总">
+  <strong>PREVIOUS:</strong><br/>
+  <span>
+  前端面试题汇总</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/03/20/canvasPolygon/"  title="canvas画多边形">
+ <strong>NEXT:</strong><br/> 
+ <span>canvas画多边形
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	<div class="ds-thread"></div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+  <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#十大热门搜索"><span class="toc-number">1.</span> <span class="toc-text">十大热门搜索</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#1-产生测试数据"><span class="toc-number">2.</span> <span class="toc-text">1. 产生测试数据</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-前缀匹配"><span class="toc-number">3.</span> <span class="toc-text">2. 前缀匹配</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-根据前缀匹配的结果"><span class="toc-number">4.</span> <span class="toc-text">3. 根据前缀匹配的结果</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#4-前端展示"><span class="toc-number">5.</span> <span class="toc-text">4. 前端展示</span></a></li></ol>
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+			<li><a href="/categories/html-css/" title="html/css">html/css<sup>4</sup></a></li>
+		
+			<li><a href="/categories/javascript/" title="javascript">javascript<sup>4</sup></a></li>
+		
+			<li><a href="/categories/mongodb/" title="mongodb">mongodb<sup>1</sup></a></li>
+		
+			<li><a href="/categories/nodejs/" title="nodejs">nodejs<sup>2</sup></a></li>
+		
+			<li><a href="/categories/前端工具/" title="前端工具">前端工具<sup>1</sup></a></li>
+		
+			<li><a href="/categories/前端框架/" title="前端框架">前端框架<sup>4</sup></a></li>
+		
+			<li><a href="/categories/前端理论/" title="前端理论">前端理论<sup>2</sup></a></li>
+		
+			<li><a href="/categories/算法/" title="算法">算法<sup>8</sup></a></li>
+		
+			<li><a href="/categories/读书笔记/" title="读书笔记">读书笔记<sup>3</sup></a></li>
+		
+			<li><a href="/categories/转载/" title="转载">转载<sup>1</sup></a></li>
+		
+			<li><a href="/categories/项目实战/" title="项目实战">项目实战<sup>3</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			<li><a href="/tags/WEB安全/" title="WEB安全">WEB安全<sup>2</sup></a></li>
+		
+			<li><a href="/tags/angularjs/" title="angularjs">angularjs<sup>2</sup></a></li>
+		
+			<li><a href="/tags/angularjs2/" title="angularjs2">angularjs2<sup>1</sup></a></li>
+		
+			<li><a href="/tags/canvas/" title="canvas">canvas<sup>3</sup></a></li>
+		
+			<li><a href="/tags/chrome插件/" title="chrome插件">chrome插件<sup>1</sup></a></li>
+		
+			<li><a href="/tags/css/" title="css">css<sup>1</sup></a></li>
+		
+			<li><a href="/tags/helmet/" title="helmet">helmet<sup>1</sup></a></li>
+		
+			<li><a href="/tags/html/" title="html">html<sup>3</sup></a></li>
+		
+			<li><a href="/tags/http/" title="http">http<sup>2</sup></a></li>
+		
+			<li><a href="/tags/https/" title="https">https<sup>1</sup></a></li>
+		
+			<li><a href="/tags/javascript/" title="javascript">javascript<sup>5</sup></a></li>
+		
+			<li><a href="/tags/jquery插件/" title="jquery插件">jquery插件<sup>1</sup></a></li>
+		
+			<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>4</sup></a></li>
+		
+			<li><a href="/tags/promise/" title="promise">promise<sup>1</sup></a></li>
+		
+			<li><a href="/tags/react/" title="react">react<sup>2</sup></a></li>
+		
+			<li><a href="/tags/replica/" title="replica">replica<sup>1</sup></a></li>
+		
+			<li><a href="/tags/sharding/" title="sharding">sharding<sup>1</sup></a></li>
+		
+			<li><a href="/tags/slb/" title="slb">slb<sup>1</sup></a></li>
+		
+			<li><a href="/tags/webpack/" title="webpack">webpack<sup>2</sup></a></li>
+		
+			<li><a href="/tags/事件/" title="事件">事件<sup>1</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  <div class="rsspart">
+	<a href="null" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+	</div>
+		<p class="copyright">Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/zhyu/yaht" target="_blank" title="YAHT">YAHT</a> © 2017 
+		
+		<a href="http://www.paradeto.com" target="_blank" title="Ayou">Ayou</a>
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<!--canvas-->
+
+<script src="/js/canvas.js"></script>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.navbar').click(function(){
+      $('header nav').toggleClass('shownav');
+    });
+    var myWidth = 0;
+    function getSize(){
+      if( typeof( window.innerWidth ) == 'number' ) {
+        myWidth = window.innerWidth;
+      } else if( document.documentElement && document.documentElement.clientWidth) {
+        myWidth = document.documentElement.clientWidth;
+      };
+    };
+    var m = $('#main'),
+    a = $('#asidepart'),
+    c = $('.closeaside'),
+    o = $('.openaside');
+    $(window).resize(function(){
+      getSize();
+      if (myWidth >= 1024) {
+        $('header nav').removeClass('shownav');
+      }else
+      {
+        m.removeClass('moveMain');
+        a.css('display', 'block').removeClass('fadeOut');
+        o.css('display', 'none');
+        
+            $('#toc.toc-aside').css('display', 'none');
+          
+      }
+    });
+    c.click(function(){
+      a.addClass('fadeOut').css('display', 'none');
+      o.css('display', 'block').addClass('fadeIn');
+      m.addClass('moveMain');
+    });
+    o.click(function(){
+      o.css('display', 'none').removeClass('beforeFadeIn');
+      a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');
+      m.removeClass('moveMain');
+    });
+    $(window).scroll(function(){
+      o.css("top",Math.max(80,260-$(this).scrollTop()));
+    });
+  });
+</script>
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+      var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+      if(ai.length>0){
+        ai.wrap('<div class="video-container" />');
+      };
+      if(ae.length>0){
+        ae.wrap('<div class="video-container" />');
+      };
+      if(ah.length==0){
+        t.css('display','none');
+      }else{
+        c.click(function(){
+          ta.css('display', 'block').addClass('fadeIn');
+        });
+        o.click(function(){
+          ta.css('display', 'none');
+        });
+        $(window).scroll(function(){
+          ta.css("top",Math.max(140,320-$(this).scrollTop()));
+        });
+      };
+    });
+  </script>
+
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+      var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+      var html = [
+        '<a href="#" class="overlay" id="qrcode"></a>',
+        '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+        '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+        '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+        '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+        '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+        '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+        '<span title="Share to"></span>'
+        ].join('');
+        $this.append(html);
+        $('.article-share-qrcode').click(function(){
+          var imgSrc = $('#qrcode-pic').attr('data-src');
+          $('#qrcode-pic').attr('src', imgSrc);
+          $('#qrcode-pic').load(function(){
+            $('.qrcode strong').text(' ');
+          });
+        });
+    });
+  </script>
+
+
+  
+    <script type="text/javascript">
+      var duoshuoQuery = {short_name:"paradeto"};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0]
+        || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+    </script>
+  
+  
+  
+
+
+
+
+
+
+
+
+
+
+  <div id="back-to-top">
+    <a title="返回顶部"><img src="/img/scrollup.png"/></a>
+  </div>
+  <script src="/js/back_to_top.js"></script>
+
+
+
+  </body>
+</html>
+
