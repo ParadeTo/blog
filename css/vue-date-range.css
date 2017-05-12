@@ -1,33 +1,77 @@
-body {
-  background: #fff;
+body,
+code {
+  font-family: "Arial", "Microsoft YaHei", "黑体", "宋体", sans-serif;
+  background-color: #f5f5f5;
 }
-.vue-date-range-wrapper {
-  background: #d4d7d6;
-  border: 1px solid #f9f9f9;
-  padding: 20px;
-  max-width: 400px;
-  margin: 0 auto;
+div {
+  box-sizing: border-box;
 }
-.vue-date-range-wrapper section {
-  margin-bottom: 20px;
+section {
+  max-width: 800px;
+  margin: 1rem auto;
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 1rem;
+/*border: 1px solid #dbdbdb;*/
+  box-shadow: 0 2px 3px rgba(10,10,10,0.1), 0 0 0 1px rgba(10,10,10,0.1);
 }
-.vue-date-range-wrapper pre {
-  margin-top: 10px;
-  font-size: 0.8rem;
-  background: #002b36;
-  color: #eecc8b;
-  overflow-x: scroll;
-}
-.vue-date-range-wrapper h2 {
-  margin-top: 10px;
-  margin-bottom: 10px;
+h2 {
+  font-size: 2rem;
   text-align: center;
-  font-size: 20px;
 }
-.vue-date-range-wrapper span.date {
+code {
+  overflow-x: auto;
+  text-indent: 0;
+  border-color: #000;
+  border-style: dashed;
+  border-width: 1px;
   display: block;
-  width: 100%;
-  margin-bottom: 10px;
+  font-size: 12px;
+  font-family: Courier, Calibri, "宋体";
+  margin: 10px 0 0 0;
+  padding: 10px 0 10px 5px;
+  -moz-border-radius: 5px;
+  background: #f5f5f5;
+  color: #000;
+}
+button {
+  background-color: #23d160;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 5px;
+  outline: none;
+}
+button:hover {
+  cursor: pointer;
+}
+.calendar-wrapper {
+  width: 50%;
+  float: left;
+  padding-right: 1rem;
+}
+.code-wrapper {
+  width: 50%;
+  float: left;
+}
+@media all and (max-width: 800px) {
+  .calendar-wrapper {
+    width: 100%;
+  }
+  .code-wrapper {
+    width: 100%;
+  }
+}
+section:after {
+  content: ".";
+  display: block;
+  height: 0;
+  clear: both;
+  visibility: hidden;
+}
+.calendar {
+  margin: 1rem 0;
+  border: 1px solid #dbdbdb;
 }
 #custom-style .ayou-day-cell .selected {
   background-color: #ffa500;

@@ -1,18 +1,40 @@
-/**
- * Created by ayou on 2017/2/28.
- */
 new Vue({
   el: '#calendar',
   components: {
     'calendar':daterange.Calendar
   },
-  data: {
-    lang: 'en',
-    date: moment().format('YYYY-MM-DD')
+  data() {
+    return {
+      disableDaysBeforeToday: true,
+      lang: 'en',
+      date: moment()
+    };
   },
   methods: {
     onChange(date) {
-      this.date = date.format('YYYY-MM-DD');
+      this.date = date;
+    },
+    setDate (offset) {
+      this.date = moment().add(offset, 'days')
+    }
+  }
+});
+
+new Vue({
+  el: '#calendarLunar',
+  components: {
+    'calendar':daterange.Calendar
+  },
+  data() {
+    return {
+      disableDaysBeforeToday: true,
+      lang: 'zh',
+      date: moment()
+    };
+  },
+  methods: {
+    onChange(date) {
+      this.date = date;
     }
   }
 });
@@ -23,17 +45,28 @@ new Vue({
   components: {
     'daterange':daterange.DateRange
   },
-  data: {
-    lang: 'en',
-    range: {
-      startDate: moment(),
-      endDate: moment().add(7, 'days')
-    }
+  data() {
+    return {
+      lang: 'en',
+      range: {
+        startDate: moment(),
+        endDate: moment().add(7, 'days')
+      }
+    };
   },
   methods: {
     onChange(range) {
       this.range = range;
-    }
+    },
+    setRange (p) {
+      if (typeof p === 'number') {
+        console.log(p)
+        this.range = {
+          startDate: moment().add(p, 'days'),
+          endDate: moment()
+        }
+      }
+    },
   }
 });
 

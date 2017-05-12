@@ -121,21 +121,7 @@
   </url>
   
   <url>
-    <loc>http://www.paradeto.com/2016/06/04/csrf-1/</loc>
-    
-    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.paradeto.com/2016/07/01/imitate-app-pwd/</loc>
-    
-    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.paradeto.com/2016/08/15/js-hld-13/</loc>
+    <loc>http://www.paradeto.com/2016/06/04/css-background-issue/</loc>
     
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     
@@ -149,21 +135,28 @@
   </url>
   
   <url>
+    <loc>http://www.paradeto.com/2016/08/15/js-hld-13/</loc>
+    
+    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.paradeto.com/2016/07/11/angular-2/</loc>
+    
+    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.paradeto.com/2016/07/01/imitate-app-pwd/</loc>
+    
+    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://www.paradeto.com/2016/06/17/helmet/</loc>
-    
-    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.paradeto.com/2016/06/03/first-blog/</loc>
-    
-    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.paradeto.com/2016/06/04/css-background-issue/</loc>
     
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     
@@ -184,13 +177,6 @@
   </url>
   
   <url>
-    <loc>http://www.paradeto.com/2016/10/10/promise-frame/</loc>
-    
-    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>http://www.paradeto.com/2016/06/06/dcsort/</loc>
     
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
@@ -198,7 +184,35 @@
   </url>
   
   <url>
+    <loc>http://www.paradeto.com/2016/10/10/promise-frame/</loc>
+    
+    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.paradeto.com/2016/06/03/first-blog/</loc>
+    
+    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://www.paradeto.com/2016/06/06/js-hld-10/</loc>
+    
+    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.paradeto.com/2016/06/29/webpack-1/</loc>
+    
+    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.paradeto.com/2016/06/04/csrf-1/</loc>
     
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     
@@ -213,20 +227,6 @@
   
   <url>
     <loc>http://www.paradeto.com/2016/09/13/chrome-ext-mooncake/</loc>
-    
-    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.paradeto.com/2016/06/07/cavas-1/</loc>
-    
-    <lastmod>2016-11-19T08:25:18.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.paradeto.com/2016/06/29/webpack-1/</loc>
     
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     
@@ -254,7 +254,7 @@
   </url>
   
   <url>
-    <loc>http://www.paradeto.com/2016/09/13/angularjs2-dropdown/</loc>
+    <loc>http://www.paradeto.com/2016/06/07/cavas-1/</loc>
     
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     
@@ -268,7 +268,7 @@
   </url>
   
   <url>
-    <loc>http://www.paradeto.com/2016/07/11/angular-2/</loc>
+    <loc>http://www.paradeto.com/2016/09/13/angularjs2-dropdown/</loc>
     
     <lastmod>2016-11-19T08:25:18.000Z</lastmod>
     
