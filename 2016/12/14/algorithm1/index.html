@@ -1,0 +1,442 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>利用栈实现四则表达式运算-js版 | Ayou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="Ayou">
+    
+    <meta name="description" itemprop="description" content="利用栈实现四则表达式运算-js版">
+    
+    
+    
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/yaht.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/yaht.jpg">
+    
+    
+        <link rel="stylesheet" href="/css/style.css">
+    
+    
+    
+<script type="text/javascript">
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "//hm.baidu.com/hm.js?bc27adb5eec6cd3b858ecca2a190876a";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+
+</head>
+
+  <body>
+    <header>
+      <canvas id="headerCanvas">
+
+</canvas>
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Ayou" title="Ayou"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Ayou">Ayou</a></h1>
+				<h2 class="blog-motto">Good Good Study, Day Day Up!</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/resume">Resume</a></li>
+					
+						<li><a href="/demo">Demo</a></li>
+					
+					<li>
+					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:www.paradeto.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/14/algorithm1/" title="利用栈实现四则表达式运算-js版" itemprop="url">利用栈实现四则表达式运算-js版</a>
+  </h1>
+  <p class="article-author">By
+    
+      <a href="http://www.paradeto.com" title="Ayou">Ayou</a>
+    </p>
+  <p class="article-time">
+    <time datetime="2016-12-14T06:20:30.000Z" itemprop="datePublished">2016-12-14</time>
+    更新日期:<time datetime="2016-12-14T13:20:55.000Z" itemprop="dateModified">2016-12-14</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#原理"><span class="toc-number">1.</span> <span class="toc-text">原理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#第一步-将中缀表达式转换为后缀表达式形式"><span class="toc-number">1.1.</span> <span class="toc-text">第一步-将中缀表达式转换为后缀表达式形式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#用二叉树来存储表达式"><span class="toc-number">1.1.1.</span> <span class="toc-text">用二叉树来存储表达式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#用栈实现将中缀表达式转换为后缀表达式形式"><span class="toc-number">1.1.2.</span> <span class="toc-text">用栈实现将中缀表达式转换为后缀表达式形式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第二步-利用后缀表达式计算结果"><span class="toc-number">1.2.</span> <span class="toc-text">第二步-利用后缀表达式计算结果</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#手工演算"><span class="toc-number">2.</span> <span class="toc-text">手工演算</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#代码实现-js版"><span class="toc-number">3.</span> <span class="toc-text">代码实现-js版</span></a></li></ol>
+		</div>
+		
+		<h1 id="&#x539F;&#x7406;"><a href="#&#x539F;&#x7406;" class="headerlink" title="&#x539F;&#x7406;"></a>&#x539F;&#x7406;</h1><p>&#x5229;&#x7528;&#x6808;&#x5B9E;&#x73B0;&#x7B80;&#x5355;&#x7684;&#x56DB;&#x5219;&#x8FD0;&#x7B97;&#x5206;&#x4E3A;&#x4E24;&#x6B65;&#xFF1A;</p>
+<h2 id="&#x7B2C;&#x4E00;&#x6B65;-&#x5C06;&#x4E2D;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x8F6C;&#x6362;&#x4E3A;&#x540E;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x5F62;&#x5F0F;"><a href="#&#x7B2C;&#x4E00;&#x6B65;-&#x5C06;&#x4E2D;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x8F6C;&#x6362;&#x4E3A;&#x540E;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x5F62;&#x5F0F;" class="headerlink" title="&#x7B2C;&#x4E00;&#x6B65;-&#x5C06;&#x4E2D;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x8F6C;&#x6362;&#x4E3A;&#x540E;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x5F62;&#x5F0F;"></a>&#x7B2C;&#x4E00;&#x6B65;-&#x5C06;&#x4E2D;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x8F6C;&#x6362;&#x4E3A;&#x540E;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x5F62;&#x5F0F;</h2><h3 id="&#x7528;&#x4E8C;&#x53C9;&#x6811;&#x6765;&#x5B58;&#x50A8;&#x8868;&#x8FBE;&#x5F0F;"><a href="#&#x7528;&#x4E8C;&#x53C9;&#x6811;&#x6765;&#x5B58;&#x50A8;&#x8868;&#x8FBE;&#x5F0F;" class="headerlink" title="&#x7528;&#x4E8C;&#x53C9;&#x6811;&#x6765;&#x5B58;&#x50A8;&#x8868;&#x8FBE;&#x5F0F;"></a>&#x7528;&#x4E8C;&#x53C9;&#x6811;&#x6765;&#x5B58;&#x50A8;&#x8868;&#x8FBE;&#x5F0F;</h3><p>&#x4F8B;&#x5982;&#xFF1A;a&#xD7;(b+c)-d &#x7528;&#x4E8C;&#x53C9;&#x6811;&#x53EF;&#x4EE5;&#x8868;&#x793A;&#x4E3A;&#xFF1A;</p>
+<p><img src="/2016/12/14/algorithm1/1.jpg" alt="algorithm1"></p>
+<p>&#x5BF9;&#x5176;&#x8FDB;&#x884C;&#x540E;&#x5E8F;&#x904D;&#x5386;&#x5F97;&#x5230;&#x540E;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x4E3A;&#xFF1A;<br>abc+&#xD7;d-</p>
+<p>&#x7528;&#x4E8C;&#x53C9;&#x6811;&#x53EF;&#x4EE5;&#x5F88;&#x5F62;&#x8C61;&#x7684;&#x8868;&#x793A;&#x4E00;&#x4E2A;&#x8868;&#x8FBE;&#x5F0F;&#xFF0C;&#x4E0D;&#x8FC7;&#x672C;&#x6587;&#x7528;&#x6808;&#x6765;&#x8FDB;&#x884C;&#x8F6C;&#x6362;</p>
+<h3 id="&#x7528;&#x6808;&#x5B9E;&#x73B0;&#x5C06;&#x4E2D;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x8F6C;&#x6362;&#x4E3A;&#x540E;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x5F62;&#x5F0F;"><a href="#&#x7528;&#x6808;&#x5B9E;&#x73B0;&#x5C06;&#x4E2D;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x8F6C;&#x6362;&#x4E3A;&#x540E;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x5F62;&#x5F0F;" class="headerlink" title="&#x7528;&#x6808;&#x5B9E;&#x73B0;&#x5C06;&#x4E2D;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x8F6C;&#x6362;&#x4E3A;&#x540E;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x5F62;&#x5F0F;"></a>&#x7528;&#x6808;&#x5B9E;&#x73B0;&#x5C06;&#x4E2D;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x8F6C;&#x6362;&#x4E3A;&#x540E;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x5F62;&#x5F0F;</h3><p>&#xFF08;1&#xFF09;&#x4ECE;&#x5DE6;&#x5230;&#x53F3;&#x9010;&#x4E2A;&#x626B;&#x63CF;&#x4E2D;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x4E2D;&#x7684;&#x5404;&#x9879;&#xFF0C;&#x5982;&#x679C;&#x5230;&#x8FBE;&#x672B;&#x5C3E;&#x5219;&#x8DF3;&#x8F6C;&#x8F6C;&#x5230;&#xFF08;6&#xFF09;&#xFF0C;&#x5426;&#x5219;&#x6839;&#x636E;&#xFF08;2&#xFF09;~&#xFF08;5&#xFF09;&#x7684;&#x63CF;&#x8FF0;&#x8FDB;&#x884C;&#x64CD;&#x4F5C;&#xFF1B;<br>&#xFF08;2&#xFF09;&#x9047;&#x5230;&#x64CD;&#x4F5C;&#x6570;&#x76F4;&#x63A5;&#x8F93;&#x51FA;&#xFF1B;<br>&#xFF08;3&#xFF09;&#x9047;&#x5230;&#x8FD0;&#x7B97;&#x7B26;&#xFF08;&#x8BBE;&#x4E3A;a&#xFF09;&#xFF0C;&#x5219;&#x548C;&#x6808;&#x9876;&#x7684;&#x64CD;&#x4F5C;&#x7B26;&#xFF08;&#x8BBE;&#x4E3A;b&#xFF09;&#x6BD4;&#x8F83;&#x4F18;&#x5148;&#x7EA7;&#xFF0C;&#x82E5;a&#x5C0F;&#x4E8E;&#x7B49;&#x4E8E;b&#x7684;&#x4F18;&#x5148;&#x7EA7;&#xFF0C;&#x5219;&#x8FDE;&#x7EED;&#x51FA;&#x6808;&#x8F93;&#x51FA;&#xFF0C;&#x76F4;&#x5230;a&#x5927;&#x4E8E;b&#x7684;&#x4F18;&#x5148;&#x7EA7;&#x6216;b&#x4E3A;<code>(</code>&#xFF0C;a&#x8FDB;&#x6808;&#xFF1B;<br>&#xFF08;4&#xFF09;&#x9047;&#x5230;<code>(</code>&#xFF0C;&#x8FDB;&#x6808;&#xFF1B;<br>&#xFF08;5&#xFF09;&#x9047;&#x5230;<code>)</code>&#xFF0C;&#x5219;&#x8FDE;&#x7EED;&#x51FA;&#x6808;&#x8F93;&#x51FA;&#xFF0C;&#x76F4;&#x5230;&#x9047;&#x5230;&#x5DE6;&#x62EC;&#x5F27;<code>(</code>&#x4E3A;&#x6B62;&#x3002;&#x5176;&#x4E2D;&#xFF0C;<code>(</code>&#x51FA;&#x6808;&#x4F46;&#x662F;&#x5E76;&#x4E0D;&#x8F93;&#x51FA;&#xFF1B;<br>&#xFF08;6&#xFF09;&#x8F93;&#x51FA;&#x6808;&#x4E2D;&#x5269;&#x4F59;&#x7684;&#x64CD;&#x4F5C;&#x7B26;&#x3002;</p>
+<h2 id="&#x7B2C;&#x4E8C;&#x6B65;-&#x5229;&#x7528;&#x540E;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x8BA1;&#x7B97;&#x7ED3;&#x679C;"><a href="#&#x7B2C;&#x4E8C;&#x6B65;-&#x5229;&#x7528;&#x540E;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x8BA1;&#x7B97;&#x7ED3;&#x679C;" class="headerlink" title="&#x7B2C;&#x4E8C;&#x6B65;-&#x5229;&#x7528;&#x540E;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x8BA1;&#x7B97;&#x7ED3;&#x679C;"></a>&#x7B2C;&#x4E8C;&#x6B65;-&#x5229;&#x7528;&#x540E;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x8BA1;&#x7B97;&#x7ED3;&#x679C;</h2><p>&#xFF08;1&#xFF09;&#x4ECE;&#x5DE6;&#x5230;&#x53F3;&#x9010;&#x4E2A;&#x626B;&#x63CF;&#x540E;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x4E2D;&#x7684;&#x5404;&#x9879;&#xFF0C;&#x5982;&#x679C;&#x5230;&#x8FBE;&#x672B;&#x5C3E;&#x5219;&#x8FDB;&#x884C;&#xFF08;4&#xFF09;&#xFF0C;&#x5426;&#x5219;&#x6839;&#x636E;&#xFF08;2&#xFF09;~&#xFF08;3&#xFF09;&#x7684;&#x63CF;&#x8FF0;&#x8FDB;&#x884C;&#x64CD;&#x4F5C;&#xFF1B;<br>&#xFF08;2&#xFF09;&#x9047;&#x5230;&#x64CD;&#x4F5C;&#x6570;&#x76F4;&#x63A5;&#x5165;&#x6808;&#xFF1B;<br>&#xFF08;3&#xFF09;&#x9047;&#x5230;&#x8FD0;&#x7B97;&#x7B26;&#xFF08;&#x8BBE;&#x4E3A;ope&#xFF09;&#x5219;&#x51FA;&#x6808;&#x4E24;&#x6B21;&#xFF0C;&#x8BBE;&#x7B2C;&#x4E00;&#x6B21;&#x51FA;&#x6808;&#x4E3A;a&#xFF0C;&#x7B2C;&#x4E8C;&#x6B21;&#x51FA;&#x6808;&#x4E3A;b&#xFF0C;&#x5219;&#x8BA1;&#x7B97;&#x7ED3;&#x679C;c = b ope a&#xFF0C;&#x5C06;c&#x5165;&#x6808;&#xFF1B;<br>&#xFF08;4&#xFF09;&#x5F39;&#x51FA;&#x6808;&#x5185;&#x5143;&#x7D20;&#x5373;&#x4E3A;&#x7ED3;&#x679C;&#x3002;</p>
+<h1 id="&#x624B;&#x5DE5;&#x6F14;&#x7B97;"><a href="#&#x624B;&#x5DE5;&#x6F14;&#x7B97;" class="headerlink" title="&#x624B;&#x5DE5;&#x6F14;&#x7B97;"></a>&#x624B;&#x5DE5;&#x6F14;&#x7B97;</h1><p><img src="/2016/12/14/algorithm1/2.jpg" alt="algorithm1"></p>
+<h1 id="&#x4EE3;&#x7801;&#x5B9E;&#x73B0;-js&#x7248;"><a href="#&#x4EE3;&#x7801;&#x5B9E;&#x73B0;-js&#x7248;" class="headerlink" title="&#x4EE3;&#x7801;&#x5B9E;&#x73B0;-js&#x7248;"></a>&#x4EE3;&#x7801;&#x5B9E;&#x73B0;-js&#x7248;</h1><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// &#x6808;</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">Stack</span>(<span class="params"></span>) </span>{</div><div class="line">  <span class="keyword">this</span>.dataStore = [];</div><div class="line">  <span class="keyword">this</span>.top = <span class="number">0</span>;</div><div class="line">}</div><div class="line"></div><div class="line">Stack.prototype.push = <span class="function"><span class="keyword">function</span> (<span class="params">element</span>) </span>{</div><div class="line">  <span class="keyword">this</span>.dataStore[<span class="keyword">this</span>.top++] = element;</div><div class="line">};</div><div class="line"></div><div class="line">Stack.prototype.pop = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>{</div><div class="line">  <span class="keyword">return</span> <span class="keyword">this</span>.dataStore[--<span class="keyword">this</span>.top];</div><div class="line">};</div><div class="line"></div><div class="line">Stack.prototype.peek = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>{</div><div class="line">  <span class="keyword">return</span> <span class="keyword">this</span>.dataStore[<span class="keyword">this</span>.top<span class="number">-1</span>];</div><div class="line">};</div><div class="line"></div><div class="line">Stack.prototype.length = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>{</div><div class="line">  <span class="keyword">return</span> <span class="keyword">this</span>.top;</div><div class="line">};</div><div class="line"></div><div class="line">Stack.prototype.clear = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>{</div><div class="line">  <span class="keyword">this</span>.top = <span class="number">0</span>;</div><div class="line">};</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"> * &#x4E2D;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x8F6C;&#x4E3A;&#x540E;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">transMiddleToSuffix</span>(<span class="params">exp</span>) </span>{</div><div class="line">  <span class="keyword">var</span> expSuffix = [];</div><div class="line">  <span class="keyword">var</span> s = <span class="keyword">new</span> Stack();</div><div class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, len=exp.length; i &lt; len; i++) {</div><div class="line">    <span class="keyword">switch</span> (exp[i]) {</div><div class="line">      <span class="keyword">case</span> <span class="string">&apos;(&apos;</span>:</div><div class="line">        s.push(exp[i]);</div><div class="line">        <span class="keyword">break</span>;</div><div class="line">      <span class="keyword">case</span> <span class="string">&apos;)&apos;</span>:</div><div class="line">        <span class="keyword">while</span>(s.peek() !== <span class="string">&apos;(&apos;</span> &amp;&amp; s.length() &gt; <span class="number">0</span>){</div><div class="line">          expSuffix.push(s.pop());</div><div class="line">        }</div><div class="line">        s.pop(); <span class="comment">// &#x5F39;&#x51FA;(</span></div><div class="line">        <span class="keyword">break</span>;</div><div class="line">      <span class="keyword">case</span> <span class="string">&apos;+&apos;</span>:<span class="comment">// &#x4F18;&#x5148;&#x7EA7;&#x6700;&#x4F4E;&#xFF0C;&#x51FA;&#x6808;&#x76F4;&#x5230;&#x9047;&#x5230;(</span></div><div class="line">      <span class="keyword">case</span> <span class="string">&apos;-&apos;</span>:</div><div class="line">        <span class="keyword">while</span>(s.length() &gt; <span class="number">0</span> &amp;&amp; s.peek() !== <span class="string">&apos;(&apos;</span>){</div><div class="line">          expSuffix.push(s.pop());</div><div class="line">        }</div><div class="line">        s.push(exp[i]);</div><div class="line">        <span class="keyword">break</span>;</div><div class="line">      <span class="keyword">case</span> <span class="string">&apos;*&apos;</span>:<span class="comment">// &#x51FA;&#x6808;&#x76F4;&#x5230;&#x9047;&#x5230;( * /</span></div><div class="line">      <span class="keyword">case</span> <span class="string">&apos;/&apos;</span>:</div><div class="line">        <span class="keyword">while</span>(s.length() &gt; <span class="number">0</span> &amp;&amp; s.peek() !== <span class="string">&apos;(&apos;</span> &amp;&amp; (s.peek() === <span class="string">&apos;*&apos;</span> || s.peek() === <span class="string">&apos;/&apos;</span>)) {</div><div class="line">          expSuffix.push(s.pop());</div><div class="line">        }</div><div class="line">        s.push(exp[i]);</div><div class="line">        <span class="keyword">break</span>;</div><div class="line">      <span class="keyword">default</span>: <span class="comment">// &#x9ED8;&#x8BA4;&#x662F;&#x6570;&#x5B57;</span></div><div class="line">        expSuffix.push(exp[i]);</div><div class="line">        <span class="keyword">break</span>;</div><div class="line">    }</div><div class="line">  }</div><div class="line">  <span class="keyword">while</span>(s.length() &gt; <span class="number">0</span>) {</div><div class="line">    expSuffix.push(s.pop());</div><div class="line">  }</div><div class="line"></div><div class="line">  <span class="keyword">return</span> expSuffix;</div><div class="line">}</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line">  &#x5229;&#x7528;&#x540E;&#x7F00;&#x8868;&#x8FBE;&#x5F0F;&#x6C42;&#x7ED3;&#x679C;</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">compute</span>(<span class="params">expSuffix</span>) </span>{</div><div class="line">  <span class="keyword">var</span> s = <span class="keyword">new</span> Stack();</div><div class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, len=expSuffix.length; i &lt; len; i++) {</div><div class="line">    <span class="keyword">switch</span> (expSuffix[i]) {</div><div class="line">      <span class="keyword">case</span> <span class="string">&apos;+&apos;</span>:</div><div class="line">        <span class="keyword">var</span> right = s.pop();</div><div class="line">        <span class="keyword">var</span> left = s.pop();</div><div class="line">        s.push(<span class="built_in">parseInt</span>(left) + <span class="built_in">parseInt</span>(right));</div><div class="line">        <span class="keyword">break</span>;</div><div class="line">      <span class="keyword">case</span> <span class="string">&apos;-&apos;</span>:</div><div class="line">        <span class="keyword">var</span> right = s.pop();</div><div class="line">        <span class="keyword">var</span> left = s.pop();</div><div class="line">        s.push(left - right);</div><div class="line">        <span class="keyword">break</span>;</div><div class="line">      <span class="keyword">case</span> <span class="string">&apos;*&apos;</span>:</div><div class="line">        <span class="keyword">var</span> right = s.pop();</div><div class="line">        <span class="keyword">var</span> left = s.pop();</div><div class="line">        s.push(left * right);</div><div class="line">        <span class="keyword">break</span>;</div><div class="line">      <span class="keyword">case</span> <span class="string">&apos;/&apos;</span>:</div><div class="line">        <span class="keyword">var</span> right = s.pop();</div><div class="line">        <span class="keyword">var</span> left = s.pop();</div><div class="line">        s.push(left / right);</div><div class="line">        <span class="keyword">break</span>;</div><div class="line">      <span class="keyword">default</span>: <span class="comment">// &#x9ED8;&#x8BA4;&#x662F;&#x6570;&#x5B57;,&#x8FDB;&#x6808;</span></div><div class="line">        s.push(expSuffix[i]);</div><div class="line">        <span class="keyword">break</span>;</div><div class="line">    }</div><div class="line">    <span class="built_in">console</span>.log(s.dataStore)</div><div class="line">  }</div><div class="line">  <span class="keyword">return</span> s.pop();</div><div class="line">}</div><div class="line"></div><div class="line"><span class="keyword">var</span> a = [<span class="string">&apos;1&apos;</span>,<span class="string">&apos;*&apos;</span>,<span class="string">&apos;(&apos;</span>,<span class="string">&apos;1&apos;</span>,<span class="string">&apos;+&apos;</span>,<span class="string">&apos;2&apos;</span>,<span class="string">&apos;*&apos;</span>,<span class="string">&apos;3&apos;</span>,<span class="string">&apos;)&apos;</span>];</div><div class="line"><span class="built_in">console</span>.log(compute(transMiddleToSuffix(a)));</div></pre></td></tr></table></figure>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/算法/">算法</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/算法/">算法</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="http://www.paradeto.com/2016/12/14/algorithm1/" data-title="利用栈实现四则表达式运算-js版 | Ayou" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/12/15/reactOptimize/" title="React性能优化（译）">
+  <strong>PREVIOUS:</strong><br/>
+  <span>
+  React性能优化（译）</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/11/22/mmsfReconstruction/"  title="妈妈送房代码重构方案">
+ <strong>NEXT:</strong><br/> 
+ <span>妈妈送房代码重构方案
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	<div class="ds-thread"></div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+  <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#原理"><span class="toc-number">1.</span> <span class="toc-text">原理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#第一步-将中缀表达式转换为后缀表达式形式"><span class="toc-number">1.1.</span> <span class="toc-text">第一步-将中缀表达式转换为后缀表达式形式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#用二叉树来存储表达式"><span class="toc-number">1.1.1.</span> <span class="toc-text">用二叉树来存储表达式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#用栈实现将中缀表达式转换为后缀表达式形式"><span class="toc-number">1.1.2.</span> <span class="toc-text">用栈实现将中缀表达式转换为后缀表达式形式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第二步-利用后缀表达式计算结果"><span class="toc-number">1.2.</span> <span class="toc-text">第二步-利用后缀表达式计算结果</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#手工演算"><span class="toc-number">2.</span> <span class="toc-text">手工演算</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#代码实现-js版"><span class="toc-number">3.</span> <span class="toc-text">代码实现-js版</span></a></li></ol>
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+			<li><a href="/categories/html-css/" title="html/css">html/css<sup>4</sup></a></li>
+		
+			<li><a href="/categories/javascript/" title="javascript">javascript<sup>4</sup></a></li>
+		
+			<li><a href="/categories/mongodb/" title="mongodb">mongodb<sup>1</sup></a></li>
+		
+			<li><a href="/categories/nodejs/" title="nodejs">nodejs<sup>2</sup></a></li>
+		
+			<li><a href="/categories/前端工具/" title="前端工具">前端工具<sup>1</sup></a></li>
+		
+			<li><a href="/categories/前端框架/" title="前端框架">前端框架<sup>4</sup></a></li>
+		
+			<li><a href="/categories/前端理论/" title="前端理论">前端理论<sup>1</sup></a></li>
+		
+			<li><a href="/categories/算法/" title="算法">算法<sup>8</sup></a></li>
+		
+			<li><a href="/categories/读书笔记/" title="读书笔记">读书笔记<sup>3</sup></a></li>
+		
+			<li><a href="/categories/转载/" title="转载">转载<sup>1</sup></a></li>
+		
+			<li><a href="/categories/项目实战/" title="项目实战">项目实战<sup>3</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			<li><a href="/tags/WEB安全/" title="WEB安全">WEB安全<sup>2</sup></a></li>
+		
+			<li><a href="/tags/angularjs/" title="angularjs">angularjs<sup>2</sup></a></li>
+		
+			<li><a href="/tags/angularjs2/" title="angularjs2">angularjs2<sup>1</sup></a></li>
+		
+			<li><a href="/tags/canvas/" title="canvas">canvas<sup>3</sup></a></li>
+		
+			<li><a href="/tags/chrome插件/" title="chrome插件">chrome插件<sup>1</sup></a></li>
+		
+			<li><a href="/tags/css/" title="css">css<sup>1</sup></a></li>
+		
+			<li><a href="/tags/helmet/" title="helmet">helmet<sup>1</sup></a></li>
+		
+			<li><a href="/tags/html/" title="html">html<sup>3</sup></a></li>
+		
+			<li><a href="/tags/http/" title="http">http<sup>2</sup></a></li>
+		
+			<li><a href="/tags/https/" title="https">https<sup>1</sup></a></li>
+		
+			<li><a href="/tags/javascript/" title="javascript">javascript<sup>5</sup></a></li>
+		
+			<li><a href="/tags/jquery插件/" title="jquery插件">jquery插件<sup>1</sup></a></li>
+		
+			<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>4</sup></a></li>
+		
+			<li><a href="/tags/promise/" title="promise">promise<sup>1</sup></a></li>
+		
+			<li><a href="/tags/react/" title="react">react<sup>2</sup></a></li>
+		
+			<li><a href="/tags/replica/" title="replica">replica<sup>1</sup></a></li>
+		
+			<li><a href="/tags/sharding/" title="sharding">sharding<sup>1</sup></a></li>
+		
+			<li><a href="/tags/slb/" title="slb">slb<sup>1</sup></a></li>
+		
+			<li><a href="/tags/webpack/" title="webpack">webpack<sup>2</sup></a></li>
+		
+			<li><a href="/tags/事件/" title="事件">事件<sup>1</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  <div class="rsspart">
+	<a href="null" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+	</div>
+		<p class="copyright">Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/zhyu/yaht" target="_blank" title="YAHT">YAHT</a> © 2017 
+		
+		<a href="http://www.paradeto.com" target="_blank" title="Ayou">Ayou</a>
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<!--canvas-->
+
+<script src="/js/canvas.js"></script>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.navbar').click(function(){
+      $('header nav').toggleClass('shownav');
+    });
+    var myWidth = 0;
+    function getSize(){
+      if( typeof( window.innerWidth ) == 'number' ) {
+        myWidth = window.innerWidth;
+      } else if( document.documentElement && document.documentElement.clientWidth) {
+        myWidth = document.documentElement.clientWidth;
+      };
+    };
+    var m = $('#main'),
+    a = $('#asidepart'),
+    c = $('.closeaside'),
+    o = $('.openaside');
+    $(window).resize(function(){
+      getSize();
+      if (myWidth >= 1024) {
+        $('header nav').removeClass('shownav');
+      }else
+      {
+        m.removeClass('moveMain');
+        a.css('display', 'block').removeClass('fadeOut');
+        o.css('display', 'none');
+        
+            $('#toc.toc-aside').css('display', 'none');
+          
+      }
+    });
+    c.click(function(){
+      a.addClass('fadeOut').css('display', 'none');
+      o.css('display', 'block').addClass('fadeIn');
+      m.addClass('moveMain');
+    });
+    o.click(function(){
+      o.css('display', 'none').removeClass('beforeFadeIn');
+      a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');
+      m.removeClass('moveMain');
+    });
+    $(window).scroll(function(){
+      o.css("top",Math.max(80,260-$(this).scrollTop()));
+    });
+  });
+</script>
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+      var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+      if(ai.length>0){
+        ai.wrap('<div class="video-container" />');
+      };
+      if(ae.length>0){
+        ae.wrap('<div class="video-container" />');
+      };
+      if(ah.length==0){
+        t.css('display','none');
+      }else{
+        c.click(function(){
+          ta.css('display', 'block').addClass('fadeIn');
+        });
+        o.click(function(){
+          ta.css('display', 'none');
+        });
+        $(window).scroll(function(){
+          ta.css("top",Math.max(140,320-$(this).scrollTop()));
+        });
+      };
+    });
+  </script>
+
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+      var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+      var html = [
+        '<a href="#" class="overlay" id="qrcode"></a>',
+        '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+        '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+        '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+        '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+        '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+        '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+        '<span title="Share to"></span>'
+        ].join('');
+        $this.append(html);
+        $('.article-share-qrcode').click(function(){
+          var imgSrc = $('#qrcode-pic').attr('data-src');
+          $('#qrcode-pic').attr('src', imgSrc);
+          $('#qrcode-pic').load(function(){
+            $('.qrcode strong').text(' ');
+          });
+        });
+    });
+  </script>
+
+
+  
+    <script type="text/javascript">
+      var duoshuoQuery = {short_name:"paradeto"};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0]
+        || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+    </script>
+  
+  
+  
+
+
+
+
+
+
+
+
+
+
+  <div id="back-to-top">
+    <a title="返回顶部"><img src="/img/scrollup.png"/></a>
+  </div>
+  <script src="/js/back_to_top.js"></script>
+
+
+
+  </body>
+</html>
+

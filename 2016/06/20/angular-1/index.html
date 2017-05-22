@@ -1,0 +1,492 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>AngularJS学习笔记(一) | Ayou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="Ayou">
+    
+    <meta name="description" itemprop="description" content="angularjs学习笔记，一">
+    
+    
+    
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/yaht.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/yaht.jpg">
+    
+    
+        <link rel="stylesheet" href="/css/style.css">
+    
+    
+    
+<script type="text/javascript">
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "//hm.baidu.com/hm.js?bc27adb5eec6cd3b858ecca2a190876a";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+
+</head>
+
+  <body>
+    <header>
+      <canvas id="headerCanvas">
+
+</canvas>
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Ayou" title="Ayou"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Ayou">Ayou</a></h1>
+				<h2 class="blog-motto">Good Good Study, Day Day Up!</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/resume">Resume</a></li>
+					
+						<li><a href="/demo">Demo</a></li>
+					
+					<li>
+					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:www.paradeto.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/06/20/angular-1/" title="AngularJS学习笔记(一)" itemprop="url">AngularJS学习笔记(一)</a>
+  </h1>
+  <p class="article-author">By
+    
+      <a href="http://www.paradeto.com" title="Ayou">Ayou</a>
+    </p>
+  <p class="article-time">
+    <time datetime="2016-06-20T06:12:01.000Z" itemprop="datePublished">2016-06-20</time>
+    更新日期:<time datetime="2016-11-19T08:25:18.000Z" itemprop="dateModified">2016-11-19</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#AngularJS的优势"><span class="toc-number">1.</span> <span class="toc-text">AngularJS的优势</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ng-app"><span class="toc-number">2.</span> <span class="toc-text">ng-app</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#模型和控制器"><span class="toc-number">3.</span> <span class="toc-text">模型和控制器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#模型"><span class="toc-number">3.1.</span> <span class="toc-text">模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建模型"><span class="toc-number">3.2.</span> <span class="toc-text">创建模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#控制器"><span class="toc-number">3.3.</span> <span class="toc-text">控制器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建控制器"><span class="toc-number">3.4.</span> <span class="toc-text">创建控制器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#综合实例"><span class="toc-number">3.5.</span> <span class="toc-text">综合实例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#双向数据绑定"><span class="toc-number">4.</span> <span class="toc-text">双向数据绑定</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ng-repeat"><span class="toc-number">5.</span> <span class="toc-text">ng-repeat</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#index"><span class="toc-number">5.1.</span> <span class="toc-text">index</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#事件"><span class="toc-number">6.</span> <span class="toc-text">事件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Filters"><span class="toc-number">7.</span> <span class="toc-text">Filters</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#format-data"><span class="toc-number">7.1.</span> <span class="toc-text">format data</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sorting-data"><span class="toc-number">7.2.</span> <span class="toc-text">sorting data</span></a></li></ol></li></ol>
+		</div>
+		
+		<h2 id="AngularJS&#x7684;&#x4F18;&#x52BF;"><a href="#AngularJS&#x7684;&#x4F18;&#x52BF;" class="headerlink" title="AngularJS&#x7684;&#x4F18;&#x52BF;"></a>AngularJS&#x7684;&#x4F18;&#x52BF;</h2><ul>
+<li>Dependency Injection</li>
+<li>Two Way Data-Binding<br>Changes to the model updates the view<br>Changes to the view update the model</li>
+<li>Testing</li>
+<li>MVC</li>
+</ul>
+<h2 id="ng-app"><a href="#ng-app" class="headerlink" title="ng-app"></a>ng-app</h2><p>&#x5E26;&#x6709;ng-app&#x6807;&#x7B7E;&#x5185;&#x7684;&#x5185;&#x5BB9;&#x624D;&#x4F1A;&#x88AB;angular&#x6240;&#x6267;&#x884C;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">&lt;body&gt;</div><div class="line">    &lt;div ng-app&gt;</div><div class="line">        10 + 20 = {{10+20}}</div><div class="line">    &lt;/div&gt;</div><div class="line">    &lt;div&gt;</div><div class="line">        40+50={{40+50}}</div><div class="line">    &lt;/div&gt;</div><div class="line">&lt;/body&gt;</div><div class="line">&#x7ED3;&#x679C;&#xFF1A;</div><div class="line">10 + 20 = 30</div><div class="line">40+50={{40+50}}</div></pre></td></tr></table></figure></p>
+<h2 id="&#x6A21;&#x578B;&#x548C;&#x63A7;&#x5236;&#x5668;"><a href="#&#x6A21;&#x578B;&#x548C;&#x63A7;&#x5236;&#x5668;" class="headerlink" title="&#x6A21;&#x578B;&#x548C;&#x63A7;&#x5236;&#x5668;"></a>&#x6A21;&#x578B;&#x548C;&#x63A7;&#x5236;&#x5668;</h2><h3 id="&#x6A21;&#x578B;"><a href="#&#x6A21;&#x578B;" class="headerlink" title="&#x6A21;&#x578B;"></a>&#x6A21;&#x578B;</h3><p>&#x6A21;&#x578B;&#x53EF;&#x4EE5;&#x770B;&#x6210;&#x5176;&#x4ED6;&#x8BED;&#x8A00;&#x7684;Main()&#x65B9;&#x6CD5;</p>
+<h3 id="&#x521B;&#x5EFA;&#x6A21;&#x578B;"><a href="#&#x521B;&#x5EFA;&#x6A21;&#x578B;" class="headerlink" title="&#x521B;&#x5EFA;&#x6A21;&#x578B;"></a>&#x521B;&#x5EFA;&#x6A21;&#x578B;</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">// &#x7B2C;&#x4E00;&#x4E2A;&#x53C2;&#x6570;&#x662F;&#x6A21;&#x578B;&#x7684;&#x540D;&#x5B57;&#xFF0C;&#x7B2C;&#x4E8C;&#x4E2A;&#x662F;&#x5176;&#x4F9D;&#x8D56;&#x7684;&#x6A21;&#x578B;</div><div class="line">var myApp = angular.module(&apos;myModule&apos;,[])</div></pre></td></tr></table></figure>
+<h3 id="&#x63A7;&#x5236;&#x5668;"><a href="#&#x63A7;&#x5236;&#x5668;" class="headerlink" title="&#x63A7;&#x5236;&#x5668;"></a>&#x63A7;&#x5236;&#x5668;</h3><p>&#x53EF;&#x4EE5;&#x770B;&#x6210;javascript &#x51FD;&#x6570;&#xFF0C;&#x5176;&#x5DE5;&#x4F5C;&#x662F;&#x4E3A;&#x8BD5;&#x56FE;&#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x6A21;&#x578B;</p>
+<h3 id="&#x521B;&#x5EFA;&#x63A7;&#x5236;&#x5668;"><a href="#&#x521B;&#x5EFA;&#x63A7;&#x5236;&#x5668;" class="headerlink" title="&#x521B;&#x5EFA;&#x63A7;&#x5236;&#x5668;"></a>&#x521B;&#x5EFA;&#x63A7;&#x5236;&#x5668;</h3><p>$scope&#x662F;&#x4E00;&#x4E2A;angular&#x5BF9;&#x8C61;&#xFF0C;&#x81EA;&#x52A8;&#x4F20;&#x9012;&#x5230;controller&#x4E2D;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">var myController = function($scope){</div><div class="line">  $scope.message = &quot;AngularJS Tutorial&quot;;</div><div class="line">}</div></pre></td></tr></table></figure></p>
+<h3 id="&#x7EFC;&#x5408;&#x5B9E;&#x4F8B;"><a href="#&#x7EFC;&#x5408;&#x5B9E;&#x4F8B;" class="headerlink" title="&#x7EFC;&#x5408;&#x5B9E;&#x4F8B;"></a>&#x7EFC;&#x5408;&#x5B9E;&#x4F8B;</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">&lt;html ng-app=&quot;myModule&quot;&gt;</div><div class="line">&lt;head lang=&quot;en&quot;&gt;</div><div class="line">    &lt;script src=&quot;//cdn.bootcss.com/angular.js/1.3.0/angular.min.js&quot;&gt;&lt;/script&gt;</div><div class="line">&lt;/head&gt;</div><div class="line">&lt;body&gt;</div><div class="line">    &lt;div ng-controller=&quot;myController&quot;&gt;</div><div class="line">        {{message}}</div><div class="line">    &lt;/div&gt;</div><div class="line">    &lt;div&gt;    </div><div class="line">        {{message}}</div><div class="line">    &lt;/div&gt;</div><div class="line">&lt;/body&gt;</div><div class="line">&lt;script&gt;</div><div class="line">    // &#x521B;&#x5EFA;&#x6A21;&#x5757;</div><div class="line">    var myApp = angular.module(&apos;myModule&apos;,[]);</div><div class="line">    // &#x521B;&#x5EFA;&#x63A7;&#x5236;&#x5668;</div><div class="line">    var myController = function($scope) {</div><div class="line">        $scope.message = &apos;AngularJS&apos;;</div><div class="line">    }</div><div class="line">    // &#x6CE8;&#x518C;controller</div><div class="line">    myApp.controller(&apos;myController&apos;,myController);</div><div class="line">&lt;/script&gt;</div><div class="line">&lt;/html&gt;</div><div class="line">&#x7ED3;&#x679C;&#xFF1A;</div><div class="line">AngularJS</div></pre></td></tr></table></figure>
+<p>&#x4E00;&#x884C;&#x521B;&#x5EFA;&#x6240;&#x6709;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">var myApp = angular</div><div class="line">                    .module(&apos;myModule&apos;,[])</div><div class="line">                    .controller(&apos;myController&apos;,function($scope) {</div><div class="line">                        var employee = {</div><div class="line">                            firstName: &apos;David&apos;,</div><div class="line">                            lastName: &apos;Hastings&apos;,</div><div class="line">                            gender: &apos;Malle&apos;</div><div class="line">                        }</div><div class="line">                        $scope.employee = employee;</div><div class="line">                    });</div></pre></td></tr></table></figure></p>
+<p><strong>&#x4F7F;&#x7528;binding expression&#x7ED9;&#x56FE;&#x7247;src&#x8D4B;&#x503C;&#x4F1A;&#x5BFC;&#x81F4;404&#xFF1A;</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">&lt;body&gt;</div><div class="line">    &lt;div ng-controller=&quot;myController&quot;&gt;</div><div class="line">        &lt;div&gt;</div><div class="line">            Name: {{obj.name}}</div><div class="line">        &lt;/div&gt;</div><div class="line">        &lt;img src=&quot;{{obj.flag}}&quot; style=&quot;height:100px;width:100px&quot; alt=&quot;&quot;/&gt;</div><div class="line">    &lt;/div&gt;</div><div class="line">&lt;/body&gt;</div><div class="line">&lt;script&gt;</div><div class="line">    // &#x521B;&#x5EFA;&#x6A21;&#x5757;</div><div class="line">    var myApp = angular</div><div class="line">                        .module(&apos;myModule&apos;,[])</div><div class="line">                        .controller(&apos;myController&apos;,function($scope) {</div><div class="line">                            var obj = {</div><div class="line">                                name: &apos;testPic&apos;,</div><div class="line">                                flag: &apos;../../public/img/author.jpg&apos;</div><div class="line">                            }</div><div class="line">                            $scope.obj = obj;</div><div class="line">                        });</div><div class="line">&lt;/script&gt;</div><div class="line">&#x62A5;&#x9519;&#xFF1A;</div><div class="line">GET http://localhost:63342/blog/test/angular/%7B%7Bobj.flag%7D%7D 404 (Not Found)</div></pre></td></tr></table></figure></p>
+<p>&#x539F;&#x56E0;&#x662F;&#x5F53;&#x9875;&#x9762;&#x6E32;&#x67D3;&#x4E4B;&#x9645;&#xFF0C;angularJS&#x8FD8;&#x6CA1;&#x6709;&#x5F00;&#x59CB;&#x6267;&#x884C;&#xFF0C;&#x6B64;&#x65F6;src&#x7684;&#x503C;&#x4E3A;<br>&#x89E3;&#x51B3;&#x529E;&#x6CD5;&#x662F;&#x4F7F;&#x7528;ng-src</p>
+<h2 id="&#x53CC;&#x5411;&#x6570;&#x636E;&#x7ED1;&#x5B9A;"><a href="#&#x53CC;&#x5411;&#x6570;&#x636E;&#x7ED1;&#x5B9A;" class="headerlink" title="&#x53CC;&#x5411;&#x6570;&#x636E;&#x7ED1;&#x5B9A;"></a>&#x53CC;&#x5411;&#x6570;&#x636E;&#x7ED1;&#x5B9A;</h2><p>&#x4FDD;&#x6301;&#x6A21;&#x578B;&#x548C;&#x89C6;&#x56FE;&#x7684;&#x6570;&#x636E;&#x4E00;&#x81F4;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div></pre></td><td class="code"><pre><div class="line">&lt;body&gt;</div><div class="line">    &lt;div ng-controller=&quot;myController&quot;&gt;</div><div class="line">        &lt;table&gt;</div><div class="line">            &lt;tr&gt;</div><div class="line">                &lt;td&gt;First Name&lt;/td&gt;</div><div class="line">                &lt;td&gt;</div><div class="line">                    &lt;input type=&quot;text&quot; ng-model=&quot;employee.firstName&quot;/&gt;</div><div class="line">                &lt;/td&gt;</div><div class="line">            &lt;/tr&gt;</div><div class="line">            &lt;tr&gt;</div><div class="line">                &lt;td&gt;Last Name&lt;/td&gt;</div><div class="line">                &lt;td&gt;</div><div class="line">                    &lt;input type=&quot;text&quot; ng-model=&quot;employee.lastName&quot;/&gt;</div><div class="line">                &lt;/td&gt;</div><div class="line">            &lt;/tr&gt;</div><div class="line">            &lt;tr&gt;</div><div class="line">                &lt;td&gt;age&lt;/td&gt;</div><div class="line">                &lt;td&gt;</div><div class="line">                    &lt;input type=&quot;text&quot; ng-model=&quot;employee.age&quot;/&gt;</div><div class="line">                &lt;/td&gt;</div><div class="line">            &lt;/tr&gt;</div><div class="line">        &lt;/table&gt;</div><div class="line">        &lt;/br&gt;</div><div class="line">        &lt;table&gt;</div><div class="line">            &lt;tr&gt;</div><div class="line">                &lt;td&gt;First Name&lt;/td&gt;</div><div class="line">                &lt;td&gt;</div><div class="line">                    {{employee.firstName}}</div><div class="line">                &lt;/td&gt;</div><div class="line">            &lt;/tr&gt;</div><div class="line">            &lt;tr&gt;</div><div class="line">                &lt;td&gt;Last Name&lt;/td&gt;</div><div class="line">                &lt;td&gt;</div><div class="line">                    {{employee.lastName}}</div><div class="line">                &lt;/td&gt;</div><div class="line">            &lt;/tr&gt;</div><div class="line">            &lt;tr&gt;</div><div class="line">                &lt;td&gt;age&lt;/td&gt;</div><div class="line">                &lt;td&gt;</div><div class="line">                    {{employee.age}}</div><div class="line">                &lt;/td&gt;</div><div class="line">            &lt;/tr&gt;</div><div class="line">        &lt;/table&gt;</div><div class="line">    &lt;/div&gt;</div><div class="line">&lt;/body&gt;</div><div class="line">&lt;script&gt;</div><div class="line">    // &#x521B;&#x5EFA;&#x6A21;&#x5757;</div><div class="line">    var myApp = angular</div><div class="line">                        .module(&apos;myModule&apos;,[])</div><div class="line">                        .controller(&apos;myController&apos;,function($scope) {</div><div class="line">                            var employee = {</div><div class="line">                                firstName: &apos;You&apos;,</div><div class="line">                                lastName:&apos;Xingzhi&apos;,</div><div class="line">                                age:27</div><div class="line">                            }</div><div class="line">                            $scope.employee = employee</div><div class="line">                        });</div><div class="line">&lt;/script&gt;</div></pre></td></tr></table></figure></p>
+<p>ng-model&#x53EA;&#x80FD;&#x7528;&#x4E8E;&#xFF1A;</p>
+<ul>
+<li>input</li>
+<li>select</li>
+<li>textarea</li>
+</ul>
+<h2 id="ng-repeat"><a href="#ng-repeat" class="headerlink" title="ng-repeat"></a>ng-repeat</h2><p>&#x4F8B;&#xFF1A;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div></pre></td><td class="code"><pre><div class="line">&lt;body&gt;</div><div class="line">    &lt;div ng-controller=&quot;myController&quot;&gt;</div><div class="line">        &lt;table&gt;</div><div class="line">            &lt;thead&gt;</div><div class="line">                &lt;tr&gt;</div><div class="line">                    &lt;th&gt;FirstName&lt;/th&gt;</div><div class="line">                    &lt;th&gt;LastName&lt;/th&gt;</div><div class="line">                    &lt;th&gt;age&lt;/th&gt;</div><div class="line">                &lt;/tr&gt;</div><div class="line">            &lt;/thead&gt;</div><div class="line">            &lt;tbody&gt;</div><div class="line">                &lt;tr ng-repeat=&quot;employee in employees&quot;&gt;</div><div class="line">                    &lt;td&gt;{{employee.firstName}}&lt;/td&gt;</div><div class="line">                    &lt;td&gt;{{employee.lastName}}&lt;/td&gt;</div><div class="line">                    &lt;td&gt;{{employee.age}}&lt;/td&gt;</div><div class="line">                &lt;/tr&gt;</div><div class="line">            &lt;/tbody&gt;</div><div class="line">        &lt;/table&gt;</div><div class="line">    &lt;/div&gt;</div><div class="line">&lt;/body&gt;</div><div class="line">&lt;script&gt;</div><div class="line">    // &#x521B;&#x5EFA;&#x6A21;&#x5757;</div><div class="line">    var myApp = angular</div><div class="line">                        .module(&apos;myModule&apos;,[])</div><div class="line">                        .controller(&apos;myController&apos;,function($scope) {</div><div class="line">                            var employees = [</div><div class="line">                                {</div><div class="line">                                    firstName: &apos;You&apos;,</div><div class="line">                                    lastName:&apos;Xingzhi&apos;,</div><div class="line">                                    age:27</div><div class="line">                                },</div><div class="line">                                {</div><div class="line">                                    firstName: &apos;You&apos;,</div><div class="line">                                    lastName:&apos;Xingzhi&apos;,</div><div class="line">                                    age:27</div><div class="line">                                },                                {</div><div class="line">                                    firstName: &apos;You&apos;,</div><div class="line">                                    lastName:&apos;Xingzhi&apos;,</div><div class="line">                                    age:27</div><div class="line">                                },</div><div class="line">                            ];</div><div class="line"></div><div class="line">                            $scope.employees = employees;</div><div class="line">                        });</div><div class="line">&lt;/script&gt;</div></pre></td></tr></table></figure></p>
+<p>&#x4F8B;&#xFF1A;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div></pre></td><td class="code"><pre><div class="line">&lt;body&gt;</div><div class="line">    &lt;div ng-controller=&quot;myController&quot;&gt;</div><div class="line">        &lt;ul&gt;</div><div class="line">            &lt;li ng-repeat=&quot;country in countries&quot;&gt;</div><div class="line">                {{country.name}}</div><div class="line">                &lt;ul&gt;</div><div class="line">                    &lt;li ng-repeat=&quot;city in country.cities&quot;&gt;</div><div class="line">                        {{city.name}}</div><div class="line">                    &lt;/li&gt;</div><div class="line">                &lt;/ul&gt;</div><div class="line">            &lt;/li&gt;</div><div class="line">        &lt;/ul&gt;</div><div class="line">    &lt;/div&gt;</div><div class="line">&lt;/body&gt;</div><div class="line">&lt;script&gt;</div><div class="line">    // &#x521B;&#x5EFA;&#x6A21;&#x5757;</div><div class="line">    var myApp = angular</div><div class="line">                        .module(&apos;myModule&apos;,[])</div><div class="line">                        .controller(&apos;myController&apos;,function($scope) {</div><div class="line">                            var countries =[</div><div class="line">                                {</div><div class="line">                                    name:&apos;UK&apos;,</div><div class="line">                                    cities:[</div><div class="line">                                        {</div><div class="line">                                            name:&apos;London&apos;</div><div class="line">                                        },</div><div class="line">                                        {</div><div class="line">                                            name:&apos;Mancheste&apos;</div><div class="line">                                        }</div><div class="line">                                    ]</div><div class="line">                                },</div><div class="line">                                {</div><div class="line">                                    name:&apos;USA&apos;,</div><div class="line">                                    cities:[</div><div class="line">                                        {</div><div class="line">                                            name:&apos;New York&apos;</div><div class="line">                                        },</div><div class="line">                                        {</div><div class="line">                                            name:&apos;Washington&apos;</div><div class="line">                                        }</div><div class="line">                                    ]</div><div class="line">                                },</div><div class="line">                                {</div><div class="line">                                    name:&apos;China&apos;,</div><div class="line">                                    cities:[</div><div class="line">                                        {</div><div class="line">                                            name:&apos;Beijing&apos;</div><div class="line">                                        },</div><div class="line">                                        {</div><div class="line">                                            name:&apos;Shenzhen&apos;</div><div class="line">                                        }</div><div class="line">                                    ]</div><div class="line">                                }</div><div class="line">                            ]</div><div class="line">                            $scope.countries = countries;</div><div class="line">                        });</div><div class="line">&lt;/script&gt;</div></pre></td></tr></table></figure></p>
+<p><img src="/2016/06/20/angular-1/np-repeat.png" alt="np-repeat.png"></p>
+<h3 id="index"><a href="#index" class="headerlink" title="index"></a>index</h3><ul>
+<li>&#x4F7F;&#x7528;$index&#x83B7;&#x53D6;&#x5F53;&#x524D;&#x9879;&#x76EE;&#x7684;index</li>
+<li>&#x4F7F;&#x7528;$parent.$index &#x6216; ng-init=&#x201D;parentIndex = $index&#x201D;&#x6765;&#x83B7;&#x53D6;&#x7236;&#x6807;&#x7B7E;&#x7684;index<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">  &lt;ul&gt;</div><div class="line">	&lt;li ng-repeat=&quot;country in countries&quot; ng-init=&quot;parentIndex=$index&quot;&gt;</div><div class="line">		{{country.name}}-Parent Index ={{$parent.$index}} , Index = {{$index}}</div><div class="line">		&lt;ul&gt;</div><div class="line">			&lt;li ng-repeat=&quot;city in country.cities&quot;&gt;</div><div class="line">				{{city.name}}-Parent Index ={{parentIndex}} , Index = {{$index}}</div><div class="line">			&lt;/li&gt;</div><div class="line">		&lt;/ul&gt;</div><div class="line">	&lt;/li&gt;</div><div class="line">&lt;/ul&gt;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="&#x4E8B;&#x4EF6;"><a href="#&#x4E8B;&#x4EF6;" class="headerlink" title="&#x4E8B;&#x4EF6;"></a>&#x4E8B;&#x4EF6;</h2><p>&#x4F8B;&#xFF1A;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div></pre></td><td class="code"><pre><div class="line">&lt;body&gt;</div><div class="line">    &lt;div ng-controller=&quot;myController&quot;&gt;</div><div class="line">        &lt;table&gt;</div><div class="line">            &lt;thead&gt;</div><div class="line">                &lt;tr&gt;</div><div class="line">                    &lt;th&gt;Name&lt;/th&gt;</div><div class="line">                    &lt;th&gt;Likes&lt;/th&gt;</div><div class="line">                    &lt;th&gt;Dislikes&lt;/th&gt;</div><div class="line">                    &lt;th&gt;Like/Dislike&lt;/th&gt;</div><div class="line">                &lt;/tr&gt;</div><div class="line">            &lt;/thead&gt;</div><div class="line">            &lt;tbody&gt;</div><div class="line">                &lt;tr ng-repeat=&quot;technology in technologies&quot;&gt;</div><div class="line">                    &lt;td&gt;{{technology.name}}&lt;/td&gt;</div><div class="line">                    &lt;td&gt;{{technology.likes}}&lt;/td&gt;</div><div class="line">                    &lt;td&gt;{{technology.dislikes}}&lt;/td&gt;</div><div class="line">                    &lt;td&gt;</div><div class="line">                        &lt;input type=&quot;button&quot; value=&quot;Like&quot; ng-click=&quot;incrementLikes(technology)&quot;/&gt;</div><div class="line">                        &lt;input type=&quot;button&quot; value=&quot;Dislike&quot; ng-click=&quot;incrementDislikes(technology)&quot;/&gt;</div><div class="line">                    &lt;/td&gt;</div><div class="line">                &lt;/tr&gt;</div><div class="line">            &lt;/tbody&gt;</div><div class="line">        &lt;/table&gt;</div><div class="line">    &lt;/div&gt;</div><div class="line">&lt;/body&gt;</div><div class="line">&lt;script&gt;</div><div class="line">    // &#x521B;&#x5EFA;&#x6A21;&#x5757;</div><div class="line">    var myApp = angular</div><div class="line">                        .module(&apos;myModule&apos;,[])</div><div class="line">                        .controller(&apos;myController&apos;,function($scope) {</div><div class="line">                            var technologies = [</div><div class="line">                                {name:&apos;c#&apos;,likes:0,dislikes:0},</div><div class="line">                                {name:&apos;java&apos;,likes:0,dislikes:0},</div><div class="line">                                {name:&apos;js&apos;,likes:0,dislikes:0},</div><div class="line">                                {name:&apos;angularJS&apos;,likes:0,dislikes:0}</div><div class="line">                            ];</div><div class="line">                            $scope.technologies = technologies;</div><div class="line">                            $scope.incrementLikes = function(techonology) {</div><div class="line">                                techonology.likes++;</div><div class="line">                            };</div><div class="line">                            $scope.incrementDislikes = function(techonology) {</div><div class="line">                                techonology.dislikes++;</div><div class="line">                            };</div><div class="line">                        });</div><div class="line">&lt;/script&gt;</div></pre></td></tr></table></figure></p>
+<p><img src="/2016/06/20/angular-1/event.png" alt="event.png"></p>
+<h2 id="Filters"><a href="#Filters" class="headerlink" title="Filters"></a>Filters</h2><ul>
+<li>3&#x4E2A;&#x7528;&#x9014;<ul>
+<li>Format, Sort and Filter Data</li>
+</ul>
+</li>
+<li>&#x80FD;&#x7528;&#x5728;binding expression &#x6216;&#x8005; directive&#x4E2D;</li>
+<li><p>&#x7528;&#x6CD5;</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">{{ expression | filterName:parameter }}</div></pre></td></tr></table></figure>
+</li>
+<li><p>&#x5E38;&#x7528;Filters</p>
+<ul>
+<li>lowercase</li>
+<li>uppercase</li>
+<li>number</li>
+<li>currency</li>
+<li>date</li>
+<li>limitTo<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">{{ expression | limitTo : limit : begin }}</div></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="format-data"><a href="#format-data" class="headerlink" title="format data"></a>format data</h3><p>&#x4F8B;&#x5B50;&#xFF1A;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div></pre></td><td class="code"><pre><div class="line">&lt;body&gt;</div><div class="line">    &lt;div ng-controller=&quot;myController&quot;&gt;</div><div class="line">        Rows to display: &lt;input type=&quot;number&quot; step=&quot;1&quot; min=&quot;0&quot; max=&quot;5&quot; ng-model=&quot;rowLimit&quot;/&gt;</div><div class="line">        &lt;/br&gt;</div><div class="line">        &lt;table&gt;</div><div class="line">            &lt;thead&gt;</div><div class="line">                &lt;tr&gt;</div><div class="line">                    &lt;th&gt;Name&lt;/th&gt;</div><div class="line">                    &lt;th&gt;Date of Birth&lt;/th&gt;</div><div class="line">                    &lt;th&gt;Gender&lt;/th&gt;</div><div class="line">                    &lt;th&gt;Salary (number)&lt;/th&gt;</div><div class="line">                    &lt;th&gt;Salary (currency)&lt;/th&gt;</div><div class="line">                &lt;/tr&gt;</div><div class="line">            &lt;/thead&gt;</div><div class="line">            &lt;tbody&gt;</div><div class="line">                &lt;tr ng-repeat=&quot;employee in employees | limitTo:rowLimit&quot;&gt;</div><div class="line">                    &lt;td&gt;{{employee.name | uppercase}}&lt;/td&gt;</div><div class="line">                    &lt;td&gt;{{employee.dateOfBirth | date:&apos;yyyy-MM-dd hh:mm:ss&apos;}}&lt;/td&gt;</div><div class="line">                    &lt;td&gt;{{employee.gender | lowercase}}&lt;/td&gt;</div><div class="line">                    &lt;td&gt;{{employee.salary | number:1}}&lt;/td&gt;</div><div class="line">                    &lt;td&gt;{{employee.salary | currency:&apos;&#xFFE5;&apos;:1}}&lt;/td&gt;</div><div class="line">                &lt;/tr&gt;</div><div class="line">            &lt;/tbody&gt;</div><div class="line">        &lt;/table&gt;</div><div class="line">    &lt;/div&gt;</div><div class="line">&lt;/body&gt;</div><div class="line">&lt;script&gt;</div><div class="line">    // &#x521B;&#x5EFA;&#x6A21;&#x5757;</div><div class="line">    var myApp = angular</div><div class="line">                        .module(&apos;myModule&apos;,[])</div><div class="line">                        .controller(&apos;myController&apos;,function($scope) {</div><div class="line">                            var employees = [</div><div class="line">                                {name:&apos;Ben&apos;,dateOfBirth:new Date(&apos;1980-11-20&apos;),gender:&apos;Male&apos;,salary:8000},</div><div class="line">                                {name:&apos;You&apos;,dateOfBirth:new Date(&apos;1990-01-20&apos;),gender:&apos;Male&apos;,salary:8000},</div><div class="line">                                {name:&apos;Nie&apos;,dateOfBirth:new Date(&apos;1990-12-20&apos;),gender:&apos;Male&apos;,salary:8000},</div><div class="line">                                {name:&apos;Chen&apos;,dateOfBirth:new Date(&apos;1985-11-20&apos;),gender:&apos;Male&apos;,salary:8000},</div><div class="line">                                {name:&apos;Zhang&apos;,dateOfBirth:new Date(&apos;1980-11-23&apos;),gender:&apos;Male&apos;,salary:8000},</div><div class="line">                            ];</div><div class="line">                            $scope.employees = employees;</div><div class="line">                            $scope.rowLimit = 3;</div><div class="line">                        });</div><div class="line">&lt;/script&gt;</div></pre></td></tr></table></figure></p>
+<h3 id="sorting-data"><a href="#sorting-data" class="headerlink" title="sorting data"></a>sorting data</h3><p>&#x7528;&#x6CD5;&#xFF1A;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">{{ expression | orderBy : expression : reverse }} // &#x9ED8;&#x8BA4;&#x5347;&#x5E8F;</div><div class="line">&#x4F8B;&#xFF1A;</div><div class="line">{{ employee in employees | orderBy : &apos;salary&apos; : &apos;false&apos; }}</div><div class="line">&#x6216;</div><div class="line">{{ employee in employees | orderBy : &apos;+salary&apos; }} //&#x5347;&#x5E8F;</div></pre></td></tr></table></figure></p>
+<p>&#x4F8B;&#x4E00;&#xFF1A;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div></pre></td><td class="code"><pre><div class="line">&lt;body&gt;</div><div class="line">    &lt;div ng-controller=&quot;myController&quot;&gt;</div><div class="line">        Order By:</div><div class="line">        &lt;select ng-model=&quot;sortColumn&quot;&gt;</div><div class="line">            &lt;option value=&quot;name&quot;&gt;name asc&lt;/option&gt;</div><div class="line">            &lt;option value=&quot;dateOfBirth&quot;&gt;date of birth asc&lt;/option&gt;</div><div class="line">            &lt;option value=&quot;gender&quot;&gt;gender asc&lt;/option&gt;</div><div class="line">            &lt;option value=&quot;-salary&quot;&gt;salary desc&lt;/option&gt;</div><div class="line">        &lt;/select&gt;</div><div class="line">        &lt;/br&gt;</div><div class="line">        &lt;table&gt;</div><div class="line">            &lt;thead&gt;</div><div class="line">                &lt;tr&gt;</div><div class="line">                    &lt;th&gt;Name&lt;/th&gt;</div><div class="line">                    &lt;th&gt;Date of Birth&lt;/th&gt;</div><div class="line">                    &lt;th&gt;Gender&lt;/th&gt;</div><div class="line">                    &lt;th&gt;Salary&lt;/th&gt;</div><div class="line">                &lt;/tr&gt;</div><div class="line">            &lt;/thead&gt;</div><div class="line">            &lt;tbody&gt;</div><div class="line">                &lt;tr ng-repeat=&quot;employee in employees | orderBy:sortColumn&quot;&gt;</div><div class="line">                    &lt;td&gt;{{employee.name | uppercase}}&lt;/td&gt;</div><div class="line">                    &lt;td&gt;{{employee.dateOfBirth | date:&apos;yyyy-MM-dd&apos;}}&lt;/td&gt;</div><div class="line">                    &lt;td&gt;{{employee.gender | lowercase}}&lt;/td&gt;</div><div class="line">                    &lt;td&gt;{{employee.salary | number:1}}&lt;/td&gt;</div><div class="line">                &lt;/tr&gt;</div><div class="line">            &lt;/tbody&gt;</div><div class="line">        &lt;/table&gt;</div><div class="line">    &lt;/div&gt;</div><div class="line">&lt;/body&gt;</div><div class="line">&lt;script&gt;</div><div class="line">    // &#x521B;&#x5EFA;&#x6A21;&#x5757;</div><div class="line">    var myApp = angular</div><div class="line">                        .module(&apos;myModule&apos;,[])</div><div class="line">                        .controller(&apos;myController&apos;,function($scope) {</div><div class="line">                            var employees = [</div><div class="line">                                {name:&apos;Ben&apos;,dateOfBirth:new Date(&apos;1980-11-20&apos;),gender:&apos;Female&apos;,salary:8000},</div><div class="line">                                {name:&apos;You&apos;,dateOfBirth:new Date(&apos;1990-01-20&apos;),gender:&apos;Male&apos;,salary:5000},</div><div class="line">                                {name:&apos;Nie&apos;,dateOfBirth:new Date(&apos;1990-12-20&apos;),gender:&apos;Male&apos;,salary:9876},</div><div class="line">                                {name:&apos;Chen&apos;,dateOfBirth:new Date(&apos;1985-11-20&apos;),gender:&apos;Female&apos;,salary:5432},</div><div class="line">                                {name:&apos;Zhang&apos;,dateOfBirth:new Date(&apos;1980-11-23&apos;),gender:&apos;Male&apos;,salary:3346},</div><div class="line">                            ];</div><div class="line">                            $scope.employees = employees;</div><div class="line">                            $scope.sortColumn = &apos;name&apos;;</div><div class="line">                        });</div><div class="line">&lt;/script&gt;</div></pre></td></tr></table></figure></p>
+<p><img src="/2016/06/20/angular-1/sort.png" alt="sort.png"></p>
+<p>&#x4F8B;&#x4E8C;&#xFF1A;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div></pre></td><td class="code"><pre><div class="line">&lt;head lang=&quot;en&quot;&gt;</div><div class="line">    &lt;script src=&quot;//cdn.bootcss.com/angular.js/1.3.0/angular.js&quot;&gt;&lt;/script&gt;</div><div class="line">    &lt;style&gt;</div><div class="line">        .arrow-up {</div><div class="line">            width:0;</div><div class="line">            height:0;</div><div class="line">            border-left:5px solid transparent;</div><div class="line">            border-right:5px solid transparent;</div><div class="line">            border-bottom: 10px solid black;;</div><div class="line">        }</div><div class="line">        .arrow-down {</div><div class="line">            width:0;</div><div class="line">            height: 0;</div><div class="line">            border-left:5px solid transparent;</div><div class="line">            border-right:5px solid transparent;</div><div class="line">            border-top:10px solid black;</div><div class="line">        }</div><div class="line">    &lt;/style&gt;</div><div class="line">&lt;/head&gt;</div><div class="line">&lt;body&gt;</div><div class="line">    &lt;div ng-controller=&quot;myController&quot;&gt;</div><div class="line">        Sort By:</div><div class="line">        &lt;select ng-model=&quot;sortColumn&quot;&gt;</div><div class="line">            &lt;option value=&quot;name&quot;&gt;name&lt;/option&gt;</div><div class="line">            &lt;option value=&quot;dateOfBirth&quot;&gt;date&lt;/option&gt;</div><div class="line">            &lt;option value=&quot;gender&quot;&gt;gender&lt;/option&gt;</div><div class="line">            &lt;option value=&quot;salary&quot;&gt;salary&lt;/option&gt;</div><div class="line">        &lt;/select&gt;</div><div class="line">        &lt;/br&gt;</div><div class="line">        &lt;table&gt;</div><div class="line">            &lt;thead&gt;</div><div class="line">                &lt;tr&gt;</div><div class="line">                    &lt;th ng-click=&quot;sortDate(&apos;name&apos;)&quot;&gt;</div><div class="line">                        Name</div><div class="line">                        &lt;div ng-class=&quot;getSortClass(&apos;name&apos;)&quot;&gt;&lt;/div&gt;</div><div class="line">                    &lt;/th&gt;</div><div class="line">                    &lt;th ng-click=&quot;sortDate(&apos;dateOfBirth&apos;)&quot;&gt;</div><div class="line">                        Date of Birth</div><div class="line">                        &lt;div ng-class=&quot;getSortClass(&apos;dateOfBirth&apos;)&quot;&gt;&lt;/div&gt;</div><div class="line">                    &lt;/th&gt;</div><div class="line">                    &lt;th ng-click=&quot;sortDate(&apos;gender&apos;)&quot;&gt;</div><div class="line">                        Gender</div><div class="line">                        &lt;div ng-class=&quot;getSortClass(&apos;gender&apos;)&quot;&gt;&lt;/div&gt;</div><div class="line">                    &lt;/th&gt;</div><div class="line">                    &lt;th ng-click=&quot;sortDate(&apos;salary&apos;)&quot;&gt;</div><div class="line">                        Salary</div><div class="line">                        &lt;div ng-class=&quot;getSortClass(&apos;salary&apos;)&quot;&gt;&lt;/div&gt;</div><div class="line">                    &lt;/th&gt;</div><div class="line">                &lt;/tr&gt;</div><div class="line">            &lt;/thead&gt;</div><div class="line">            &lt;tbody&gt;</div><div class="line">                &lt;tr ng-repeat=&quot;employee in employees | orderBy:sortColumn:reverseSort&quot;&gt;</div><div class="line">                    &lt;td&gt;{{employee.name | uppercase}}&lt;/td&gt;</div><div class="line">                    &lt;td&gt;{{employee.dateOfBirth | date:&apos;yyyy-MM-dd&apos;}}&lt;/td&gt;</div><div class="line">                    &lt;td&gt;{{employee.gender | lowercase}}&lt;/td&gt;</div><div class="line">                    &lt;td&gt;{{employee.salary | number:1}}&lt;/td&gt;</div><div class="line">                &lt;/tr&gt;</div><div class="line">            &lt;/tbody&gt;</div><div class="line">        &lt;/table&gt;</div><div class="line">    &lt;/div&gt;</div><div class="line">&lt;/body&gt;</div><div class="line">&lt;script&gt;</div><div class="line">    // &#x521B;&#x5EFA;&#x6A21;&#x5757;</div><div class="line">    var myApp = angular</div><div class="line">                        .module(&apos;myModule&apos;,[])</div><div class="line">                        .controller(&apos;myController&apos;,function($scope) {</div><div class="line">                            var employees = [</div><div class="line">                                {name:&apos;Ben&apos;,dateOfBirth:new Date(&apos;1980-11-20&apos;),gender:&apos;Female&apos;,salary:8000},</div><div class="line">                                {name:&apos;You&apos;,dateOfBirth:new Date(&apos;1990-01-20&apos;),gender:&apos;Male&apos;,salary:5000},</div><div class="line">                                {name:&apos;Nie&apos;,dateOfBirth:new Date(&apos;1990-12-20&apos;),gender:&apos;Male&apos;,salary:9876},</div><div class="line">                                {name:&apos;Chen&apos;,dateOfBirth:new Date(&apos;1985-11-20&apos;),gender:&apos;Female&apos;,salary:5432},</div><div class="line">                                {name:&apos;Zhang&apos;,dateOfBirth:new Date(&apos;1980-11-23&apos;),gender:&apos;Male&apos;,salary:3346},</div><div class="line">                            ];</div><div class="line">                            $scope.employees = employees;</div><div class="line">                            $scope.sortColumn = &apos;name&apos;;</div><div class="line">                            $scope.reverseSort = false;</div><div class="line"></div><div class="line">                            $scope.sortDate = function (column) {</div><div class="line">                                $scope.reverseSort = ($scope.sortColumn == column) ? !$scope.reverseSort : false;</div><div class="line">                                $scope.sortColumn = column;</div><div class="line">                            }</div><div class="line"></div><div class="line">                            $scope.getSortClass = function (column) {</div><div class="line">                                if ($scope.sortColumn == column) {</div><div class="line">                                    return $scope.reverseSort ? &apos;arrow-down&apos; : &apos;arrow-up&apos;;</div><div class="line">                                }</div><div class="line">                                return &apos;&apos;;</div><div class="line">                            }</div><div class="line">                        });</div><div class="line">&lt;/script&gt;</div></pre></td></tr></table></figure></p>
+<p><img src="/2016/06/20/angular-1/sort-2.png" alt="sort-2.png"></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/angularjs/">angularjs</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/前端框架/">前端框架</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="http://www.paradeto.com/2016/06/20/angular-1/" data-title="AngularJS学习笔记(一) | Ayou" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/06/29/webpack-1/" title="webpack初识">
+  <strong>PREVIOUS:</strong><br/>
+  <span>
+  webpack初识</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/06/17/helmet/"  title="helmet使用记录">
+ <strong>NEXT:</strong><br/> 
+ <span>helmet使用记录
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	<div class="ds-thread"></div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+  <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#AngularJS的优势"><span class="toc-number">1.</span> <span class="toc-text">AngularJS的优势</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ng-app"><span class="toc-number">2.</span> <span class="toc-text">ng-app</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#模型和控制器"><span class="toc-number">3.</span> <span class="toc-text">模型和控制器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#模型"><span class="toc-number">3.1.</span> <span class="toc-text">模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建模型"><span class="toc-number">3.2.</span> <span class="toc-text">创建模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#控制器"><span class="toc-number">3.3.</span> <span class="toc-text">控制器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建控制器"><span class="toc-number">3.4.</span> <span class="toc-text">创建控制器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#综合实例"><span class="toc-number">3.5.</span> <span class="toc-text">综合实例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#双向数据绑定"><span class="toc-number">4.</span> <span class="toc-text">双向数据绑定</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ng-repeat"><span class="toc-number">5.</span> <span class="toc-text">ng-repeat</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#index"><span class="toc-number">5.1.</span> <span class="toc-text">index</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#事件"><span class="toc-number">6.</span> <span class="toc-text">事件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Filters"><span class="toc-number">7.</span> <span class="toc-text">Filters</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#format-data"><span class="toc-number">7.1.</span> <span class="toc-text">format data</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sorting-data"><span class="toc-number">7.2.</span> <span class="toc-text">sorting data</span></a></li></ol></li></ol>
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+			<li><a href="/categories/html-css/" title="html/css">html/css<sup>4</sup></a></li>
+		
+			<li><a href="/categories/javascript/" title="javascript">javascript<sup>4</sup></a></li>
+		
+			<li><a href="/categories/mongodb/" title="mongodb">mongodb<sup>1</sup></a></li>
+		
+			<li><a href="/categories/nodejs/" title="nodejs">nodejs<sup>2</sup></a></li>
+		
+			<li><a href="/categories/前端工具/" title="前端工具">前端工具<sup>1</sup></a></li>
+		
+			<li><a href="/categories/前端框架/" title="前端框架">前端框架<sup>4</sup></a></li>
+		
+			<li><a href="/categories/前端理论/" title="前端理论">前端理论<sup>1</sup></a></li>
+		
+			<li><a href="/categories/算法/" title="算法">算法<sup>8</sup></a></li>
+		
+			<li><a href="/categories/读书笔记/" title="读书笔记">读书笔记<sup>3</sup></a></li>
+		
+			<li><a href="/categories/转载/" title="转载">转载<sup>1</sup></a></li>
+		
+			<li><a href="/categories/项目实战/" title="项目实战">项目实战<sup>3</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			<li><a href="/tags/WEB安全/" title="WEB安全">WEB安全<sup>2</sup></a></li>
+		
+			<li><a href="/tags/angularjs/" title="angularjs">angularjs<sup>2</sup></a></li>
+		
+			<li><a href="/tags/angularjs2/" title="angularjs2">angularjs2<sup>1</sup></a></li>
+		
+			<li><a href="/tags/canvas/" title="canvas">canvas<sup>3</sup></a></li>
+		
+			<li><a href="/tags/chrome插件/" title="chrome插件">chrome插件<sup>1</sup></a></li>
+		
+			<li><a href="/tags/css/" title="css">css<sup>1</sup></a></li>
+		
+			<li><a href="/tags/helmet/" title="helmet">helmet<sup>1</sup></a></li>
+		
+			<li><a href="/tags/html/" title="html">html<sup>3</sup></a></li>
+		
+			<li><a href="/tags/http/" title="http">http<sup>2</sup></a></li>
+		
+			<li><a href="/tags/https/" title="https">https<sup>1</sup></a></li>
+		
+			<li><a href="/tags/javascript/" title="javascript">javascript<sup>5</sup></a></li>
+		
+			<li><a href="/tags/jquery插件/" title="jquery插件">jquery插件<sup>1</sup></a></li>
+		
+			<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>4</sup></a></li>
+		
+			<li><a href="/tags/promise/" title="promise">promise<sup>1</sup></a></li>
+		
+			<li><a href="/tags/react/" title="react">react<sup>2</sup></a></li>
+		
+			<li><a href="/tags/replica/" title="replica">replica<sup>1</sup></a></li>
+		
+			<li><a href="/tags/sharding/" title="sharding">sharding<sup>1</sup></a></li>
+		
+			<li><a href="/tags/slb/" title="slb">slb<sup>1</sup></a></li>
+		
+			<li><a href="/tags/webpack/" title="webpack">webpack<sup>2</sup></a></li>
+		
+			<li><a href="/tags/事件/" title="事件">事件<sup>1</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  <div class="rsspart">
+	<a href="null" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+	</div>
+		<p class="copyright">Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/zhyu/yaht" target="_blank" title="YAHT">YAHT</a> © 2017 
+		
+		<a href="http://www.paradeto.com" target="_blank" title="Ayou">Ayou</a>
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<!--canvas-->
+
+<script src="/js/canvas.js"></script>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.navbar').click(function(){
+      $('header nav').toggleClass('shownav');
+    });
+    var myWidth = 0;
+    function getSize(){
+      if( typeof( window.innerWidth ) == 'number' ) {
+        myWidth = window.innerWidth;
+      } else if( document.documentElement && document.documentElement.clientWidth) {
+        myWidth = document.documentElement.clientWidth;
+      };
+    };
+    var m = $('#main'),
+    a = $('#asidepart'),
+    c = $('.closeaside'),
+    o = $('.openaside');
+    $(window).resize(function(){
+      getSize();
+      if (myWidth >= 1024) {
+        $('header nav').removeClass('shownav');
+      }else
+      {
+        m.removeClass('moveMain');
+        a.css('display', 'block').removeClass('fadeOut');
+        o.css('display', 'none');
+        
+            $('#toc.toc-aside').css('display', 'none');
+          
+      }
+    });
+    c.click(function(){
+      a.addClass('fadeOut').css('display', 'none');
+      o.css('display', 'block').addClass('fadeIn');
+      m.addClass('moveMain');
+    });
+    o.click(function(){
+      o.css('display', 'none').removeClass('beforeFadeIn');
+      a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');
+      m.removeClass('moveMain');
+    });
+    $(window).scroll(function(){
+      o.css("top",Math.max(80,260-$(this).scrollTop()));
+    });
+  });
+</script>
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+      var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+      if(ai.length>0){
+        ai.wrap('<div class="video-container" />');
+      };
+      if(ae.length>0){
+        ae.wrap('<div class="video-container" />');
+      };
+      if(ah.length==0){
+        t.css('display','none');
+      }else{
+        c.click(function(){
+          ta.css('display', 'block').addClass('fadeIn');
+        });
+        o.click(function(){
+          ta.css('display', 'none');
+        });
+        $(window).scroll(function(){
+          ta.css("top",Math.max(140,320-$(this).scrollTop()));
+        });
+      };
+    });
+  </script>
+
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+      var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+      var html = [
+        '<a href="#" class="overlay" id="qrcode"></a>',
+        '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+        '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+        '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+        '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+        '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+        '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+        '<span title="Share to"></span>'
+        ].join('');
+        $this.append(html);
+        $('.article-share-qrcode').click(function(){
+          var imgSrc = $('#qrcode-pic').attr('data-src');
+          $('#qrcode-pic').attr('src', imgSrc);
+          $('#qrcode-pic').load(function(){
+            $('.qrcode strong').text(' ');
+          });
+        });
+    });
+  </script>
+
+
+  
+    <script type="text/javascript">
+      var duoshuoQuery = {short_name:"paradeto"};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0]
+        || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+    </script>
+  
+  
+  
+
+
+
+
+
+
+
+
+
+
+  <div id="back-to-top">
+    <a title="返回顶部"><img src="/img/scrollup.png"/></a>
+  </div>
+  <script src="/js/back_to_top.js"></script>
+
+
+
+  </body>
+</html>
+

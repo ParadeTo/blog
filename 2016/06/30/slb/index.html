@@ -1,0 +1,441 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>利用阿里云SLB和node实现http自动跳转https | Ayou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="Ayou">
+    
+    <meta name="description" itemprop="description" content="利用阿里云SLB和node实现http自动跳转https">
+    
+    
+    
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/yaht.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/yaht.jpg">
+    
+    
+        <link rel="stylesheet" href="/css/style.css">
+    
+    
+    
+<script type="text/javascript">
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "//hm.baidu.com/hm.js?bc27adb5eec6cd3b858ecca2a190876a";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+
+</head>
+
+  <body>
+    <header>
+      <canvas id="headerCanvas">
+
+</canvas>
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Ayou" title="Ayou"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Ayou">Ayou</a></h1>
+				<h2 class="blog-motto">Good Good Study, Day Day Up!</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/resume">Resume</a></li>
+					
+						<li><a href="/demo">Demo</a></li>
+					
+					<li>
+					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:www.paradeto.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/06/30/slb/" title="利用阿里云SLB和node实现http自动跳转https" itemprop="url">利用阿里云SLB和node实现http自动跳转https</a>
+  </h1>
+  <p class="article-author">By
+    
+      <a href="http://www.paradeto.com" title="Ayou">Ayou</a>
+    </p>
+  <p class="article-time">
+    <time datetime="2016-06-30T06:12:01.000Z" itemprop="datePublished">2016-06-30</time>
+    更新日期:<time datetime="2016-11-22T13:51:34.000Z" itemprop="dateModified">2016-11-22</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+		</div>
+		
+		<p>&#x516C;&#x53F8;&#x4EA7;&#x54C1;&#x4E3A;&#x4E86;&#x5B89;&#x5168;&#x8003;&#x8651;&#x5FC5;&#x987B;&#x8981;&#x7528;https&#x534F;&#x8BAE;&#xFF0C;&#x4F46;&#x662F;&#x7528;&#x6237;&#x5728;&#x6D4F;&#x89C8;&#x5668;&#x5730;&#x5740;&#x680F;&#x4E2D;&#x4E00;&#x822C;&#x4E0D;&#x4F1A;&#x4E3B;&#x52A8;&#x8F93;&#x5165;https&#x3002;&#x6240;&#x4EE5;&#xFF0C;&#x5982;&#x4F55;&#x81EA;&#x52A8;&#x4ECE;http&#x8DF3;&#x8F6C;&#x5230;https&#x662F;&#x4E00;&#x4E2A;&#x5FC5;&#x987B;&#x8981;&#x89E3;&#x51B3;&#x7684;&#x95EE;&#x9898;&#x3002;&#x7F51;&#x4E0A;&#x5927;&#x90E8;&#x5206;&#x7684;&#x505A;&#x6CD5;&#x662F;SLB-&gt;(https/http)NGIX-&gt;(http)NODE&#x3002;&#x7136;&#x540E;&#x7531;NGIX&#x6765;&#x5B9E;&#x73B0;&#x81EA;&#x52A8;&#x8DF3;&#x8F6C;&#x7684;&#x529F;&#x80FD;&#xFF0C;&#x6211;&#x4EEC;&#x516C;&#x53F8;&#x6CA1;&#x6709;&#x90E8;&#x7F72;NGIX&#x3002;&#x7136;&#x540E;&#x6211;&#x4EEC;&#x7684;&#x8FD0;&#x7EF4;&#x8BF4;&#xFF0C;&#x4F60;&#x4EEC;&#x524D;&#x7AEF;&#x81EA;&#x5DF1;&#x53BB;&#x8DF3;&#x5427;&#x3002;</p>
+<p>&#x8FD9;&#x4E2A;&#x5F88;&#x597D;&#x529E;&#xFF0C;&#x9875;&#x9762;&#x4E0A;&#x51E0;&#x884C;&#x4EE3;&#x7801;&#x5C31;&#x641E;&#x5B9A;&#xFF1A;<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> url = <span class="built_in">window</span>.location.href;  </div><div class="line"><span class="keyword">if</span>(url.indexOf(<span class="string">&apos;https&apos;</span>) &lt; <span class="number">0</span>) {  </div><div class="line">  url = url.replace(<span class="string">&apos;http:&apos;</span>, <span class="string">&apos;https:&apos;</span>);  </div><div class="line">  <span class="built_in">window</span>.location.replace(url);  </div><div class="line">}</div></pre></td></tr></table></figure></p>
+<p>&#x4F46;&#x662F;&#xFF0C;&#x8FD9;&#x6837;&#x7684;&#x95EE;&#x9898;&#x662F;&#x6BCF;&#x4E00;&#x6B21;http&#x7684;&#x8BBF;&#x95EE;&#x90FD;&#x76F8;&#x5F53;&#x4E8E;&#x4E24;&#x6B21;&#x8BBF;&#x95EE;&#xFF08;&#x540C;&#x6837;&#x7684;css&#x3001;js&#x3001;&#x56FE;&#x7247;&#xFF0C;&#x90FD;&#x4E0B;&#x8F7D;&#x4E86;&#x4E24;&#x6B21;&#xFF09;&#x3002;&#x4E0D;&#x884C;&#xFF0C;&#x6211;&#x4EEC;&#x5F97;&#x5728;&#x670D;&#x52A1;&#x5668;&#x5185;&#x90E8;&#x5C31;&#x8FDB;&#x884C;&#x8DF3;&#x8F6C;&#x3002;&#x4E8E;&#x662F;&#xFF0C;&#x6211;&#x4EEC;&#x5199;&#x51FA;&#x4E86;&#x8FD9;&#x6837;&#x7684;&#x4EE3;&#x7801;&#xFF1A;<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">app.use(<span class="function"><span class="keyword">function</span>(<span class="params">req, res, next</span>) </span>{  </div><div class="line">  <span class="keyword">if</span> (req.originalUrl.indexOf(<span class="string">&quot;https&quot;</span>) &lt; <span class="number">0</span>) {  </div><div class="line">    res.setHeader(<span class="string">&apos;Location&apos;</span>,<span class="string">&apos;http://*****&apos;</span>);  </div><div class="line">    res.status(<span class="number">301</span>).end();  </div><div class="line">  } <span class="keyword">else</span> {  </div><div class="line">    next();  </div><div class="line">  }  </div><div class="line">});</div></pre></td></tr></table></figure></p>
+<p>&#x7ED3;&#x679C;&#x662F;&#xFF0C;&#x751F;&#x4EA7;&#x73AF;&#x5883;&#x4E0A;&#x62A5;502&#x9519;&#x8BEF;&#xFF0C;&#x610F;&#x601D;&#x662F;SLB&#x65E0;&#x6CD5;&#x68C0;&#x6D4B;&#x5230;&#x5065;&#x5EB7;&#x7684;&#x670D;&#x52A1;&#xFF0C;&#x65E0;&#x6CD5;&#x5C06;&#x8BF7;&#x6C42;&#x8FDB;&#x884C;&#x8F6C;&#x53D1;&#x3002;<br>&#x540E;&#x6765;&#x4ED4;&#x7EC6;&#x60F3;&#x4E86;&#x60F3;&#xFF0C;&#x6309;&#x7167;&#x4E0A;&#x9762;&#x7684;&#x505A;&#x6CD5;&#xFF0C;&#x662F;&#x8FD9;&#x4E48;&#x4E2A;&#x60C5;&#x51B5;:<br><img src="/2016/06/30/slb/1.jpg" alt="1.jpg"></p>
+<p>&#x7531;&#x4E8E;SLB&#x5230;NODE&#x90FD;&#x662F;http&#x534F;&#x8BAE;&#xFF0C;&#x6240;&#x4EE5;NODE&#x6240;&#x5904;&#x7406;&#x7684;&#x8BF7;&#x6C42;&#x90FD;&#x4F1A;&#x8FDB;&#x884C;&#x91CD;&#x5B9A;&#x5411;&#xFF0C;&#x5E76;&#x8FD4;&#x56DE;301&#x5230;SLB&#xFF0C;&#x800C;SLB&#x662F;&#x6709;&#x4E00;&#x4E2A;&#x5065;&#x5EB7;&#x68C0;&#x67E5;&#x7684;&#x673A;&#x5236;&#xFF0C;&#x8BE6;&#x60C5;&#x53EF;&#x4EE5;<a href="https://help.aliyun.com/knowledge_detail/13057332.html" target="_blank" rel="external">&#x770B;&#x8FD9;&#x91CC;</a>&#xFF0C;&#x6211;&#x4EEC;&#x751F;&#x4EA7;&#x4E0A;&#x662F;&#x914D;&#x7F6E;&#x7684;&#x8FD4;&#x56DE;2**&#x7684;&#x72B6;&#x6001;&#x7801;&#x624D;&#x8BA4;&#x4E3A;&#x670D;&#x52A1;&#x6B63;&#x5E38;&#x3002;&#x6240;&#x4EE5;&#xFF0C;&#x5C31;&#x6709;&#x4E86;&#x4E0A;&#x9762;&#x7684;&#x9519;&#x8BEF;&#x3002;</p>
+<p>&#x89E3;&#x51B3;&#x529E;&#x6CD5;&#xFF0C;&#x5728;node&#x7AEF;&#x518D;&#x542F;&#x52A8;&#x4E00;&#x4E2A;&#x670D;&#x52A1;&#xFF0C;&#x76D1;&#x542C;81&#x7AEF;&#x53E3;&#xFF0C;SLB&#x76D1;&#x542C;80&#x7AEF;&#x53E3;&#xFF08;http&#xFF09;&#x7684;&#x6570;&#x636E;&#x8F6C;&#x53D1;&#x7ED9;&#x6B64;&#x670D;&#x52A1;&#xFF1A;<br><img src="/2016/06/30/slb/2.png" alt="2.png"></p>
+<p>&#x8FD9;&#x6837;&#x7684;&#x8BDD;&#xFF0C;81&#x7AEF;&#x53E3;SLB&#x7684;&#x5065;&#x5EB7;&#x68C0;&#x67E5;&#x673A;&#x5236;&#x5C31;&#x5FC5;&#x987B;&#x8981;&#x7528;TCP&#x7684;&#x65B9;&#x6CD5;&#x3002;</p>
+<p>&#x867D;&#x7136;&#x6682;&#x65F6;&#x89E3;&#x51B3;&#x4E86;&#xFF0C;&#x4F46;&#x662F;&#x540E;&#x9762;&#x6362;&#x6210;NGIX&#x8FD8;&#x662F;&#x6709;&#x610F;&#x4E49;&#x7684;&#xFF0C;&#x8FD8;&#x53EF;&#x4EE5;&#x5C06;&#x9759;&#x6001;&#x8D44;&#x6E90;&#x8FC1;&#x79FB;&#x5230;&#x4E0A;&#x9762;&#x3002;</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/http/">http</a><a href="/tags/nodejs/">nodejs</a><a href="/tags/slb/">slb</a><a href="/tags/https/">https</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/项目实战/">项目实战</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="http://www.paradeto.com/2016/06/30/slb/" data-title="利用阿里云SLB和node实现http自动跳转https | Ayou" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/07/01/imitate-app-pwd/" title="H5仿原生APP密码输入">
+  <strong>PREVIOUS:</strong><br/>
+  <span>
+  H5仿原生APP密码输入</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/06/29/webpack-1/"  title="webpack初识">
+ <strong>NEXT:</strong><br/> 
+ <span>webpack初识
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	<div class="ds-thread"></div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+  
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+			<li><a href="/categories/html-css/" title="html/css">html/css<sup>4</sup></a></li>
+		
+			<li><a href="/categories/javascript/" title="javascript">javascript<sup>4</sup></a></li>
+		
+			<li><a href="/categories/mongodb/" title="mongodb">mongodb<sup>1</sup></a></li>
+		
+			<li><a href="/categories/nodejs/" title="nodejs">nodejs<sup>2</sup></a></li>
+		
+			<li><a href="/categories/前端工具/" title="前端工具">前端工具<sup>1</sup></a></li>
+		
+			<li><a href="/categories/前端框架/" title="前端框架">前端框架<sup>4</sup></a></li>
+		
+			<li><a href="/categories/前端理论/" title="前端理论">前端理论<sup>1</sup></a></li>
+		
+			<li><a href="/categories/算法/" title="算法">算法<sup>8</sup></a></li>
+		
+			<li><a href="/categories/读书笔记/" title="读书笔记">读书笔记<sup>3</sup></a></li>
+		
+			<li><a href="/categories/转载/" title="转载">转载<sup>1</sup></a></li>
+		
+			<li><a href="/categories/项目实战/" title="项目实战">项目实战<sup>3</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			<li><a href="/tags/WEB安全/" title="WEB安全">WEB安全<sup>2</sup></a></li>
+		
+			<li><a href="/tags/angularjs/" title="angularjs">angularjs<sup>2</sup></a></li>
+		
+			<li><a href="/tags/angularjs2/" title="angularjs2">angularjs2<sup>1</sup></a></li>
+		
+			<li><a href="/tags/canvas/" title="canvas">canvas<sup>3</sup></a></li>
+		
+			<li><a href="/tags/chrome插件/" title="chrome插件">chrome插件<sup>1</sup></a></li>
+		
+			<li><a href="/tags/css/" title="css">css<sup>1</sup></a></li>
+		
+			<li><a href="/tags/helmet/" title="helmet">helmet<sup>1</sup></a></li>
+		
+			<li><a href="/tags/html/" title="html">html<sup>3</sup></a></li>
+		
+			<li><a href="/tags/http/" title="http">http<sup>2</sup></a></li>
+		
+			<li><a href="/tags/https/" title="https">https<sup>1</sup></a></li>
+		
+			<li><a href="/tags/javascript/" title="javascript">javascript<sup>5</sup></a></li>
+		
+			<li><a href="/tags/jquery插件/" title="jquery插件">jquery插件<sup>1</sup></a></li>
+		
+			<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>4</sup></a></li>
+		
+			<li><a href="/tags/promise/" title="promise">promise<sup>1</sup></a></li>
+		
+			<li><a href="/tags/react/" title="react">react<sup>2</sup></a></li>
+		
+			<li><a href="/tags/replica/" title="replica">replica<sup>1</sup></a></li>
+		
+			<li><a href="/tags/sharding/" title="sharding">sharding<sup>1</sup></a></li>
+		
+			<li><a href="/tags/slb/" title="slb">slb<sup>1</sup></a></li>
+		
+			<li><a href="/tags/webpack/" title="webpack">webpack<sup>2</sup></a></li>
+		
+			<li><a href="/tags/事件/" title="事件">事件<sup>1</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  <div class="rsspart">
+	<a href="null" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+	</div>
+		<p class="copyright">Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/zhyu/yaht" target="_blank" title="YAHT">YAHT</a> © 2017 
+		
+		<a href="http://www.paradeto.com" target="_blank" title="Ayou">Ayou</a>
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<!--canvas-->
+
+<script src="/js/canvas.js"></script>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.navbar').click(function(){
+      $('header nav').toggleClass('shownav');
+    });
+    var myWidth = 0;
+    function getSize(){
+      if( typeof( window.innerWidth ) == 'number' ) {
+        myWidth = window.innerWidth;
+      } else if( document.documentElement && document.documentElement.clientWidth) {
+        myWidth = document.documentElement.clientWidth;
+      };
+    };
+    var m = $('#main'),
+    a = $('#asidepart'),
+    c = $('.closeaside'),
+    o = $('.openaside');
+    $(window).resize(function(){
+      getSize();
+      if (myWidth >= 1024) {
+        $('header nav').removeClass('shownav');
+      }else
+      {
+        m.removeClass('moveMain');
+        a.css('display', 'block').removeClass('fadeOut');
+        o.css('display', 'none');
+        
+            $('#toc.toc-aside').css('display', 'none');
+          
+      }
+    });
+    c.click(function(){
+      a.addClass('fadeOut').css('display', 'none');
+      o.css('display', 'block').addClass('fadeIn');
+      m.addClass('moveMain');
+    });
+    o.click(function(){
+      o.css('display', 'none').removeClass('beforeFadeIn');
+      a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');
+      m.removeClass('moveMain');
+    });
+    $(window).scroll(function(){
+      o.css("top",Math.max(80,260-$(this).scrollTop()));
+    });
+  });
+</script>
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+      var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+      if(ai.length>0){
+        ai.wrap('<div class="video-container" />');
+      };
+      if(ae.length>0){
+        ae.wrap('<div class="video-container" />');
+      };
+      if(ah.length==0){
+        t.css('display','none');
+      }else{
+        c.click(function(){
+          ta.css('display', 'block').addClass('fadeIn');
+        });
+        o.click(function(){
+          ta.css('display', 'none');
+        });
+        $(window).scroll(function(){
+          ta.css("top",Math.max(140,320-$(this).scrollTop()));
+        });
+      };
+    });
+  </script>
+
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+      var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+      var html = [
+        '<a href="#" class="overlay" id="qrcode"></a>',
+        '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+        '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+        '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+        '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+        '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+        '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+        '<span title="Share to"></span>'
+        ].join('');
+        $this.append(html);
+        $('.article-share-qrcode').click(function(){
+          var imgSrc = $('#qrcode-pic').attr('data-src');
+          $('#qrcode-pic').attr('src', imgSrc);
+          $('#qrcode-pic').load(function(){
+            $('.qrcode strong').text(' ');
+          });
+        });
+    });
+  </script>
+
+
+  
+    <script type="text/javascript">
+      var duoshuoQuery = {short_name:"paradeto"};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0]
+        || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+    </script>
+  
+  
+  
+
+
+
+
+
+
+
+
+
+
+  <div id="back-to-top">
+    <a title="返回顶部"><img src="/img/scrollup.png"/></a>
+  </div>
+  <script src="/js/back_to_top.js"></script>
+
+
+
+  </body>
+</html>
+

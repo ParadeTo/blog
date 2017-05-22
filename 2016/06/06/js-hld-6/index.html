@@ -1,0 +1,554 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>笔记-javascript高级程序设计（第3版）第6章 | Ayou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="Ayou">
+    
+    <meta name="description" itemprop="description" content="javascript高级程序设计（第3版）第6章笔记">
+    
+    
+    
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/yaht.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/yaht.jpg">
+    
+    
+        <link rel="stylesheet" href="/css/style.css">
+    
+    
+    
+<script type="text/javascript">
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "//hm.baidu.com/hm.js?bc27adb5eec6cd3b858ecca2a190876a";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+
+</head>
+
+  <body>
+    <header>
+      <canvas id="headerCanvas">
+
+</canvas>
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Ayou" title="Ayou"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Ayou">Ayou</a></h1>
+				<h2 class="blog-motto">Good Good Study, Day Day Up!</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/resume">Resume</a></li>
+					
+						<li><a href="/demo">Demo</a></li>
+					
+					<li>
+					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:www.paradeto.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/06/06/js-hld-6/" title="笔记-javascript高级程序设计（第3版）第6章" itemprop="url">笔记-javascript高级程序设计（第3版）第6章</a>
+  </h1>
+  <p class="article-author">By
+    
+      <a href="http://www.paradeto.com" title="Ayou">Ayou</a>
+    </p>
+  <p class="article-time">
+    <time datetime="2016-06-06T07:56:49.000Z" itemprop="datePublished">2016-06-06</time>
+    更新日期:<time datetime="2017-04-01T23:33:14.000Z" itemprop="dateModified">2017-04-02</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#理解对象"><span class="toc-number">1.</span> <span class="toc-text">理解对象</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#属性类型"><span class="toc-number">1.1.</span> <span class="toc-text">属性类型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#数据属性"><span class="toc-number">1.1.1.</span> <span class="toc-text">数据属性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#访问器属性"><span class="toc-number">1.1.2.</span> <span class="toc-text">访问器属性</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#定义多个属性"><span class="toc-number">1.2.</span> <span class="toc-text">定义多个属性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#读取属性的特性"><span class="toc-number">1.3.</span> <span class="toc-text">读取属性的特性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建对象"><span class="toc-number">2.</span> <span class="toc-text">创建对象</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#工厂模式"><span class="toc-number">2.1.</span> <span class="toc-text">工厂模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#寄生构造函数模式（不常用）"><span class="toc-number">2.2.</span> <span class="toc-text">寄生构造函数模式（不常用）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#稳妥构造函数模式（不常用）"><span class="toc-number">2.3.</span> <span class="toc-text">稳妥构造函数模式（不常用）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#构造函数模式"><span class="toc-number">2.4.</span> <span class="toc-text">构造函数模式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#将构造函数当作函数"><span class="toc-number">2.4.1.</span> <span class="toc-text">将构造函数当作函数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#构造函数的问题"><span class="toc-number">2.4.2.</span> <span class="toc-text">构造函数的问题</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#原型模式"><span class="toc-number">2.5.</span> <span class="toc-text">原型模式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#理解原型对象"><span class="toc-number">2.5.1.</span> <span class="toc-text">理解原型对象</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#原型与in操作符"><span class="toc-number">2.5.2.</span> <span class="toc-text">原型与in操作符</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#更简单的原型语法"><span class="toc-number">2.5.3.</span> <span class="toc-text">更简单的原型语法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#原型的动态性"><span class="toc-number">2.5.4.</span> <span class="toc-text">原型的动态性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#原生对象的原型"><span class="toc-number">2.5.5.</span> <span class="toc-text">原生对象的原型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#原型对象的问题"><span class="toc-number">2.5.6.</span> <span class="toc-text">原型对象的问题</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#组合使用改造函数模式和原型模式"><span class="toc-number">2.6.</span> <span class="toc-text">组合使用改造函数模式和原型模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#动态原型模式"><span class="toc-number">2.7.</span> <span class="toc-text">动态原型模式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#继承"><span class="toc-number">3.</span> <span class="toc-text">继承</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#原型链"><span class="toc-number">3.1.</span> <span class="toc-text">原型链</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#别忘记默认的原型"><span class="toc-number">3.1.1.</span> <span class="toc-text">别忘记默认的原型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#确定原型和实例的关系"><span class="toc-number">3.1.2.</span> <span class="toc-text">确定原型和实例的关系</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#谨慎的定义方法"><span class="toc-number">3.1.3.</span> <span class="toc-text">谨慎的定义方法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#原型链的问题"><span class="toc-number">3.1.4.</span> <span class="toc-text">原型链的问题</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#借用构造函数"><span class="toc-number">3.2.</span> <span class="toc-text">借用构造函数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#传递参数"><span class="toc-number">3.2.1.</span> <span class="toc-text">传递参数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#借用构造函数的问题"><span class="toc-number">3.2.2.</span> <span class="toc-text">借用构造函数的问题</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#组合继承（最常用）"><span class="toc-number">3.3.</span> <span class="toc-text">组合继承（最常用）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#原型式继承"><span class="toc-number">3.4.</span> <span class="toc-text">原型式继承</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Object-create"><span class="toc-number">3.4.1.</span> <span class="toc-text">Object.create()</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#寄生式继承"><span class="toc-number">3.5.</span> <span class="toc-text">寄生式继承</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#寄生组合式继承"><span class="toc-number">3.6.</span> <span class="toc-text">寄生组合式继承</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#后记"><span class="toc-number"></span> <span class="toc-text">后记</span></a>
+		</div>
+		
+		<h2 id="&#x7406;&#x89E3;&#x5BF9;&#x8C61;"><a href="#&#x7406;&#x89E3;&#x5BF9;&#x8C61;" class="headerlink" title="&#x7406;&#x89E3;&#x5BF9;&#x8C61;"></a>&#x7406;&#x89E3;&#x5BF9;&#x8C61;</h2><h3 id="&#x5C5E;&#x6027;&#x7C7B;&#x578B;"><a href="#&#x5C5E;&#x6027;&#x7C7B;&#x578B;" class="headerlink" title="&#x5C5E;&#x6027;&#x7C7B;&#x578B;"></a>&#x5C5E;&#x6027;&#x7C7B;&#x578B;</h3><h4 id="&#x6570;&#x636E;&#x5C5E;&#x6027;"><a href="#&#x6570;&#x636E;&#x5C5E;&#x6027;" class="headerlink" title="&#x6570;&#x636E;&#x5C5E;&#x6027;"></a>&#x6570;&#x636E;&#x5C5E;&#x6027;</h4><ul>
+<li>Configurable: &#x80FD;&#x5426;delete&#xFF0C;&#x80FD;&#x5426;&#x4FEE;&#x6539;&#x5176;&#x7279;&#x6027;&#xFF0C;&#x80FD;&#x5426;&#x4FEE;&#x6539;&#x4E3A;&#x8BBF;&#x95EE;&#x5668;&#x5C5E;&#x6027;&#x3002;&#x9ED8;&#x8BA4;true</li>
+<li>Enumerable: &#x80FD;&#x5426;&#x901A;&#x8FC7;for-in&#x5FAA;&#x73AF;&#x8FD4;&#x56DE;&#x3002;&#x9ED8;&#x8BA4;true</li>
+<li>Writable: &#x80FD;&#x5426;&#x4FEE;&#x6539;&#x503C;&#x3002;&#x9ED8;&#x8BA4;true</li>
+<li>Value: &#x5C5E;&#x6027;&#x7684;&#x6570;&#x636E;&#x503C;&#x3002;&#x9ED8;&#x8BA4;undefined</li>
+</ul>
+<p><strong> defineProperty&#xFF1A; </strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">var person = {};</div><div class="line">Object.defineProperty(person, &apos;name&apos;, {</div><div class="line">  configurable: false,</div><div class="line">  value: &apos;Nicholas&apos;</div><div class="line">});</div><div class="line">alert(person.name); // &apos;Nicholas&apos;</div><div class="line">delete person.name; // &#x65E0;&#x6CD5;&#x5220;&#x9664;&#xFF0C;&#x975E;&#x4E25;&#x683C;&#x6A21;&#x5F0F;&#x4EC0;&#x4E48;&#x90FD;&#x4E0D;&#x4F1A;&#x53D1;&#x751F;&#xFF0C;&#x4E25;&#x683C;&#x6A21;&#x5F0F;&#x4F1A;&#x5BFC;&#x81F4;&#x9519;&#x8BEF;</div><div class="line">alert(person.name); // &apos;Nicholas&apos;</div></pre></td></tr></table></figure></p>
+<p><strong> &#x4E00;&#x65E6;&#x628A;&#x5C5E;&#x6027;&#x5B9A;&#x4E49;&#x4E3A;&#x4E0D;&#x53EF;&#x914D;&#x7F6E;&#x7684;&#xFF0C;&#x5C31;&#x4E0D;&#x80FD;&#x518D;&#x8C03;&#x7528;&#x5176;&#x4FEE;&#x6539;&#x9664;writable&#x4E4B;&#x5916;&#x7684;&#x5176;&#x4ED6;&#x7279;&#x6027; </strong></p>
+<h4 id="&#x8BBF;&#x95EE;&#x5668;&#x5C5E;&#x6027;"><a href="#&#x8BBF;&#x95EE;&#x5668;&#x5C5E;&#x6027;" class="headerlink" title="&#x8BBF;&#x95EE;&#x5668;&#x5C5E;&#x6027;"></a>&#x8BBF;&#x95EE;&#x5668;&#x5C5E;&#x6027;</h4><ul>
+<li>Configurable</li>
+<li>Enumerable</li>
+<li>Get</li>
+<li>Set</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">var book ={</div><div class="line">  _year: 2004,</div><div class="line">  edition: 1</div><div class="line">};</div><div class="line"></div><div class="line">Object.defineProperty(book, &apos;year&apos;, {</div><div class="line">  get: function() {</div><div class="line">    return this._year</div><div class="line">  },</div><div class="line">  set: function(newValue) {</div><div class="line">    if (newValue &gt; 2004) {</div><div class="line">      this._year = newValue;</div><div class="line">      this.edition += newValue - 2004;</div><div class="line">    }</div><div class="line">  }</div><div class="line">});</div><div class="line"></div><div class="line">book.year = 2005;</div><div class="line">alert(book.edition);</div></pre></td></tr></table></figure>
+<p>&#x4E0D;&#x4E00;&#x5B9A;&#x8981;&#x540C;&#x65F6;&#x6307;&#x5B9A;&#x4E24;&#x8005;&#xFF0C;&#x5F53;set/get&#x6CA1;&#x6709;&#x6307;&#x5B9A;&#x65F6;&#xFF0C;&#x8868;&#x793A;&#x8BE5;&#x5C5E;&#x6027;&#x4E0D;&#x53EF;&#x5199;/&#x8BFB;</p>
+<h3 id="&#x5B9A;&#x4E49;&#x591A;&#x4E2A;&#x5C5E;&#x6027;"><a href="#&#x5B9A;&#x4E49;&#x591A;&#x4E2A;&#x5C5E;&#x6027;" class="headerlink" title="&#x5B9A;&#x4E49;&#x591A;&#x4E2A;&#x5C5E;&#x6027;"></a>&#x5B9A;&#x4E49;&#x591A;&#x4E2A;&#x5C5E;&#x6027;</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">var book = {};</div><div class="line">Object.defineProperties(book,{</div><div class="line">  _year: {</div><div class="line">    value: 2004</div><div class="line">  },</div><div class="line">  year: {</div><div class="line">    get: function() {</div><div class="line">      </div><div class="line">    },</div><div class="line">    set: function() {</div><div class="line">      </div><div class="line">    }</div><div class="line">  }</div><div class="line">});</div></pre></td></tr></table></figure>
+<h3 id="&#x8BFB;&#x53D6;&#x5C5E;&#x6027;&#x7684;&#x7279;&#x6027;"><a href="#&#x8BFB;&#x53D6;&#x5C5E;&#x6027;&#x7684;&#x7279;&#x6027;" class="headerlink" title="&#x8BFB;&#x53D6;&#x5C5E;&#x6027;&#x7684;&#x7279;&#x6027;"></a>&#x8BFB;&#x53D6;&#x5C5E;&#x6027;&#x7684;&#x7279;&#x6027;</h3><p>Object.getOwnPropertyDescriptor<br>&#x8FD9;&#x4E2A;&#x65B9;&#x6CD5;&#x53EA;&#x80FD;&#x7528;&#x4E8E;&#x5B9E;&#x4F8B;&#x5C5E;&#x6027;&#xFF0C;&#x8981;&#x53D6;&#x5F97;&#x539F;&#x578B;&#x5C5E;&#x6027;&#x7684;&#x63CF;&#x8FF0;&#x7B26;&#xFF0C;&#x5FC5;&#x987B;&#x76F4;&#x63A5;&#x5728;&#x539F;&#x578B;&#x5BF9;&#x8C61;&#x4E0A;&#x8C03;&#x7528;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">var descriptor = Object.getOwnPropertyDescriptor(book,&apos;year&apos;)</div><div class="line">console.log(descriptor.value); // undefined</div><div class="line">console.log(descriptor.configurable); // false</div></pre></td></tr></table></figure></p>
+<h2 id="&#x521B;&#x5EFA;&#x5BF9;&#x8C61;"><a href="#&#x521B;&#x5EFA;&#x5BF9;&#x8C61;" class="headerlink" title="&#x521B;&#x5EFA;&#x5BF9;&#x8C61;"></a>&#x521B;&#x5EFA;&#x5BF9;&#x8C61;</h2><h3 id="&#x5DE5;&#x5382;&#x6A21;&#x5F0F;"><a href="#&#x5DE5;&#x5382;&#x6A21;&#x5F0F;" class="headerlink" title="&#x5DE5;&#x5382;&#x6A21;&#x5F0F;"></a>&#x5DE5;&#x5382;&#x6A21;&#x5F0F;</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">// &#x5DE5;&#x5382;&#x6A21;&#x5F0F;</div><div class="line">function createPerson(name, age, job) {</div><div class="line">  var o = new Object();</div><div class="line">  o.name = name;</div><div class="line">  o.age = age;</div><div class="line">  o.job = job;</div><div class="line">  o.sayName = function() {</div><div class="line">    console.log(this.name);</div><div class="line">  }</div><div class="line">  return o;</div><div class="line">}</div></pre></td></tr></table></figure>
+<p>&#x6CA1;&#x6709;&#x89E3;&#x51B3;&#x5BF9;&#x8C61;&#x8BC6;&#x522B;&#x7684;&#x95EE;&#x9898;&#xFF08;&#x5373;&#x600E;&#x6837;&#x77E5;&#x9053;&#x4E00;&#x4E2A;&#x5BF9;&#x8C61;&#x7684;&#x7C7B;&#x578B;&#xFF09;</p>
+<h3 id="&#x5BC4;&#x751F;&#x6784;&#x9020;&#x51FD;&#x6570;&#x6A21;&#x5F0F;&#xFF08;&#x4E0D;&#x5E38;&#x7528;&#xFF09;"><a href="#&#x5BC4;&#x751F;&#x6784;&#x9020;&#x51FD;&#x6570;&#x6A21;&#x5F0F;&#xFF08;&#x4E0D;&#x5E38;&#x7528;&#xFF09;" class="headerlink" title="&#x5BC4;&#x751F;&#x6784;&#x9020;&#x51FD;&#x6570;&#x6A21;&#x5F0F;&#xFF08;&#x4E0D;&#x5E38;&#x7528;&#xFF09;"></a>&#x5BC4;&#x751F;&#x6784;&#x9020;&#x51FD;&#x6570;&#x6A21;&#x5F0F;&#xFF08;&#x4E0D;&#x5E38;&#x7528;&#xFF09;</h3><p>&#x4E00;&#x4E2A;&#x4E0E;&#x5DE5;&#x5382;&#x6A21;&#x5F0F;&#x51E0;&#x4E4E;&#x4E00;&#x6837;&#x7684;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">function Persion(name, age, job) {</div><div class="line">  var o = new Object();</div><div class="line">  o.name = name;</div><div class="line">  o.age = age;</div><div class="line">  o.job = job;</div><div class="line">  o.sayName = function() {</div><div class="line">    console.log(this.name);</div><div class="line">  }</div><div class="line">  return o;</div><div class="line">}</div><div class="line">// &#x521B;&#x5EFA;&#x5BF9;&#x8C61;&#x662F;&#x7528;new&#xFF0C;&#x4E0E;&#x5DE5;&#x5382;&#x6A21;&#x5F0F;&#x4E0D;&#x540C;</div><div class="line">var p = new Person(...)</div></pre></td></tr></table></figure></p>
+<p>&#x53EF;&#x4EE5;&#x7528;&#x4E8E;&#x5728;&#x7279;&#x6B8A;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#x4E3A;&#x5BF9;&#x8C61;&#x521B;&#x5EFA;&#x6784;&#x9020;&#x51FD;&#x6570;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">function SpeicialArray() {</div><div class="line">  var values = new Array();</div><div class="line">  values.push.apply(values,arguments);</div><div class="line">  values.toPipedString = function() {</div><div class="line">    return this.join(&quot;|&quot;);</div><div class="line">  }</div><div class="line">  return values;</div><div class="line">}</div></pre></td></tr></table></figure></p>
+<p>&#x6709;&#x4E2A;&#x5C0F;&#x95EE;&#x9898;&#xFF1A;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">var colors = new SpeicialArray(&apos;red&apos;,&apos;blue&apos;);</div><div class="line">console.log(colors instanceof SpeicialArray); // false</div><div class="line">console.log(colors instanceof Array); // true</div></pre></td></tr></table></figure></p>
+<h3 id="&#x7A33;&#x59A5;&#x6784;&#x9020;&#x51FD;&#x6570;&#x6A21;&#x5F0F;&#xFF08;&#x4E0D;&#x5E38;&#x7528;&#xFF09;"><a href="#&#x7A33;&#x59A5;&#x6784;&#x9020;&#x51FD;&#x6570;&#x6A21;&#x5F0F;&#xFF08;&#x4E0D;&#x5E38;&#x7528;&#xFF09;" class="headerlink" title="&#x7A33;&#x59A5;&#x6784;&#x9020;&#x51FD;&#x6570;&#x6A21;&#x5F0F;&#xFF08;&#x4E0D;&#x5E38;&#x7528;&#xFF09;"></a>&#x7A33;&#x59A5;&#x6784;&#x9020;&#x51FD;&#x6570;&#x6A21;&#x5F0F;&#xFF08;&#x4E0D;&#x5E38;&#x7528;&#xFF09;</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">function Person(name, age, job) {</div><div class="line">  var o = new Object();</div><div class="line">  // &#x53EF;&#x4EE5;&#x5728;&#x8FD9;&#x91CC;&#x5B9A;&#x4E49;&#x79C1;&#x6709;&#x542B;&#x91CF;&#x548C;&#x51FD;&#x6570;</div><div class="line">  o.sayName = function(){</div><div class="line">    console.log(name);</div><div class="line">  }</div><div class="line">  return o;</div><div class="line">}</div></pre></td></tr></table></figure>
+<h3 id="&#x6784;&#x9020;&#x51FD;&#x6570;&#x6A21;&#x5F0F;"><a href="#&#x6784;&#x9020;&#x51FD;&#x6570;&#x6A21;&#x5F0F;" class="headerlink" title="&#x6784;&#x9020;&#x51FD;&#x6570;&#x6A21;&#x5F0F;"></a>&#x6784;&#x9020;&#x51FD;&#x6570;&#x6A21;&#x5F0F;</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">/// &#x6784;&#x9020;&#x51FD;&#x6570;&#x6A21;&#x5F0F;</div><div class="line">function Person(name, age, job) {</div><div class="line">  this.name = name;</div><div class="line">  this.age = age;</div><div class="line">  this.job = job;</div><div class="line">  this.sayName = function () {</div><div class="line">    console.log(this.name);</div><div class="line">  };</div><div class="line">}</div><div class="line"></div><div class="line">var p =new Person(&apos;ayou&apos;, 27, &apos;Web Front End Developer&apos;);</div></pre></td></tr></table></figure>
+<p>&#x4E0E;&#x5DE5;&#x5382;&#x6A21;&#x5F0F;&#x4E0D;&#x540C;&#x5904;&#xFF1A;</p>
+<ul>
+<li>&#x6CA1;&#x6709;&#x663E;&#x793A;&#x7684;&#x521B;&#x5EFA;&#x5BF9;&#x8C61;</li>
+<li>&#x76F4;&#x63A5;&#x5C06;&#x5C5E;&#x6027;&#x548C;&#x65B9;&#x6CD5;&#x8D4B;&#x7ED9;&#x4E86;this&#x5BF9;&#x8C61;</li>
+<li>&#x6CA1;&#x6709;return&#x8BED;&#x53E5;<br>new&#x4E00;&#x4E2A;&#x5BF9;&#x8C61;&#x4F1A;&#x7ECF;&#x5386;4&#x4E2A;&#x6B65;&#x9AA4;&#xFF1A;</li>
+</ul>
+<ol>
+<li>&#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x5BF9;&#x8C61;</li>
+<li>&#x5C06;&#x6784;&#x9020;&#x51FD;&#x6570;&#x7684;&#x4F5C;&#x7528;&#x57DF;&#x8D4B;&#x7ED9;&#x65B0;&#x5BF9;&#x8C61;(this&#x6307;&#x5411;&#x4E86;&#x8FD9;&#x4E2A;&#x65B0;&#x5BF9;&#x8C61;)</li>
+<li>&#x6267;&#x884C;&#x6784;&#x9020;&#x51FD;&#x6570;&#x4E2D;&#x7684;&#x4EE3;&#x7801;(&#x4E3A;&#x8FD9;&#x4E2A;&#x65B0;&#x5BF9;&#x8C61;&#x6DFB;&#x52A0;&#x5C5E;&#x6027;)</li>
+<li>&#x8FD4;&#x56DE;&#x65B0;&#x5BF9;&#x8C61;</li>
+</ol>
+<p>p&#x4F1A;&#x6709;&#x4E00;&#x4E2A;constructor&#xFF08;&#x6784;&#x9020;&#x51FD;&#x6570;&#xFF09;&#x5C5E;&#x6027;&#xFF0C;&#x6539;&#x5C5E;&#x6027;&#x6307;&#x5411;Person<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">console.log(p.constructor == Person); // true</div></pre></td></tr></table></figure></p>
+<p>constructor&#x53EF;&#x4EE5;&#x7528;&#x6765;&#x6807;&#x8BC6;&#x5BF9;&#x8C61;&#x7C7B;&#x578B;&#xFF0C;&#x4F46;&#x662F;&#x8FD8;&#x662F;instanceof&#x66F4;&#x53EF;&#x9760;&#x4E00;&#x4E9B;</p>
+<h4 id="&#x5C06;&#x6784;&#x9020;&#x51FD;&#x6570;&#x5F53;&#x4F5C;&#x51FD;&#x6570;"><a href="#&#x5C06;&#x6784;&#x9020;&#x51FD;&#x6570;&#x5F53;&#x4F5C;&#x51FD;&#x6570;" class="headerlink" title="&#x5C06;&#x6784;&#x9020;&#x51FD;&#x6570;&#x5F53;&#x4F5C;&#x51FD;&#x6570;"></a>&#x5C06;&#x6784;&#x9020;&#x51FD;&#x6570;&#x5F53;&#x4F5C;&#x51FD;&#x6570;</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">// &#x4F5C;&#x4E3A;&#x666E;&#x901A;&#x51FD;&#x6570;&#x7528;</div><div class="line">Person(&apos;ddd&apos;,23,&apos;ddd&apos;); </div><div class="line">window.sayName();</div><div class="line">// &#x5728;&#x53E6;&#x4E00;&#x4E2A;&#x5BF9;&#x8C61;&#x7684;&#x4F5C;&#x7528;&#x57DF;&#x4E2D;&#x8C03;&#x7528;</div><div class="line">var o = new Object();</div><div class="line">Person.call(0, &quot;Kristen&quot;, 24, &quot;Nurse&quot;);</div><div class="line">o.sayName();</div></pre></td></tr></table></figure>
+<h4 id="&#x6784;&#x9020;&#x51FD;&#x6570;&#x7684;&#x95EE;&#x9898;"><a href="#&#x6784;&#x9020;&#x51FD;&#x6570;&#x7684;&#x95EE;&#x9898;" class="headerlink" title="&#x6784;&#x9020;&#x51FD;&#x6570;&#x7684;&#x95EE;&#x9898;"></a>&#x6784;&#x9020;&#x51FD;&#x6570;&#x7684;&#x95EE;&#x9898;</h4><p>&#x6BCF;&#x4E2A;&#x65B9;&#x6CD5;&#x90FD;&#x8981;&#x5728;&#x6BCF;&#x4E2A;&#x5B9E;&#x4F8B;&#x4E0A;&#x9762;&#x91CD;&#x65B0;&#x521B;&#x5EFA;&#x4E00;&#x904D;&#xFF0C;&#x6BD4;&#x5982;&#x4E0A;&#x4F8B;&#x4E2D;&#x7684;sayName&#xFF0C;&#x53EF;&#x4EE5;&#x7528;&#x8FD9;&#x6837;&#x4E00;&#x79CD;&#x5947;&#x8469;&#x7684;&#x65B9;&#x5F0F;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">function Person(name, age, job) {</div><div class="line">  this.name = name;</div><div class="line">  this.age = age;</div><div class="line">  this.job = job;</div><div class="line">  this.sayName = sayName;</div><div class="line">}</div><div class="line">function sayName() {</div><div class="line">  console.log(this.name);</div><div class="line">}</div></pre></td></tr></table></figure></p>
+<p>&#x6BEB;&#x65E0;&#x5C01;&#x88C5;&#x6027;&#x53EF;&#x8A00;</p>
+<h3 id="&#x539F;&#x578B;&#x6A21;&#x5F0F;"><a href="#&#x539F;&#x578B;&#x6A21;&#x5F0F;" class="headerlink" title="&#x539F;&#x578B;&#x6A21;&#x5F0F;"></a>&#x539F;&#x578B;&#x6A21;&#x5F0F;</h3><p>&#x6BCF;&#x4E2A;&#x51FD;&#x6570;&#x90FD;&#x6709;&#x4E00;&#x4E2A;prototype&#x5C5E;&#x6027;&#xFF0C;&#x5B83;&#x662F;&#x4E00;&#x4E2A;&#x6307;&#x9488;&#xFF0C;&#x6307;&#x5411;&#x4E00;&#x4E2A;&#x5BF9;&#x8C61;&#xFF0C;&#x8FD9;&#x4E2A;&#x5BF9;&#x8C61;&#x7684;&#x7528;&#x9014;&#x662F;&#x5305;&#x542B;&#x53EF;&#x4EE5;&#x7531;&#x7279;&#x5B9A;&#x7C7B;&#x578B;&#x7684;&#x6240;&#x6709;&#x5B9E;&#x4F8B;&#x5171;&#x4EAB;&#x7684;&#x5C5E;&#x6027;&#x548C;&#x65B9;&#x6CD5;</p>
+<h4 id="&#x7406;&#x89E3;&#x539F;&#x578B;&#x5BF9;&#x8C61;"><a href="#&#x7406;&#x89E3;&#x539F;&#x578B;&#x5BF9;&#x8C61;" class="headerlink" title="&#x7406;&#x89E3;&#x539F;&#x578B;&#x5BF9;&#x8C61;"></a>&#x7406;&#x89E3;&#x539F;&#x578B;&#x5BF9;&#x8C61;</h4><p><img src="/2016/06/06/js-hld-6/6-1.png" alt="prototype.png"><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">console.log(Person.prototype.constructor == Person); // true</div><div class="line">console.log(p.__proto__ == Person.prototype); // true</div></pre></td></tr></table></figure></p>
+<ul>
+<li>isPrototypeOf</li>
+<li>getPrototypeOf</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">Person.prototype.isPrototypeOf(p);</div><div class="line">Object.getPrototypeOf(p)</div></pre></td></tr></table></figure>
+<p>&#x5F53;&#x6211;&#x4EEC;&#x7ED9;&#x5BF9;&#x8C61;&#x6DFB;&#x52A0;&#x4E00;&#x4E2A;&#x5C5E;&#x6027;&#x65F6;&#xFF0C;&#x8FD9;&#x4E2A;&#x5C5E;&#x6027;&#x4F1A;&#x5C4F;&#x853D;&#x539F;&#x578B;&#x5BF9;&#x8C61;&#x4E2D;&#x4FDD;&#x5B58;&#x7684;&#x540C;&#x540D;&#x5C5E;&#x6027;&#xFF0C;&#x53EF;&#x4EE5;&#x901A;&#x8FC7;delete&#x5220;&#x9664;&#x8FD9;&#x4E2A;&#x5C5E;&#x6027;&#xFF0C;&#x4ECE;&#x800C;&#x91CD;&#x65B0;&#x8BBF;&#x95EE;&#x539F;&#x578B;&#x4E2D;&#x7684;&#x5C5E;&#x6027;</p>
+<ul>
+<li>hasOwnProperty<br>&#x8BE5;&#x65B9;&#x6CD5;&#x68C0;&#x6D4B;&#x5C5E;&#x6027;&#x662F;&#x5B58;&#x5728;&#x5B9E;&#x4F8B;&#x4E2D;&#xFF08;&#x8FD4;&#x56DE;true&#xFF09;&#x8FD8;&#x662F;&#x539F;&#x578B;&#x4E2D;&#xFF08;&#x8FD4;&#x56DE;false&#xFF09;</li>
+</ul>
+<h4 id="&#x539F;&#x578B;&#x4E0E;in&#x64CD;&#x4F5C;&#x7B26;"><a href="#&#x539F;&#x578B;&#x4E0E;in&#x64CD;&#x4F5C;&#x7B26;" class="headerlink" title="&#x539F;&#x578B;&#x4E0E;in&#x64CD;&#x4F5C;&#x7B26;"></a>&#x539F;&#x578B;&#x4E0E;in&#x64CD;&#x4F5C;&#x7B26;</h4><p>in&#x64CD;&#x4F5C;&#x7B26;&#x4F1A;&#x5728;&#x901A;&#x8FC7;&#x5BF9;&#x8C61;&#x80FD;&#x591F;&#x8BBF;&#x95EE;&#x7ED9;&#x70B9;&#x5C5E;&#x6027;&#x65F6;&#x8FD4;&#x56DE;true&#xFF0C;&#x65E0;&#x8BBA;&#x8BE5;&#x5C5E;&#x6027;&#x5B58;&#x5728;&#x4E8E;&#x5B9E;&#x4F8B;&#x4E2D;&#x8FD8;&#x662F;&#x539F;&#x578B;&#x4E2D;&#xFF0C;&#x540C;&#x65F6;&#x4E0E;hasOwnProperty&#x914D;&#x5408;&#xFF0C;&#x53EF;&#x4EE5;&#x786E;&#x5B9A;&#x5C5E;&#x6027;&#x5B58;&#x5728;&#x54EA;&#x91CC;&#xFF1A;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">function hasPrototypeProperty(object, name){</div><div class="line">  return !object.hasOwnProperty(name) &amp;&amp; (name in object);</div><div class="line">}</div></pre></td></tr></table></figure></p>
+<p>for-in&#x5FAA;&#x73AF;&#x4E2D;&#xFF0C;&#x8FD4;&#x56DE;&#x7684;&#x662F;&#x80FD;&#x591F;&#x901A;&#x8FC7;&#x5BF9;&#x8C61;&#x8BBF;&#x95EE;&#x7684;&#x3001;&#x53EF;&#x679A;&#x4E3E;&#x7684;&#x5C5E;&#x6027;&#xFF08;&#x5B9E;&#x4F8B;+&#x539F;&#x578B;+<strong>&#x5C4F;&#x853D;&#x4E86;&#x539F;&#x578B;&#x4E2D;&#x4E0D;&#x53EF;&#x679A;&#x4E3E;&#x5C5E;&#x6027;&#x7684;&#x5B9E;&#x4F8B;&#x5C5E;&#x6027;</strong>&#xFF08;IE8&#x53CA;&#x66F4;&#x65E9;&#x9664;&#x5916;&#xFF09;&#xFF09;<br>&#x8981;&#x53D6;&#x5F97;&#x5BF9;&#x8C61;&#x4E0A;&#x6240;&#x6709;<strong>&#x53EF;&#x679A;&#x4E3E;</strong>&#x7684;&#x5B9E;&#x4F8B;&#x5C5E;&#x6027;&#xFF0C;&#x53EF;&#x4EE5;&#x4F7F;&#x7528;Object.keys()&#x65B9;&#x6CD5;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">// &#x8FD4;&#x56DE;&#x539F;&#x578B;&#x4E0A;&#x7684;&#x5C5E;&#x6027;</div><div class="line">var keys = Object.keys(Person.prototype);</div><div class="line">// &#x8FD4;&#x56DE;&#x5B9E;&#x4F8B;&#x4E0A;&#x7684;&#x5C5E;&#x6027;</div><div class="line">var objKeys = Object.keys(p);</div></pre></td></tr></table></figure></p>
+<p>&#x8981;&#x53D6;&#x5F97;&#x6240;&#x6709;&#x5C5E;&#x6027;&#xFF08;<strong>&#x65E0;&#x8BBA;&#x662F;&#x5426;&#x53EF;&#x679A;&#x4E3E;</strong>&#xFF09;&#xFF0C;&#x53EF;&#x4EE5;&#x4F7F;&#x7528;Object.getOwnPropertyNames()<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">var keys = Object.getOwnPropertyNames(Person.prototype);</div><div class="line">console.log(keys); // constructor, name, age, job, sayName</div></pre></td></tr></table></figure></p>
+<h4 id="&#x66F4;&#x7B80;&#x5355;&#x7684;&#x539F;&#x578B;&#x8BED;&#x6CD5;"><a href="#&#x66F4;&#x7B80;&#x5355;&#x7684;&#x539F;&#x578B;&#x8BED;&#x6CD5;" class="headerlink" title="&#x66F4;&#x7B80;&#x5355;&#x7684;&#x539F;&#x578B;&#x8BED;&#x6CD5;"></a>&#x66F4;&#x7B80;&#x5355;&#x7684;&#x539F;&#x578B;&#x8BED;&#x6CD5;</h4><p>&#x524D;&#x9762;&#x6BCF;&#x6B21;&#x7ED9;&#x539F;&#x578B;&#x6DFB;&#x52A0;&#x4E00;&#x4E2A;&#x5C5E;&#x6027;&#x6216;&#x65B9;&#x6CD5;&#x90FD;&#x8981;&#x6572;&#x4E00;&#x904D;Person.prototype&#x3002;&#x4E3A;&#x51CF;&#x5C11;&#x4E0D;&#x5FC5;&#x8981;&#x7684;&#x8F93;&#x5165;&#xFF0C;&#x53EF;&#x4EE5;&#x8FD9;&#x6837;&#xFF1A;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">function Person() {</div><div class="line">}</div><div class="line">Person.prototype = {</div><div class="line">  name: &apos;ayou&apos;,</div><div class="line">  age: 29,</div><div class="line">  job: &apos;Software Engineer&apos;,</div><div class="line">  sayName: function () {</div><div class="line">    console.log(this.name);</div><div class="line">  }</div><div class="line">}</div></pre></td></tr></table></figure></p>
+<p>&#x4F46;&#x662F;&#xFF0C;<strong>constructor&#x5C5E;&#x6027;&#x4E0D;&#x518D;&#x6307;&#x5411;Person&#x4E86;</strong>&#xFF0C;&#x672C;&#x8D28;&#x4E0A;&#x5B8C;&#x5168;&#x91CD;&#x5199;&#x4E86;&#x9ED8;&#x8BA4;&#x7684;prototype&#x5BF9;&#x8C61;&#xFF0C;&#x56E0;&#x6B64;constructor&#x5C5E;&#x6027;&#x4E5F;&#x5C31;&#x53D8;&#x6210;&#x4E86;&#x65B0;&#x5BF9;&#x8C61;&#x7684;constructor&#x5C5E;&#x6027;&#xFF08;<strong>&#x6307;&#x5411;Object&#x6784;&#x9020;&#x51FD;&#x6570;</strong>&#xFF09;&#xFF0C;&#x5C3D;&#x7BA1;instanceof&#x64CD;&#x4F5C;&#x7B26;&#x8FD8;&#x80FD;&#x8FD4;&#x56DE;&#x6B63;&#x786E;&#x7684;&#x7ED3;&#x679C;&#xFF0C;&#x4F46;&#x901A;&#x8FC7;constructor&#x5DF2;&#x7ECF;&#x65E0;&#x6CD5;&#x786E;&#x5B9A;&#x5BF9;&#x8C61;&#x7684;&#x7C7B;&#x578B;&#x4E86;&#x3002;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">var p = new Person();</div><div class="line">console.log(p instanceof Object);// true</div><div class="line">console.log(p instanceof Person); // true</div><div class="line">console.log(p.constructor == Person); // false</div><div class="line">console.log(p.constructoor == Object); // true</div></pre></td></tr></table></figure></p>
+<p>&#x4E0D;&#x8FC7;&#x53EF;&#x4EE5;&#x60F3;&#x4E0B;&#x9762;&#x4E00;&#x6837;&#xFF0C;&#x91CD;&#x7F6E;&#x56DE;&#x9002;&#x5F53;&#x7684;&#x503C;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">function Person() {</div><div class="line">}</div><div class="line">Person.prototype = {</div><div class="line">  constructor: Person, // &#x91CD;&#x8BBE;&#x4E3A;Person&#x6784;&#x9020;&#x51FD;&#x6570;</div><div class="line">  name: &apos;ayou&apos;,</div><div class="line">  age: 29,</div><div class="line">  job: &apos;Software Engineer&apos;,</div><div class="line">  sayName: function () {</div><div class="line">    console.log(this.name);</div><div class="line">  }</div><div class="line">}</div></pre></td></tr></table></figure></p>
+<p>&#x4F46;&#x662F;&#x4E0A;&#x8FF0;&#x65B9;&#x6CD5;&#x4F1A;&#x5BFC;&#x81F4;constructor&#x7684;Enumerable&#x8BBE;&#x7F6E;&#x4E3A;true&#xFF0C;&#x539F;&#x751F;&#x7684;constructor&#x662F;&#x4E0D;&#x53EF;&#x679A;&#x4E3E;&#x7684;&#xFF0C;&#x53EF;&#x4EE5;&#x7528;defineProperty&#xFF1A;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">Object.defineProperty(Person.prototype,&apos;constructor&apos;,{</div><div class="line">  enumerable: false,</div><div class="line">  value: Person</div><div class="line">});</div></pre></td></tr></table></figure></p>
+<h4 id="&#x539F;&#x578B;&#x7684;&#x52A8;&#x6001;&#x6027;"><a href="#&#x539F;&#x578B;&#x7684;&#x52A8;&#x6001;&#x6027;" class="headerlink" title="&#x539F;&#x578B;&#x7684;&#x52A8;&#x6001;&#x6027;"></a>&#x539F;&#x578B;&#x7684;&#x52A8;&#x6001;&#x6027;</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">var friend = new Person();</div><div class="line">Person.prototype.sayHi = function() {</div><div class="line">  console.log(&apos;Hi&apos;);</div><div class="line">};</div><div class="line">friend.sayHi();// Hi &#x867D;&#x7136;&#x65B9;&#x6CD5;&#x662F;&#x5728;&#x521B;&#x5EFA;&#x5B9E;&#x4F8B;&#x540E;&#x6DFB;&#x52A0;&#x5230;&#x539F;&#x578B;&#x7684;&#xFF0C;&#x4F46;&#x662F;&#x8FD8;&#x662F;&#x53EF;&#x4EE5;&#x8BBF;&#x95EE;</div></pre></td></tr></table></figure>
+<p>&#x4F46;&#x662F;&#x5982;&#x679C;&#x662F;&#x91CD;&#x5199;&#x4E86;&#x539F;&#x578B;&#x5BF9;&#x8C61;&#xFF0C;&#x5219;&#x4F1A;&#x6709;&#x95EE;&#x9898;&#xFF1A;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">function Person() {</div><div class="line">}</div><div class="line">var p = new Person();</div><div class="line">Person.prototype = {</div><div class="line">  constructor: Person, // &#x91CD;&#x8BBE;&#x4E3A;Person&#x6784;&#x9020;&#x51FD;&#x6570;</div><div class="line">  name: &apos;ayou&apos;,</div><div class="line">  age: 29,</div><div class="line">  job: &apos;Software Engineer&apos;,</div><div class="line">  sayName: function () {</div><div class="line">    console.log(this.name);</div><div class="line">  }</div><div class="line">};</div><div class="line">p.sayName(); // errow</div></pre></td></tr></table></figure></p>
+<p>&#x5176;&#x539F;&#x56E0;&#x53EF;&#x4EE5;&#x4ECE;&#x56FE;&#x4E2D;&#x6E05;&#x6670;&#x7684;&#x770B;&#x51FA;&#x6765;&#xFF1A;</p>
+<p><img src="/2016/06/06/js-hld-6/6-2.png" alt="rewrite prototype.png"></p>
+<h4 id="&#x539F;&#x751F;&#x5BF9;&#x8C61;&#x7684;&#x539F;&#x578B;"><a href="#&#x539F;&#x751F;&#x5BF9;&#x8C61;&#x7684;&#x539F;&#x578B;" class="headerlink" title="&#x539F;&#x751F;&#x5BF9;&#x8C61;&#x7684;&#x539F;&#x578B;"></a>&#x539F;&#x751F;&#x5BF9;&#x8C61;&#x7684;&#x539F;&#x578B;</h4><p>&#x53EF;&#x4EE5;&#x7ED9;&#x539F;&#x751F;&#x5BF9;&#x8C61;&#x6DFB;&#x52A0;&#x81EA;&#x5B9A;&#x4E49;&#x65B9;&#x6CD5;<strong>&#x4E0D;&#x63A8;&#x8350;</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">String.prototype.startsWith = ......</div></pre></td></tr></table></figure></p>
+<h4 id="&#x539F;&#x578B;&#x5BF9;&#x8C61;&#x7684;&#x95EE;&#x9898;"><a href="#&#x539F;&#x578B;&#x5BF9;&#x8C61;&#x7684;&#x95EE;&#x9898;" class="headerlink" title="&#x539F;&#x578B;&#x5BF9;&#x8C61;&#x7684;&#x95EE;&#x9898;"></a>&#x539F;&#x578B;&#x5BF9;&#x8C61;&#x7684;&#x95EE;&#x9898;</h4><p>&#x5F53;&#x539F;&#x578B;&#x5BF9;&#x8C61;&#x4E2D;&#x6709;&#x5F15;&#x7528;&#x7C7B;&#x578B;&#x7684;&#x5C5E;&#x6027;&#x65F6;&#xFF0C;&#x4F1A;&#x6709;&#x95EE;&#x9898;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">function Person() {</div><div class="line">}</div><div class="line">Person.prototype = {</div><div class="line">  ...  </div><div class="line">  friends : [&apos;Ayou&apos;,&apos;Aling&apos;]</div><div class="line">  ...</div><div class="line">}</div><div class="line">var p1 = new Person();</div><div class="line">var p2 = new Person();</div><div class="line">p1.friends.push(&apos;AA&apos;); // &#x4F1A;&#x5BFC;&#x81F4;p2&#x4E2D;&#x7684;friends&#x5C5E;&#x6027;&#x4E5F;&#x53D1;&#x751F;&#x53D8;&#x5316;</div><div class="line">...</div></pre></td></tr></table></figure></p>
+<h3 id="&#x7EC4;&#x5408;&#x4F7F;&#x7528;&#x6539;&#x9020;&#x51FD;&#x6570;&#x6A21;&#x5F0F;&#x548C;&#x539F;&#x578B;&#x6A21;&#x5F0F;"><a href="#&#x7EC4;&#x5408;&#x4F7F;&#x7528;&#x6539;&#x9020;&#x51FD;&#x6570;&#x6A21;&#x5F0F;&#x548C;&#x539F;&#x578B;&#x6A21;&#x5F0F;" class="headerlink" title="&#x7EC4;&#x5408;&#x4F7F;&#x7528;&#x6539;&#x9020;&#x51FD;&#x6570;&#x6A21;&#x5F0F;&#x548C;&#x539F;&#x578B;&#x6A21;&#x5F0F;"></a>&#x7EC4;&#x5408;&#x4F7F;&#x7528;&#x6539;&#x9020;&#x51FD;&#x6570;&#x6A21;&#x5F0F;&#x548C;&#x539F;&#x578B;&#x6A21;&#x5F0F;</h3><p>&#x6784;&#x9020;&#x51FD;&#x6570;&#x7528;&#x4E8E;&#x5B9A;&#x4E49;&#x5B9E;&#x4F8B;&#x5C5E;&#x6027;&#xFF0C;&#x539F;&#x578B;&#x6A21;&#x5F0F;&#x7528;&#x4E8E;&#x5B9A;&#x4E49;&#x65B9;&#x6CD5;&#x548C;&#x5171;&#x4EAB;&#x7684;&#x5C5E;&#x6027;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">function Person(name, age, job) {</div><div class="line">  this.name = name;</div><div class="line">  this.age = age;</div><div class="line">  this.job = job;</div><div class="line">  this.friends = [&apos;Ayou&apos;,&apos;Aling&apos;];</div><div class="line">}</div><div class="line">Person.prototype = {</div><div class="line">  constructor:Person,</div><div class="line">  sayName:........</div><div class="line">}</div></pre></td></tr></table></figure></p>
+<h3 id="&#x52A8;&#x6001;&#x539F;&#x578B;&#x6A21;&#x5F0F;"><a href="#&#x52A8;&#x6001;&#x539F;&#x578B;&#x6A21;&#x5F0F;" class="headerlink" title="&#x52A8;&#x6001;&#x539F;&#x578B;&#x6A21;&#x5F0F;"></a>&#x52A8;&#x6001;&#x539F;&#x578B;&#x6A21;&#x5F0F;</h3><p>&#x628A;&#x6784;&#x9020;&#x51FD;&#x6570;&#x548C;&#x539F;&#x578B;&#x5206;&#x5F00;&#x5199;&#xFF0C;&#x5BF9;&#x719F;&#x6089;&#x4E86;OOP&#x5F00;&#x53D1;&#x4EBA;&#x5458;&#x6765;&#x8BF4;&#x4F1A;&#x663E;&#x5F97;&#x5947;&#x602A;&#xFF0C;&#x6240;&#x4EE5;&#x52A8;&#x6001;&#x539F;&#x578B;&#x6A21;&#x5F0F;&#x5C31;&#x51FA;&#x73B0;&#x4E86;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">function Person(name, age, job) {</div><div class="line">  this.name = name;</div><div class="line">  this.age = age;</div><div class="line">  this.job = job;</div><div class="line">  // &#x53EA;&#x4F1A;&#x5728;&#x7B2C;&#x4E00;&#x6B21;&#x6267;&#x884C;&#x6784;&#x9020;&#x51FD;&#x6570;&#x65F6;&#x624D;&#x4F1A;&#x6267;&#x884C;</div><div class="line">  if (typeof this.sayName != &quot;function&quot;) {</div><div class="line">    console.log(&apos;&#x6267;&#x884C;&#x4E86;&#xFF01;&apos;);</div><div class="line">    Person.prototype.sayName = function() {</div><div class="line">      return this.name;</div><div class="line">    };</div><div class="line">  }</div><div class="line">}</div><div class="line">var p1 = new Person(&apos;ayou&apos;,12,&apos;web&apos;); // &#x6267;&#x884C;&#x4E86;</div><div class="line">var p2 = new Person(&apos;ayou2&apos;,22,&apos;web2&apos;);</div></pre></td></tr></table></figure></p>
+<h2 id="&#x7EE7;&#x627F;"><a href="#&#x7EE7;&#x627F;" class="headerlink" title="&#x7EE7;&#x627F;"></a>&#x7EE7;&#x627F;</h2><p>&#x7EC8;&#x4E8E;&#x5F00;&#x59CB;&#x5B66;&#x201C;&#x88C5;&#x903C;&#x201D;&#x7684;&#x4E1C;&#x897F;&#x4E86;&#xFF0C;&#x563F;&#x563F;</p>
+<h3 id="&#x539F;&#x578B;&#x94FE;"><a href="#&#x539F;&#x578B;&#x94FE;" class="headerlink" title="&#x539F;&#x578B;&#x94FE;"></a>&#x539F;&#x578B;&#x94FE;</h3><p>&#x57FA;&#x672C;&#x6A21;&#x5F0F;&#xFF1A;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">// &#x8D85;&#x7C7B;</div><div class="line">function SuperType() {</div><div class="line">  this.property = true;</div><div class="line">}</div><div class="line">SuperType.prototype.getSuperValue = function() {</div><div class="line">  return this.property;</div><div class="line">}</div><div class="line">// &#x5B50;&#x7C7B;</div><div class="line">function SubType() {</div><div class="line">  this.subproperty = false;</div><div class="line">}</div><div class="line">// &#x7EE7;&#x627F;</div><div class="line">SubType.prototype = new SuperType();</div><div class="line">SubType.prototype.getSubValue = function () {</div><div class="line">  return this.subproperty;</div><div class="line">}</div><div class="line">var instance = new SubType();</div><div class="line">console.log(instance.getSuperValue()); // true</div><div class="line">console.log(SubType.prototype);// SuperType { property: true, getSubValue: [Function] }</div><div class="line">console.log(SuperType.prototype);//SuperType { getSuperValue: [Function] }</div></pre></td></tr></table></figure></p>
+<p><img src="/2016/06/06/js-hld-6/6-3.png" alt="inherit.png"></p>
+<p><strong>instance.getSuperValue():1)&#x641C;&#x7D22;&#x5B9E;&#x4F8B;&#xFF1B;2)&#x641C;&#x7D22;SubType.prototype&#xFF1B;3)&#x641C;&#x7D22;SuperType.prototype</strong></p>
+<h4 id="&#x522B;&#x5FD8;&#x8BB0;&#x9ED8;&#x8BA4;&#x7684;&#x539F;&#x578B;"><a href="#&#x522B;&#x5FD8;&#x8BB0;&#x9ED8;&#x8BA4;&#x7684;&#x539F;&#x578B;" class="headerlink" title="&#x522B;&#x5FD8;&#x8BB0;&#x9ED8;&#x8BA4;&#x7684;&#x539F;&#x578B;"></a>&#x522B;&#x5FD8;&#x8BB0;&#x9ED8;&#x8BA4;&#x7684;&#x539F;&#x578B;</h4><p><img src="/2016/06/06/js-hld-6/6-4.png" alt="proto.png"></p>
+<h4 id="&#x786E;&#x5B9A;&#x539F;&#x578B;&#x548C;&#x5B9E;&#x4F8B;&#x7684;&#x5173;&#x7CFB;"><a href="#&#x786E;&#x5B9A;&#x539F;&#x578B;&#x548C;&#x5B9E;&#x4F8B;&#x7684;&#x5173;&#x7CFB;" class="headerlink" title="&#x786E;&#x5B9A;&#x539F;&#x578B;&#x548C;&#x5B9E;&#x4F8B;&#x7684;&#x5173;&#x7CFB;"></a>&#x786E;&#x5B9A;&#x539F;&#x578B;&#x548C;&#x5B9E;&#x4F8B;&#x7684;&#x5173;&#x7CFB;</h4><p>&#x4F7F;&#x7528;instanceof&#xFF0C;&#x51E1;&#x662F;&#x539F;&#x578B;&#x94FE;&#x4E2D;&#x51FA;&#x73B0;&#x8FC7;&#x7684;&#x6784;&#x9020;&#x51FD;&#x6570;&#xFF0C;&#x90FD;&#x4F1A;&#x8FD4;&#x56DE;true</p>
+<h4 id="&#x8C28;&#x614E;&#x7684;&#x5B9A;&#x4E49;&#x65B9;&#x6CD5;"><a href="#&#x8C28;&#x614E;&#x7684;&#x5B9A;&#x4E49;&#x65B9;&#x6CD5;" class="headerlink" title="&#x8C28;&#x614E;&#x7684;&#x5B9A;&#x4E49;&#x65B9;&#x6CD5;"></a>&#x8C28;&#x614E;&#x7684;&#x5B9A;&#x4E49;&#x65B9;&#x6CD5;</h4><p>&#x5B50;&#x7C7B;&#x6709;&#x65F6;&#x9700;&#x8981;&#x91CD;&#x5199;&#x8D85;&#x7C7B;&#x578B;&#x4E2D;&#x7684;&#x67D0;&#x4E2A;&#x65B9;&#x6CD5;&#xFF0C;&#x6216;&#x8005;&#x9700;&#x8981;&#x6DFB;&#x52A0;&#x8D85;&#x7C7B;&#x578B;&#x4E2D;&#x4E0D;&#x5B58;&#x5728;&#x7684;&#x67D0;&#x4E2A;&#x65B9;&#x6CD5;&#x3002;&#x4F46;&#x4E0D;&#x7BA1;&#x600E;&#x4E48;&#x6837;&#xFF0C;&#x7ED9;&#x539F;&#x578B;&#x6DFB;&#x52A0;&#x65B9;&#x6CD5;&#x7684;&#x4EE3;&#x7801;&#x4E00;&#x5B9A;&#x8981;&#x653E;&#x5728;&#x66FF;&#x6362;&#x539F;&#x578B;&#x7684;&#x8BED;&#x53E5;&#x4E4B;&#x540E;&#x3002;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">...</div><div class="line">// &#x7EE7;&#x627F;</div><div class="line">SubType.prototype = new SuperType();</div><div class="line">// &#x6DFB;&#x52A0;&#x65B0;&#x65B9;&#x6CD5;&#xFF0C;&#x8FD9;&#x91CC;&#x4E0D;&#x80FD;&#x4F7F;&#x7528;&#x5BF9;&#x8C61;&#x5B57;&#x9762;&#x91CF;&#x7684;&#x65B9;&#x6CD5;&#xFF0C;&#x56E0;&#x4E3A;&#x8FD9;&#x6837;&#x4F1A;&#x91CD;&#x5199;&#x539F;&#x578B;&#x94FE;</div><div class="line">SubType.prototype.getSubValue = function() {</div><div class="line">  return this.subproperty;</div><div class="line">}</div><div class="line">// &#x91CD;&#x5199;&#x8D85;&#x7C7B;&#x4E2D;&#x7684;&#x65B9;&#x6CD5;</div><div class="line">...</div></pre></td></tr></table></figure></p>
+<h4 id="&#x539F;&#x578B;&#x94FE;&#x7684;&#x95EE;&#x9898;"><a href="#&#x539F;&#x578B;&#x94FE;&#x7684;&#x95EE;&#x9898;" class="headerlink" title="&#x539F;&#x578B;&#x94FE;&#x7684;&#x95EE;&#x9898;"></a>&#x539F;&#x578B;&#x94FE;&#x7684;&#x95EE;&#x9898;</h4><p>&#x539F;&#x578B;&#x94FE;&#x4E2D;&#x7684;&#x5C5E;&#x6027;&#x4F1A;&#x88AB;&#x6240;&#x6709;&#x5B9E;&#x4F8B;&#x5171;&#x4EAB;&#xFF0C;&#x6240;&#x4EE5;&#x6211;&#x4EEC;&#x4E00;&#x822C;&#x5728;&#x6784;&#x9020;&#x51FD;&#x6570;&#x4E2D;&#x5B9A;&#x4E49;&#x5C5E;&#x6027;&#x3002;&#x4F46;&#x662F;&#xFF0C;&#x5F53;&#x901A;&#x8FC7;&#x539F;&#x578B;&#x6765;&#x5B9E;&#x73B0;&#x7EE7;&#x627F;&#x65F6;&#xFF0C;<strong>&#x539F;&#x578B;&#x5B9E;&#x9645;&#x4E0A;&#x4F1A;&#x53D8;&#x6210;&#x8D85;&#x7C7B;&#x578B;&#x7684;&#x5B9E;&#x4F8B;&#xFF0C;&#x4E8E;&#x662F;&#x8D85;&#x7C7B;&#x578B;&#x7684;&#x5B9E;&#x4F8B;&#x5C5E;&#x6027;&#x4E5F;&#x5C31;&#x987A;&#x7406;&#x6210;&#x7AE0;&#x5730;&#x53D8;&#x6210;&#x4E86;&#x5B50;&#x7C7B;&#x7684;&#x539F;&#x578B;&#x5C5E;&#x6027;&#x4E86;&#x3002;</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line">function SuperType() {</div><div class="line">  this.colors = [&quot;red&quot;,&quot;blue&quot;,&quot;green&quot;];</div><div class="line">}</div><div class="line">function SubType(){</div><div class="line">}</div><div class="line">// &#x7EE7;&#x627F;&#x4E86;SuperType</div><div class="line">SubType.prototype = new SuperType();</div><div class="line">var instance1 = new SubType();</div><div class="line">instance1.colors.push(&quot;black&quot;);</div><div class="line">console.log(instance1.colors);</div><div class="line"></div><div class="line">var instance2 = new SubType();</div><div class="line">console.log(instance2.colors);</div><div class="line"></div><div class="line">// &#x8D85;&#x7C7B;</div><div class="line">var super1 = new SuperType();</div><div class="line">super1.colors.push(&apos;white&apos;);</div><div class="line">console.log(super1.colors);</div><div class="line"></div><div class="line">var super2 = new SuperType();</div><div class="line">console.log(super2.colors);</div><div class="line">&#x7ED3;&#x679C;&#xFF1A;</div><div class="line">[ &apos;red&apos;, &apos;blue&apos;, &apos;green&apos;, &apos;black&apos; ]</div><div class="line">[ &apos;red&apos;, &apos;blue&apos;, &apos;green&apos;, &apos;black&apos; ]</div><div class="line">[ &apos;red&apos;, &apos;blue&apos;, &apos;green&apos;, &apos;white&apos; ]</div><div class="line">[ &apos;red&apos;, &apos;blue&apos;, &apos;green&apos; ]</div></pre></td></tr></table></figure></p>
+<h3 id="&#x501F;&#x7528;&#x6784;&#x9020;&#x51FD;&#x6570;"><a href="#&#x501F;&#x7528;&#x6784;&#x9020;&#x51FD;&#x6570;" class="headerlink" title="&#x501F;&#x7528;&#x6784;&#x9020;&#x51FD;&#x6570;"></a>&#x501F;&#x7528;&#x6784;&#x9020;&#x51FD;&#x6570;</h3><p>&#x4E3A;&#x4E86;&#x89E3;&#x51B3;&#x4E0A;&#x9762;&#x7684;&#x95EE;&#x9898;&#xFF0C;&#x91C7;&#x7528;<strong>&#x501F;&#x7528;&#x6784;&#x9020;&#x51FD;&#x6570;</strong>&#x7684;&#x6280;&#x672F;&#xFF08;<strong>&#x4F2A;&#x9020;&#x5BF9;&#x8C61;&#x6216;&#x7ECF;&#x5178;&#x7EE7;&#x627F;</strong>&#xFF09;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">function SuperType() {</div><div class="line">  this.colors = [&quot;red&quot;,&quot;blue&quot;,&quot;green&quot;];</div><div class="line">}</div><div class="line">function SubType() {</div><div class="line">  SuperType.call(this);</div><div class="line">}</div><div class="line">var instance1 = new SubType();</div><div class="line">instance1.colors.push(&quot;black&quot;);</div><div class="line">console.log(instance1.colors); // red, blue, green, black</div><div class="line"></div><div class="line">var instance2 = new SubType();</div><div class="line">console.log(instance2.colors); // red, blue, green</div></pre></td></tr></table></figure></p>
+<h4 id="&#x4F20;&#x9012;&#x53C2;&#x6570;"><a href="#&#x4F20;&#x9012;&#x53C2;&#x6570;" class="headerlink" title="&#x4F20;&#x9012;&#x53C2;&#x6570;"></a>&#x4F20;&#x9012;&#x53C2;&#x6570;</h4><p>&#x76F8;&#x6BD4;&#x539F;&#x578B;&#x94FE;&#x800C;&#x8A00;&#xFF0C;&#x501F;&#x7528;&#x6784;&#x9020;&#x51FD;&#x6570;&#x53EF;&#x4EE5;&#x5411;&#x8D85;&#x7C7B;&#x578B;&#x6784;&#x9020;&#x51FD;&#x6570;&#x4F20;&#x9012;&#x53C2;&#x6570;&#x3002;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">function SuperType(name) {</div><div class="line">  this.name = name;</div><div class="line">}</div><div class="line">function SubType() {</div><div class="line">  SuperType.call(this,&apos;Nicolas&apos;);//&#x653E;&#x5728;&#x6700;&#x524D;&#x9762;&#xFF0C;&#x9632;&#x6B62;&#x91CD;&#x5199;&#x5B50;&#x7C7B;&#x578B;&#x7684;&#x5C5E;&#x6027;</div><div class="line">  this.age = 29;</div><div class="line">}</div></pre></td></tr></table></figure></p>
+<h4 id="&#x501F;&#x7528;&#x6784;&#x9020;&#x51FD;&#x6570;&#x7684;&#x95EE;&#x9898;"><a href="#&#x501F;&#x7528;&#x6784;&#x9020;&#x51FD;&#x6570;&#x7684;&#x95EE;&#x9898;" class="headerlink" title="&#x501F;&#x7528;&#x6784;&#x9020;&#x51FD;&#x6570;&#x7684;&#x95EE;&#x9898;"></a>&#x501F;&#x7528;&#x6784;&#x9020;&#x51FD;&#x6570;&#x7684;&#x95EE;&#x9898;</h4><p>&#x65B9;&#x6CD5;&#x90FD;&#x5728;&#x6784;&#x9020;&#x51FD;&#x6570;&#x4E2D;&#x5B9A;&#x4E49;&#xFF0C;&#x56E0;&#x6B64;&#x51FD;&#x6570;&#x590D;&#x7528;&#x5C31;&#x65E0;&#x4ECE;&#x8C08;&#x8D77;&#xFF0C;&#x8D85;&#x7C7B;&#x578B;&#x4E2D;&#x7684;&#x65B9;&#x6CD5;&#xFF0C;&#x5BF9;&#x5B50;&#x7C7B;&#x578B;&#x4E5F;&#x662F;&#x4E0D;&#x53EF;&#x89C1;&#x7684;</p>
+<h3 id="&#x7EC4;&#x5408;&#x7EE7;&#x627F;&#xFF08;&#x6700;&#x5E38;&#x7528;&#xFF09;"><a href="#&#x7EC4;&#x5408;&#x7EE7;&#x627F;&#xFF08;&#x6700;&#x5E38;&#x7528;&#xFF09;" class="headerlink" title="&#x7EC4;&#x5408;&#x7EE7;&#x627F;&#xFF08;&#x6700;&#x5E38;&#x7528;&#xFF09;"></a>&#x7EC4;&#x5408;&#x7EE7;&#x627F;&#xFF08;&#x6700;&#x5E38;&#x7528;&#xFF09;</h3><p>&#x4F7F;&#x7528;&#x539F;&#x578B;&#x94FE;&#x5B9E;&#x73B0;&#x5BF9;&#x539F;&#x578B;&#x5C5E;&#x6027;&#x548C;&#x65B9;&#x6CD5;&#x7684;&#x7EE7;&#x627F;<br>&#x4F7F;&#x7528;&#x6784;&#x9020;&#x51FD;&#x6570;&#x6765;&#x5B9E;&#x73B0;&#x5BF9;&#x5B9E;&#x4F8B;&#x5C5E;&#x6027;&#x7684;&#x7EE7;&#x627F;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line">function SuperType(name) {</div><div class="line">  this.name = name;</div><div class="line">  this.colors = [&quot;red&quot;,&quot;blue&quot;,&quot;green&quot;];</div><div class="line">}</div><div class="line">SuperType.prototype.sayName = function() {</div><div class="line">  console.log(this.name);</div><div class="line">}</div><div class="line">function SubType(name, age) {</div><div class="line">  // &#x7EE7;&#x627F;&#x5B9E;&#x4F8B;&#x5C5E;&#x6027;</div><div class="line">  SuperType.call(this, name);</div><div class="line">  this.age = age;</div><div class="line">}</div><div class="line">// &#x7EE7;&#x627F;&#x539F;&#x578B;&#x65B9;&#x6CD5;</div><div class="line">SubType.prototype = new SuperType();</div><div class="line">SubType.prototype.sayAge = function() {</div><div class="line">  console.log(this.age);</div><div class="line">}</div><div class="line"></div><div class="line">var i1 = new SubType(&quot;ayou&quot;,29);</div><div class="line">i1.colors.push(&apos;black&apos;);</div><div class="line">console.log(i1.colors); // red, blue, green, black</div><div class="line">i1.sayName(); // ayou</div><div class="line">i1.sayAge(); // 29</div><div class="line"></div><div class="line">var i2 = new SubType(&quot;aling&quot;,27);</div><div class="line">console.log(i2.colors); // red, blue, green</div><div class="line">i2.sayName(); // aling</div><div class="line">i2.sayAge(); // 27</div></pre></td></tr></table></figure></p>
+<p>&#x4E0D;&#x8DB3;&#xFF1A;<br>&#x4F1A;&#x8C03;&#x7528;&#x4E24;&#x6B21;&#x8D85;&#x7C7B;&#x578B;&#x7684;&#x6784;&#x9020;&#x51FD;&#x6570;</p>
+<ol>
+<li>SubType.prototype = new SuperType();</li>
+<li>SuperType.call(this, name);</li>
+</ol>
+<h3 id="&#x539F;&#x578B;&#x5F0F;&#x7EE7;&#x627F;"><a href="#&#x539F;&#x578B;&#x5F0F;&#x7EE7;&#x627F;" class="headerlink" title="&#x539F;&#x578B;&#x5F0F;&#x7EE7;&#x627F;"></a>&#x539F;&#x578B;&#x5F0F;&#x7EE7;&#x627F;</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">function object(o) {</div><div class="line">  function F(){};</div><div class="line">  F.prototype = o;</div><div class="line">  return new F();</div><div class="line">}</div><div class="line"></div><div class="line">var p = {</div><div class="line">  name: &apos;ayou&apos;,</div><div class="line">  friends: [&apos;ayou&apos;,&apos;xing&apos;,&apos;zhi&apos;]</div><div class="line">}</div><div class="line">var s1 = object(p);</div><div class="line">s1.name = &apos;aling&apos;;</div><div class="line">s1.friends.push(&apos;rob&apos;);</div><div class="line">console.log(s1.friends); // ayou, xing, zhi , rob</div></pre></td></tr></table></figure>
+<h4 id="Object-create"><a href="#Object-create" class="headerlink" title="Object.create()"></a>Object.create()</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">var person = {</div><div class="line">  name: &apos;ayou&apos;,</div><div class="line">  friends:[&apos;xing&apos;,&apos;zhi&apos;]</div><div class="line">}</div><div class="line">var obj = Object.create(person);</div><div class="line">obj.name = &apos;aling&apos;;</div><div class="line">obj.friends.push(&apos;rob&apos;);</div><div class="line">// &#x6709;&#x7B2C;&#x4E8C;&#x4E2A;&#x53C2;&#x6570;</div><div class="line">var obj2 = Object.create(person,{name:&apos;azhi&apos;});</div><div class="line">console.log(obj2.name); // azhi</div></pre></td></tr></table></figure>
+<h3 id="&#x5BC4;&#x751F;&#x5F0F;&#x7EE7;&#x627F;"><a href="#&#x5BC4;&#x751F;&#x5F0F;&#x7EE7;&#x627F;" class="headerlink" title="&#x5BC4;&#x751F;&#x5F0F;&#x7EE7;&#x627F;"></a>&#x5BC4;&#x751F;&#x5F0F;&#x7EE7;&#x627F;</h3><p>&#x601D;&#x8DEF;&#x4E0E;&#x539F;&#x578B;&#x5F0F;&#x7EE7;&#x627F;&#x7D27;&#x5BC6;&#x76F8;&#x5173;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">function createAnother(original) {</div><div class="line">  var clone = object(original); // &#x8FD9;&#x91CC;&#x7684;object&#x662F;&#x4E0A;&#x9762;&#x7684;&#x65B9;&#x6CD5;</div><div class="line">  clone.sayHi = function() {</div><div class="line">    console.log(&apos;hi&apos;); </div><div class="line">  }</div><div class="line">  return clone;</div><div class="line">}</div></pre></td></tr></table></figure></p>
+<h3 id="&#x5BC4;&#x751F;&#x7EC4;&#x5408;&#x5F0F;&#x7EE7;&#x627F;"><a href="#&#x5BC4;&#x751F;&#x7EC4;&#x5408;&#x5F0F;&#x7EE7;&#x627F;" class="headerlink" title="&#x5BC4;&#x751F;&#x7EC4;&#x5408;&#x5F0F;&#x7EE7;&#x627F;"></a>&#x5BC4;&#x751F;&#x7EC4;&#x5408;&#x5F0F;&#x7EE7;&#x627F;</h3><p>&#x524D;&#x9762;&#x8BF4;&#x8FC7;&#xFF0C;&#x7EC4;&#x5408;&#x7EE7;&#x627F;&#x662F;&#x6700;&#x5E38;&#x7528;&#x7684;&#x7EE7;&#x627F;&#x65B9;&#x5F0F;&#xFF0C;&#x4F46;&#x662F;&#x4F1A;&#x8C03;&#x7528;&#x4E24;&#x6B21;&#x8D85;&#x7C7B;&#x578B;&#x6784;&#x9020;&#x51FD;&#x6570;&#x3002;</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">function SuperType(name) {</div><div class="line">  console.log(&apos;&#x8C03;&#x7528;&#x4E86;&#x8D85;&#x7C7B;&#x578B;&#x7684;&#x6784;&#x9020;&#x51FD;&#x6570;&apos;);</div><div class="line">  this.name = name;</div><div class="line">  this.colors = [&apos;red&apos;,&apos;blue&apos;,&apos;green&apos;];</div><div class="line">}</div><div class="line"></div><div class="line">SuperType.prototype.sayName = function() {</div><div class="line">  console.log(this.name);</div><div class="line">}</div><div class="line"></div><div class="line">function SubType(name, age) {</div><div class="line">  SuperType.call(this, name); // &#x7B2C;&#x4E8C;&#x6B21;&#x8C03;&#x7528;SuperType()</div><div class="line">  this.age = age;</div><div class="line">}</div><div class="line"></div><div class="line">SubType.prototype = new SuperType(); // &#x7B2C;&#x4E00;&#x6B21;&#x8C03;&#x7528;SuperType()</div><div class="line">SubType.prototype.constructor = SubType; // &#x4E0A;&#x9762;&#x91CD;&#x5199;&#x4E86;&#x539F;&#x578B;&#xFF0C;&#x5176;constructor&#x5DF2;&#x4E0D;&#x6307;&#x5411;SubType</div><div class="line">SubType.prototype.sayAge = function() {</div><div class="line">  console.log(this.age);</div><div class="line">};</div><div class="line"></div><div class="line">var instance = new SubType(&apos;Nicholas&apos;&#xFF0C; 29); //&#x6253;&#x5370;&#x4E24;&#x6B21; &#x8C03;&#x7528;&#x4E86;&#x8D85;&#x7C7B;&#x578B;&#x7684;&#x6784;&#x9020;&#x51FD;&#x6570;</div></pre></td></tr></table></figure>
+<p>&#x4E0A;&#x9762;&#x7684;&#x4EE3;&#x7801;&#x53EF;&#x4EE5;&#x7528;&#x4E0B;&#x56FE;&#x6765;&#x5F52;&#x7EB3;&#xFF08;&#x8FD9;&#x91CC;&#x8FD8;&#x5E94;&#x8BE5;&#x628A;SubType Prototype&#x7684;constructor&#x8FDE;&#x5230;SubType&#x4E0A;&#xFF0C;&#x6BCF;&#x4E2A;&#x5B9E;&#x4F8B;&#x4E2D;&#x6709;&#x4E00;&#x4E2A;&#x6307;&#x9488;&#xFF0C;&#x6307;&#x5411;&#x6784;&#x9020;&#x51FD;&#x6570;&#x7684;&#x539F;&#x578B;&#x5BF9;&#x8C61;&#xFF0C;ECMA-262&#x7BA1;&#x5B83;&#x53EB;&#x505A;[[Prototype]]&#xFF0C;Firefox, Safari, Chrome, nodejs&#x4E0A;&#x662F;<strong>proto</strong>&#xFF09;&#xFF1A;</p>
+<p><img src="/2016/06/06/js-hld-6/6-5.png" alt="Paste_Image.png"></p>
+<p><strong>&#x5BC4;&#x751F;&#x7EC4;&#x5408;&#x5F0F;&#x7EE7;&#x627F;&#xFF1A;</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">function object(o) {</div><div class="line">  function F(){};</div><div class="line">  F.prototype = o;</div><div class="line">  return new F(); // </div><div class="line">}</div><div class="line"></div><div class="line">function inheritPrototype(subType, superType) {</div><div class="line">  var prototype = object(superType.prototype)&#xFF1B;</div><div class="line">  prototype.constructor = subType;</div><div class="line">  subType.prototype = prototype;</div><div class="line">}</div><div class="line"></div><div class="line">// &#x4E0A;&#x9762;&#x7684;&#x4EE3;&#x7801;&#x4E2D;&#x8FD9;&#x4E24;&#x884C;&#x53EF;&#x4EE5;&#x66FF;&#x6362;</div><div class="line">SubType.prototype = new SuperType(); // &#x7B2C;&#x4E00;&#x6B21;&#x8C03;&#x7528;SuperType()</div><div class="line">SubType.prototype.constructor = SubType; // &#x4E0A;&#x9762;&#x91CD;&#x5199;&#x4E86;&#x539F;&#x578B;&#xFF0C;&#x5176;constructor&#x5DF2;&#x4E0D;&#x6307;&#x5411;SubType</div><div class="line">// &#x66FF;&#x6362;&#x6210;</div><div class="line">inheritPrototype(SubType, SuperType);</div></pre></td></tr></table></figure></p>
+<p>&#x5982;&#x56FE;&#x6240;&#x793A;&#xFF1A;</p>
+<p><img src="/2016/06/06/js-hld-6/6-6.png" alt="Paste_Image.png"></p>
+<h1 id="&#x540E;&#x8BB0;"><a href="#&#x540E;&#x8BB0;" class="headerlink" title="&#x540E;&#x8BB0;"></a>&#x540E;&#x8BB0;</h1><p>&#x4E66;&#x8981;&#x8D8A;&#x8BFB;&#x8D8A;&#x8584;&#xFF0C;&#x73B0;&#x5728;&#x53EF;&#x4EE5;&#x505A;&#x4E2A;&#x5F52;&#x7EB3;&#x4E86;&#xFF1A;</p>
+<p>1.&#x7C7B;&#x5F0F;&#x7EE7;&#x627F;&#xFF1A;</p>
+<p><code>SubType.prototype = new SuperType()</code></p>
+<p>&#x95EE;&#x9898;&#xFF1A;</p>
+<ul>
+<li><p>&#x5B50;&#x7C7B;&#x516C;&#x7528;&#x7236;&#x7C7B;&#x4E2D;&#x7684;&#x5F15;&#x7528;&#x7C7B;&#x578B;&#x3002;</p>
+</li>
+<li><p>&#x65E0;&#x6CD5;&#x5411;&#x7236;&#x7C7B;&#x4F20;&#x53C2;&#x6570;&#x3002;</p>
+</li>
+</ul>
+<p>2.&#x6784;&#x9020;&#x51FD;&#x6570;&#x7EE7;&#x627F;&#xFF1A;</p>
+<p><code>SuperType.call(this,args)</code></p>
+<p>&#x95EE;&#x9898;&#xFF1A;&#x7236;&#x7C7B;&#x539F;&#x578B;&#x4E2D;&#x7684;&#x65B9;&#x6CD5;&#x65E0;&#x6CD5;&#x7EE7;&#x627F;</p>
+<p>3.&#x7EC4;&#x5408;&#x7EE7;&#x627F;</p>
+<p>&#x4E0A;&#x8FF0;&#x4E24;&#x8005;&#x7EFC;&#x5408;</p>
+<p>&#x95EE;&#x9898;&#xFF1A;&#x7236;&#x7C7B;&#x6784;&#x9020;&#x51FD;&#x6570;&#x6267;&#x884C;&#x4E86;&#x4E24;&#x6B21;</p>
+<p>4.&#x539F;&#x578B;&#x5F0F;&#x7EE7;&#x627F;</p>
+<p>&#x8FD9;&#x79CD;&#x65B9;&#x5F0F;&#x9519;&#x8BEF;&#xFF1A;</p>
+<p><code>SubType.prototype = SuperType.prototype;</code></p>
+<p>&#xFF08;&#x5982;&#x679C;&#x5B50;&#x7C7B;&#x5728;&#x539F;&#x578B;&#x4E0A;&#x6DFB;&#x52A0;&#x4E86;&#x81EA;&#x5DF1;&#x7684;&#x65B9;&#x6CD5;&#x540E;&#xFF0C;&#x4F1A;&#x5F71;&#x54CD;&#x7236;&#x7C7B;&#xFF09;</p>
+<p>&#x9700;&#x8981;&#x589E;&#x52A0;&#x4E2D;&#x95F4;&#x8FC7;&#x6E21;&#x5BF9;&#x8C61;&#xFF1A;</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">function inheritObject(o){</div><div class="line">  function F(){}</div><div class="line">  F.prototype = o;</div><div class="line">  return new F();</div><div class="line">}</div></pre></td></tr></table></figure>
+<p>5.&#x5BC4;&#x751F;&#x5F0F;</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">function (SubType, SuperType) {</div><div class="line">  var p = inheritObject(SuperType.prototype)</div><div class="line">  p.constructor = SubType;</div><div class="line">  SubType.prototype = p;</div><div class="line">}</div></pre></td></tr></table></figure>
+<p>&#x53EF;&#x4EE5;&#x8FD9;&#x4E48;&#x7406;&#x89E3;&#xFF1A;</p>
+<p><code>SubType.prototype = new F() ----&gt; SuperType.prototype</code></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/javascript/">javascript</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/读书笔记/">读书笔记</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="http://www.paradeto.com/2016/06/06/js-hld-6/" data-title="笔记-javascript高级程序设计（第3版）第6章 | Ayou" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/06/06/js-hld-10/" title="笔记-javascript高级程序设计（第3版）第10章">
+  <strong>PREVIOUS:</strong><br/>
+  <span>
+  笔记-javascript高级程序设计（第3版）第10章</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/06/06/dcsort/"  title="归并算法复杂度推导">
+ <strong>NEXT:</strong><br/> 
+ <span>归并算法复杂度推导
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	<div class="ds-thread"></div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+  <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#理解对象"><span class="toc-number">1.</span> <span class="toc-text">理解对象</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#属性类型"><span class="toc-number">1.1.</span> <span class="toc-text">属性类型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#数据属性"><span class="toc-number">1.1.1.</span> <span class="toc-text">数据属性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#访问器属性"><span class="toc-number">1.1.2.</span> <span class="toc-text">访问器属性</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#定义多个属性"><span class="toc-number">1.2.</span> <span class="toc-text">定义多个属性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#读取属性的特性"><span class="toc-number">1.3.</span> <span class="toc-text">读取属性的特性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建对象"><span class="toc-number">2.</span> <span class="toc-text">创建对象</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#工厂模式"><span class="toc-number">2.1.</span> <span class="toc-text">工厂模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#寄生构造函数模式（不常用）"><span class="toc-number">2.2.</span> <span class="toc-text">寄生构造函数模式（不常用）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#稳妥构造函数模式（不常用）"><span class="toc-number">2.3.</span> <span class="toc-text">稳妥构造函数模式（不常用）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#构造函数模式"><span class="toc-number">2.4.</span> <span class="toc-text">构造函数模式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#将构造函数当作函数"><span class="toc-number">2.4.1.</span> <span class="toc-text">将构造函数当作函数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#构造函数的问题"><span class="toc-number">2.4.2.</span> <span class="toc-text">构造函数的问题</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#原型模式"><span class="toc-number">2.5.</span> <span class="toc-text">原型模式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#理解原型对象"><span class="toc-number">2.5.1.</span> <span class="toc-text">理解原型对象</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#原型与in操作符"><span class="toc-number">2.5.2.</span> <span class="toc-text">原型与in操作符</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#更简单的原型语法"><span class="toc-number">2.5.3.</span> <span class="toc-text">更简单的原型语法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#原型的动态性"><span class="toc-number">2.5.4.</span> <span class="toc-text">原型的动态性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#原生对象的原型"><span class="toc-number">2.5.5.</span> <span class="toc-text">原生对象的原型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#原型对象的问题"><span class="toc-number">2.5.6.</span> <span class="toc-text">原型对象的问题</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#组合使用改造函数模式和原型模式"><span class="toc-number">2.6.</span> <span class="toc-text">组合使用改造函数模式和原型模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#动态原型模式"><span class="toc-number">2.7.</span> <span class="toc-text">动态原型模式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#继承"><span class="toc-number">3.</span> <span class="toc-text">继承</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#原型链"><span class="toc-number">3.1.</span> <span class="toc-text">原型链</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#别忘记默认的原型"><span class="toc-number">3.1.1.</span> <span class="toc-text">别忘记默认的原型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#确定原型和实例的关系"><span class="toc-number">3.1.2.</span> <span class="toc-text">确定原型和实例的关系</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#谨慎的定义方法"><span class="toc-number">3.1.3.</span> <span class="toc-text">谨慎的定义方法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#原型链的问题"><span class="toc-number">3.1.4.</span> <span class="toc-text">原型链的问题</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#借用构造函数"><span class="toc-number">3.2.</span> <span class="toc-text">借用构造函数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#传递参数"><span class="toc-number">3.2.1.</span> <span class="toc-text">传递参数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#借用构造函数的问题"><span class="toc-number">3.2.2.</span> <span class="toc-text">借用构造函数的问题</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#组合继承（最常用）"><span class="toc-number">3.3.</span> <span class="toc-text">组合继承（最常用）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#原型式继承"><span class="toc-number">3.4.</span> <span class="toc-text">原型式继承</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Object-create"><span class="toc-number">3.4.1.</span> <span class="toc-text">Object.create()</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#寄生式继承"><span class="toc-number">3.5.</span> <span class="toc-text">寄生式继承</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#寄生组合式继承"><span class="toc-number">3.6.</span> <span class="toc-text">寄生组合式继承</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#后记"><span class="toc-number"></span> <span class="toc-text">后记</span></a>
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+			<li><a href="/categories/html-css/" title="html/css">html/css<sup>4</sup></a></li>
+		
+			<li><a href="/categories/javascript/" title="javascript">javascript<sup>4</sup></a></li>
+		
+			<li><a href="/categories/mongodb/" title="mongodb">mongodb<sup>1</sup></a></li>
+		
+			<li><a href="/categories/nodejs/" title="nodejs">nodejs<sup>2</sup></a></li>
+		
+			<li><a href="/categories/前端工具/" title="前端工具">前端工具<sup>1</sup></a></li>
+		
+			<li><a href="/categories/前端框架/" title="前端框架">前端框架<sup>4</sup></a></li>
+		
+			<li><a href="/categories/前端理论/" title="前端理论">前端理论<sup>1</sup></a></li>
+		
+			<li><a href="/categories/算法/" title="算法">算法<sup>8</sup></a></li>
+		
+			<li><a href="/categories/读书笔记/" title="读书笔记">读书笔记<sup>3</sup></a></li>
+		
+			<li><a href="/categories/转载/" title="转载">转载<sup>1</sup></a></li>
+		
+			<li><a href="/categories/项目实战/" title="项目实战">项目实战<sup>3</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			<li><a href="/tags/WEB安全/" title="WEB安全">WEB安全<sup>2</sup></a></li>
+		
+			<li><a href="/tags/angularjs/" title="angularjs">angularjs<sup>2</sup></a></li>
+		
+			<li><a href="/tags/angularjs2/" title="angularjs2">angularjs2<sup>1</sup></a></li>
+		
+			<li><a href="/tags/canvas/" title="canvas">canvas<sup>3</sup></a></li>
+		
+			<li><a href="/tags/chrome插件/" title="chrome插件">chrome插件<sup>1</sup></a></li>
+		
+			<li><a href="/tags/css/" title="css">css<sup>1</sup></a></li>
+		
+			<li><a href="/tags/helmet/" title="helmet">helmet<sup>1</sup></a></li>
+		
+			<li><a href="/tags/html/" title="html">html<sup>3</sup></a></li>
+		
+			<li><a href="/tags/http/" title="http">http<sup>2</sup></a></li>
+		
+			<li><a href="/tags/https/" title="https">https<sup>1</sup></a></li>
+		
+			<li><a href="/tags/javascript/" title="javascript">javascript<sup>5</sup></a></li>
+		
+			<li><a href="/tags/jquery插件/" title="jquery插件">jquery插件<sup>1</sup></a></li>
+		
+			<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>4</sup></a></li>
+		
+			<li><a href="/tags/promise/" title="promise">promise<sup>1</sup></a></li>
+		
+			<li><a href="/tags/react/" title="react">react<sup>2</sup></a></li>
+		
+			<li><a href="/tags/replica/" title="replica">replica<sup>1</sup></a></li>
+		
+			<li><a href="/tags/sharding/" title="sharding">sharding<sup>1</sup></a></li>
+		
+			<li><a href="/tags/slb/" title="slb">slb<sup>1</sup></a></li>
+		
+			<li><a href="/tags/webpack/" title="webpack">webpack<sup>2</sup></a></li>
+		
+			<li><a href="/tags/事件/" title="事件">事件<sup>1</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  <div class="rsspart">
+	<a href="null" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+	</div>
+		<p class="copyright">Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/zhyu/yaht" target="_blank" title="YAHT">YAHT</a> © 2017 
+		
+		<a href="http://www.paradeto.com" target="_blank" title="Ayou">Ayou</a>
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<!--canvas-->
+
+<script src="/js/canvas.js"></script>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.navbar').click(function(){
+      $('header nav').toggleClass('shownav');
+    });
+    var myWidth = 0;
+    function getSize(){
+      if( typeof( window.innerWidth ) == 'number' ) {
+        myWidth = window.innerWidth;
+      } else if( document.documentElement && document.documentElement.clientWidth) {
+        myWidth = document.documentElement.clientWidth;
+      };
+    };
+    var m = $('#main'),
+    a = $('#asidepart'),
+    c = $('.closeaside'),
+    o = $('.openaside');
+    $(window).resize(function(){
+      getSize();
+      if (myWidth >= 1024) {
+        $('header nav').removeClass('shownav');
+      }else
+      {
+        m.removeClass('moveMain');
+        a.css('display', 'block').removeClass('fadeOut');
+        o.css('display', 'none');
+        
+            $('#toc.toc-aside').css('display', 'none');
+          
+      }
+    });
+    c.click(function(){
+      a.addClass('fadeOut').css('display', 'none');
+      o.css('display', 'block').addClass('fadeIn');
+      m.addClass('moveMain');
+    });
+    o.click(function(){
+      o.css('display', 'none').removeClass('beforeFadeIn');
+      a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');
+      m.removeClass('moveMain');
+    });
+    $(window).scroll(function(){
+      o.css("top",Math.max(80,260-$(this).scrollTop()));
+    });
+  });
+</script>
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+      var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+      if(ai.length>0){
+        ai.wrap('<div class="video-container" />');
+      };
+      if(ae.length>0){
+        ae.wrap('<div class="video-container" />');
+      };
+      if(ah.length==0){
+        t.css('display','none');
+      }else{
+        c.click(function(){
+          ta.css('display', 'block').addClass('fadeIn');
+        });
+        o.click(function(){
+          ta.css('display', 'none');
+        });
+        $(window).scroll(function(){
+          ta.css("top",Math.max(140,320-$(this).scrollTop()));
+        });
+      };
+    });
+  </script>
+
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+      var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+      var html = [
+        '<a href="#" class="overlay" id="qrcode"></a>',
+        '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+        '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+        '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+        '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+        '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+        '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+        '<span title="Share to"></span>'
+        ].join('');
+        $this.append(html);
+        $('.article-share-qrcode').click(function(){
+          var imgSrc = $('#qrcode-pic').attr('data-src');
+          $('#qrcode-pic').attr('src', imgSrc);
+          $('#qrcode-pic').load(function(){
+            $('.qrcode strong').text(' ');
+          });
+        });
+    });
+  </script>
+
+
+  
+    <script type="text/javascript">
+      var duoshuoQuery = {short_name:"paradeto"};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0]
+        || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+    </script>
+  
+  
+  
+
+
+
+
+
+
+
+
+
+
+  <div id="back-to-top">
+    <a title="返回顶部"><img src="/img/scrollup.png"/></a>
+  </div>
+  <script src="/js/back_to_top.js"></script>
+
+
+
+  </body>
+</html>
+

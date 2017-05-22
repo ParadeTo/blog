@@ -1,0 +1,443 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>jquery轮播图插件 | Ayou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="Ayou">
+    
+    <meta name="description" itemprop="description" content="jquery轮播图插件">
+    
+    
+    
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/yaht.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/yaht.jpg">
+    
+    
+        <link rel="stylesheet" href="/css/style.css">
+    
+    
+    
+<script type="text/javascript">
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "//hm.baidu.com/hm.js?bc27adb5eec6cd3b858ecca2a190876a";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+
+</head>
+
+  <body>
+    <header>
+      <canvas id="headerCanvas">
+
+</canvas>
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Ayou" title="Ayou"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Ayou">Ayou</a></h1>
+				<h2 class="blog-motto">Good Good Study, Day Day Up!</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/resume">Resume</a></li>
+					
+						<li><a href="/demo">Demo</a></li>
+					
+					<li>
+					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:www.paradeto.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/10/10/page-switch/" title="jquery轮播图插件" itemprop="url">jquery轮播图插件</a>
+  </h1>
+  <p class="article-author">By
+    
+      <a href="http://www.paradeto.com" title="Ayou">Ayou</a>
+    </p>
+  <p class="article-time">
+    <time datetime="2016-10-10T08:25:41.000Z" itemprop="datePublished">2016-10-10</time>
+    更新日期:<time datetime="2016-11-19T08:25:18.000Z" itemprop="dateModified">2016-11-19</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#一个jQuery插件框架模板"><span class="toc-number">1.</span> <span class="toc-text">一个jQuery插件框架模板</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#利用上面的模板开发一个轮播图插件"><span class="toc-number">2.</span> <span class="toc-text">利用上面的模板开发一个轮播图插件</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#说明"><span class="toc-number">2.1.</span> <span class="toc-text">说明</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用"><span class="toc-number">2.2.</span> <span class="toc-text">使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参数说明"><span class="toc-number">2.3.</span> <span class="toc-text">参数说明</span></a></li></ol></li></ol>
+		</div>
+		
+		<h1 id="&#x4E00;&#x4E2A;jQuery&#x63D2;&#x4EF6;&#x6846;&#x67B6;&#x6A21;&#x677F;"><a href="#&#x4E00;&#x4E2A;jQuery&#x63D2;&#x4EF6;&#x6846;&#x67B6;&#x6A21;&#x677F;" class="headerlink" title="&#x4E00;&#x4E2A;jQuery&#x63D2;&#x4EF6;&#x6846;&#x67B6;&#x6A21;&#x677F;"></a>&#x4E00;&#x4E2A;jQuery&#x63D2;&#x4EF6;&#x6846;&#x67B6;&#x6A21;&#x677F;</h1><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div></pre></td><td class="code"><pre><div class="line">(<span class="function"><span class="keyword">function</span>(<span class="params">$</span>)</span>{</div><div class="line">	</div><div class="line">	<span class="comment">/**</span></div><div class="line">	 * [&#x63D2;&#x4EF6;&#x7C7B;]</div><div class="line">	 */</div><div class="line">	<span class="keyword">var</span> Plugin = (<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>{</div><div class="line">		<span class="function"><span class="keyword">function</span> <span class="title">Plugin</span>(<span class="params">element, options</span>) </span>{</div><div class="line">            <span class="comment">// &#x62D3;&#x5C55;&#x53C2;&#x6570;</span></div><div class="line">			<span class="keyword">this</span>.settings = $.extend(<span class="literal">true</span>,$.fn.Plugin.default,options || {});</div><div class="line">			<span class="keyword">this</span>.element = element;</div><div class="line">			<span class="keyword">this</span>.init();</div><div class="line">		}</div><div class="line">		Plugin.prototype = {</div><div class="line">			<span class="attr">init</span> : <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>{</div><div class="line"></div><div class="line">			}</div><div class="line">		}</div><div class="line">		<span class="keyword">return</span> Plugin;</div><div class="line">	})();</div><div class="line"></div><div class="line">	<span class="comment">/**</span></div><div class="line">	 * [&#x5728;jquery&#x7684;&#x539F;&#x578B;&#x4E0B;&#x6302;&#x8F7D;&#x6211;&#x4EEC;&#x7684;&#x65B9;&#x6CD5;]</div><div class="line">	 * @param {[type]} options [&#x7528;&#x6237;&#x81EA;&#x5B9A;&#x4E49;&#x53C2;&#x6570;]</div><div class="line">	 */</div><div class="line">	$.fn.Plugin = <span class="function"><span class="keyword">function</span> (<span class="params">options</span>) </span>{</div><div class="line">		<span class="keyword">return</span> <span class="keyword">this</span>.each(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>{</div><div class="line">			<span class="keyword">var</span> me = $(<span class="keyword">this</span>),</div><div class="line">					 <span class="comment">// &#x5C06;&#x63D2;&#x4EF6;&#x5B9E;&#x4F8B;&#x4FDD;&#x6301;&#x5728;&#x5BF9;&#x8C61;&#x7684;data&#x5C5E;&#x6027;&#x4E2D;&#xFF0C;&#x5B9E;&#x73B0;&#x5355;&#x4F8B;&#x6A21;&#x5F0F;</span></div><div class="line">					 instance = me.data(<span class="string">&quot;Plugin&quot;</span>);</div><div class="line">			<span class="keyword">if</span> (!instance) {</div><div class="line">				instance = <span class="keyword">new</span> Plugin(me,options);</div><div class="line">				me.data(<span class="string">&quot;Plugin&quot;</span>, instance);</div><div class="line">			}</div><div class="line">			<span class="comment">// &#x8C03;&#x7528;&#x63D2;&#x4EF6;&#x7684;&#x65B9;&#x6CD5;&#xFF0C;&#x5982;&#xFF1A;$(&quot;div&quot;).Plugin(&quot;init&quot;)</span></div><div class="line">			<span class="keyword">if</span> ($.type(options) === <span class="string">&apos;string&apos;</span>) <span class="keyword">return</span> instance[options]();</div><div class="line">		});</div><div class="line">	}</div><div class="line"></div><div class="line">	<span class="comment">// &#x63D2;&#x4EF6;&#x9ED8;&#x8BA4;&#x53C2;&#x6570;</span></div><div class="line">	$.fn.Plugin.default = {</div><div class="line"></div><div class="line">	}</div><div class="line"></div><div class="line">	<span class="comment">// &#x83B7;&#x53D6;&#x9875;&#x9762;&#x4E0A;&#x6240;&#x6709;data-Plugin&#x7684;&#x5143;&#x7D20;&#x6765;&#x521D;&#x59CB;&#x5316;</span></div><div class="line">	$(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>{</div><div class="line">		$(<span class="string">&quot;[data-Plugin]&quot;</span>).Plugin();</div><div class="line">	})</div><div class="line">})(jQuery);</div></pre></td></tr></table></figure>
+<h1 id="&#x5229;&#x7528;&#x4E0A;&#x9762;&#x7684;&#x6A21;&#x677F;&#x5F00;&#x53D1;&#x4E00;&#x4E2A;&#x8F6E;&#x64AD;&#x56FE;&#x63D2;&#x4EF6;"><a href="#&#x5229;&#x7528;&#x4E0A;&#x9762;&#x7684;&#x6A21;&#x677F;&#x5F00;&#x53D1;&#x4E00;&#x4E2A;&#x8F6E;&#x64AD;&#x56FE;&#x63D2;&#x4EF6;" class="headerlink" title="&#x5229;&#x7528;&#x4E0A;&#x9762;&#x7684;&#x6A21;&#x677F;&#x5F00;&#x53D1;&#x4E00;&#x4E2A;&#x8F6E;&#x64AD;&#x56FE;&#x63D2;&#x4EF6;"></a>&#x5229;&#x7528;&#x4E0A;&#x9762;&#x7684;&#x6A21;&#x677F;&#x5F00;&#x53D1;&#x4E00;&#x4E2A;&#x8F6E;&#x64AD;&#x56FE;&#x63D2;&#x4EF6;</h1><p><a href="https://github.com/ParadeTo/page-switch" target="_blank" rel="external">&#x9879;&#x76EE;&#x5730;&#x5740;</a></p>
+<h2 id="&#x8BF4;&#x660E;"><a href="#&#x8BF4;&#x660E;" class="headerlink" title="&#x8BF4;&#x660E;"></a>&#x8BF4;&#x660E;</h2><ul>
+<li>&#x652F;&#x6301;&#x6A2A;&#x5C4F;/&#x7AD6;&#x5C4F;&#x6ED1;&#x52A8;</li>
+<li>&#x652F;&#x6301;&#x5FAA;&#x73AF;&#x64AD;&#x653E;</li>
+<li>&#x652F;&#x6301;&#x81EA;&#x52A8;&#x64AD;&#x653E;&#xFF08;&#x9F20;&#x6807;&#x60AC;&#x505C;&#x5230;&#x5BFC;&#x822A;&#x6309;&#x94AE;&#x4E0A;&#x53EF;&#x6682;&#x505C;&#xFF09;</li>
+<li>&#x652F;&#x6301;&#x952E;&#x76D8;&#x65B9;&#x5411;&#x952E;&#x548C;&#x9F20;&#x6807;&#x6ED1;&#x8F6E;&#x5207;&#x6362;</li>
+</ul>
+<p><img src="/2016/10/10/page-switch/demo.gif" alt="demo.gif"></p>
+<h2 id="&#x4F7F;&#x7528;"><a href="#&#x4F7F;&#x7528;" class="headerlink" title="&#x4F7F;&#x7528;"></a>&#x4F7F;&#x7528;</h2><figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;container&quot;</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;sections&quot;</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;section&quot;</span> <span class="attr">id</span>=<span class="string">&quot;section0&quot;</span>&gt;</span><span class="tag">&lt;<span class="name">h3</span>&gt;</span>this is the page0<span class="tag">&lt;/<span class="name">h3</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;section&quot;</span> <span class="attr">id</span>=<span class="string">&quot;section1&quot;</span>&gt;</span><span class="tag">&lt;<span class="name">h3</span>&gt;</span>this is the page1<span class="tag">&lt;/<span class="name">h3</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;section&quot;</span> <span class="attr">id</span>=<span class="string">&quot;section2&quot;</span>&gt;</span><span class="tag">&lt;<span class="name">h3</span>&gt;</span>this is the page2<span class="tag">&lt;/<span class="name">h3</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">		<span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;section&quot;</span> <span class="attr">id</span>=<span class="string">&quot;section3&quot;</span>&gt;</span><span class="tag">&lt;<span class="name">h3</span>&gt;</span>this is the page3<span class="tag">&lt;/<span class="name">h3</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">	<span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;./jquery.min.js&quot;</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;../dist/pageSwitch.min.js&quot;</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="javascript"></span></div><div class="line">	$(<span class="string">&quot;#container&quot;</span>).PageSwitch({</div><div class="line">		<span class="attr">direction</span>:<span class="string">&apos;horizontal&apos;</span>,</div><div class="line">		<span class="attr">easing</span>:<span class="string">&apos;ease-in&apos;</span>,</div><div class="line">		<span class="attr">duration</span>:<span class="number">1000</span>,</div><div class="line">		<span class="attr">autoPlay</span>:<span class="literal">true</span>,</div><div class="line">		<span class="attr">loop</span>:<span class="string">&apos;false&apos;</span></div><div class="line">	});</div><div class="line"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div></pre></td></tr></table></figure>
+<h2 id="&#x53C2;&#x6570;&#x8BF4;&#x660E;"><a href="#&#x53C2;&#x6570;&#x8BF4;&#x660E;" class="headerlink" title="&#x53C2;&#x6570;&#x8BF4;&#x660E;"></a>&#x53C2;&#x6570;&#x8BF4;&#x660E;</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">selectors : {</div><div class="line">	<span class="attr">sections</span> : <span class="string">&quot;.sections&quot;</span>,  <span class="comment">// &#x5BB9;&#x5668;</span></div><div class="line">	section : <span class="string">&quot;.section&quot;</span>, <span class="comment">// &#x6BCF;&#x4E00;&#x9875;</span></div><div class="line">	pages : <span class="string">&quot;.pages&quot;</span>, <span class="comment">// &#x5206;&#x9875;&#x5BFC;&#x822A;(&#x5C0F;&#x5706;&#x70B9;)</span></div><div class="line">	active : <span class="string">&quot;.active&quot;</span> <span class="comment">// &#x5F53;&#x524D;&#x6FC0;&#x6D3B;&#x9875;</span></div><div class="line">},</div><div class="line"><span class="attr">index</span> : <span class="number">0</span>, <span class="comment">// &#x5F00;&#x59CB;&#x4F4D;&#x7F6E;</span></div><div class="line">easing :  <span class="string">&quot;ease&quot;</span>, <span class="comment">// &#x52A8;&#x753B;&#x51FD;&#x6570;</span></div><div class="line">duration : <span class="number">500</span>, <span class="comment">// &#x6BEB;&#x79D2;</span></div><div class="line">loop : <span class="literal">false</span>, <span class="comment">// &#x662F;&#x5426;&#x5FAA;&#x73AF;&#x64AD;&#x653E;&#xFF0C;&#x81EA;&#x52A8;&#x64AD;&#x653E;&#x65F6;&#x8BE5;&#x5C5E;&#x6027;&#x4E3A;true&#xFF0C;&#x8BBE;&#x7F6E;&#x65E0;&#x6548;</span></div><div class="line">pagination : <span class="literal">true</span>, <span class="comment">// &#x662F;&#x5426;&#x5206;&#x9875;&#x5904;&#x7406;&#xFF0C;&#x662F;&#x5426;&#x663E;&#x793A;&#x5C0F;&#x5706;&#x70B9;</span></div><div class="line">keyboard : <span class="literal">true</span>, <span class="comment">// &#x662F;&#x5426;&#x652F;&#x6301;&#x952E;&#x76D8;&#x4E0A;&#x4E0B;&#x5DE6;&#x53F3;&#x5207;&#x6362;</span></div><div class="line">direction : <span class="string">&quot;vertical&quot;</span>, <span class="comment">// &#x7AD6;&#x76F4;&#x6216;&#x6C34;&#x5E73;&#x6ED1;&#x52A8;</span></div><div class="line">autoPlay: <span class="literal">true</span>, <span class="comment">// &#x81EA;&#x52A8;&#x64AD;&#x653E;</span></div><div class="line">interval: <span class="number">3000</span>, <span class="comment">// &#x81EA;&#x52A8;&#x64AD;&#x653E;&#x95F4;&#x9694;</span></div><div class="line">callback :  <span class="string">&quot;&quot;</span> <span class="comment">// &#x5207;&#x6362;&#x52A8;&#x753B;&#x7ED3;&#x675F;&#x540E;&#x56DE;&#x8C03;&#x51FD;&#x6570;</span></div></pre></td></tr></table></figure>  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/javascript/">javascript</a><a href="/tags/jquery插件/">jquery插件</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/javascript/">javascript</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="http://www.paradeto.com/2016/10/10/page-switch/" data-title="jquery轮播图插件 | Ayou" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/10/10/promise-frame/" title="实现一个简单的Promise/Deferred框架">
+  <strong>PREVIOUS:</strong><br/>
+  <span>
+  实现一个简单的Promise/Deferred框架</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/09/13/chrome-ext-mooncake/"  title="chrome插件开发（模拟抢月饼）">
+ <strong>NEXT:</strong><br/> 
+ <span>chrome插件开发（模拟抢月饼）
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	<div class="ds-thread"></div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+  <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#一个jQuery插件框架模板"><span class="toc-number">1.</span> <span class="toc-text">一个jQuery插件框架模板</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#利用上面的模板开发一个轮播图插件"><span class="toc-number">2.</span> <span class="toc-text">利用上面的模板开发一个轮播图插件</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#说明"><span class="toc-number">2.1.</span> <span class="toc-text">说明</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用"><span class="toc-number">2.2.</span> <span class="toc-text">使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参数说明"><span class="toc-number">2.3.</span> <span class="toc-text">参数说明</span></a></li></ol></li></ol>
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+			<li><a href="/categories/html-css/" title="html/css">html/css<sup>4</sup></a></li>
+		
+			<li><a href="/categories/javascript/" title="javascript">javascript<sup>4</sup></a></li>
+		
+			<li><a href="/categories/mongodb/" title="mongodb">mongodb<sup>1</sup></a></li>
+		
+			<li><a href="/categories/nodejs/" title="nodejs">nodejs<sup>2</sup></a></li>
+		
+			<li><a href="/categories/前端工具/" title="前端工具">前端工具<sup>1</sup></a></li>
+		
+			<li><a href="/categories/前端框架/" title="前端框架">前端框架<sup>4</sup></a></li>
+		
+			<li><a href="/categories/前端理论/" title="前端理论">前端理论<sup>1</sup></a></li>
+		
+			<li><a href="/categories/算法/" title="算法">算法<sup>8</sup></a></li>
+		
+			<li><a href="/categories/读书笔记/" title="读书笔记">读书笔记<sup>3</sup></a></li>
+		
+			<li><a href="/categories/转载/" title="转载">转载<sup>1</sup></a></li>
+		
+			<li><a href="/categories/项目实战/" title="项目实战">项目实战<sup>3</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			<li><a href="/tags/WEB安全/" title="WEB安全">WEB安全<sup>2</sup></a></li>
+		
+			<li><a href="/tags/angularjs/" title="angularjs">angularjs<sup>2</sup></a></li>
+		
+			<li><a href="/tags/angularjs2/" title="angularjs2">angularjs2<sup>1</sup></a></li>
+		
+			<li><a href="/tags/canvas/" title="canvas">canvas<sup>3</sup></a></li>
+		
+			<li><a href="/tags/chrome插件/" title="chrome插件">chrome插件<sup>1</sup></a></li>
+		
+			<li><a href="/tags/css/" title="css">css<sup>1</sup></a></li>
+		
+			<li><a href="/tags/helmet/" title="helmet">helmet<sup>1</sup></a></li>
+		
+			<li><a href="/tags/html/" title="html">html<sup>3</sup></a></li>
+		
+			<li><a href="/tags/http/" title="http">http<sup>2</sup></a></li>
+		
+			<li><a href="/tags/https/" title="https">https<sup>1</sup></a></li>
+		
+			<li><a href="/tags/javascript/" title="javascript">javascript<sup>5</sup></a></li>
+		
+			<li><a href="/tags/jquery插件/" title="jquery插件">jquery插件<sup>1</sup></a></li>
+		
+			<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>4</sup></a></li>
+		
+			<li><a href="/tags/promise/" title="promise">promise<sup>1</sup></a></li>
+		
+			<li><a href="/tags/react/" title="react">react<sup>2</sup></a></li>
+		
+			<li><a href="/tags/replica/" title="replica">replica<sup>1</sup></a></li>
+		
+			<li><a href="/tags/sharding/" title="sharding">sharding<sup>1</sup></a></li>
+		
+			<li><a href="/tags/slb/" title="slb">slb<sup>1</sup></a></li>
+		
+			<li><a href="/tags/webpack/" title="webpack">webpack<sup>2</sup></a></li>
+		
+			<li><a href="/tags/事件/" title="事件">事件<sup>1</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  <div class="rsspart">
+	<a href="null" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+	</div>
+		<p class="copyright">Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/zhyu/yaht" target="_blank" title="YAHT">YAHT</a> © 2017 
+		
+		<a href="http://www.paradeto.com" target="_blank" title="Ayou">Ayou</a>
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<!--canvas-->
+
+<script src="/js/canvas.js"></script>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.navbar').click(function(){
+      $('header nav').toggleClass('shownav');
+    });
+    var myWidth = 0;
+    function getSize(){
+      if( typeof( window.innerWidth ) == 'number' ) {
+        myWidth = window.innerWidth;
+      } else if( document.documentElement && document.documentElement.clientWidth) {
+        myWidth = document.documentElement.clientWidth;
+      };
+    };
+    var m = $('#main'),
+    a = $('#asidepart'),
+    c = $('.closeaside'),
+    o = $('.openaside');
+    $(window).resize(function(){
+      getSize();
+      if (myWidth >= 1024) {
+        $('header nav').removeClass('shownav');
+      }else
+      {
+        m.removeClass('moveMain');
+        a.css('display', 'block').removeClass('fadeOut');
+        o.css('display', 'none');
+        
+            $('#toc.toc-aside').css('display', 'none');
+          
+      }
+    });
+    c.click(function(){
+      a.addClass('fadeOut').css('display', 'none');
+      o.css('display', 'block').addClass('fadeIn');
+      m.addClass('moveMain');
+    });
+    o.click(function(){
+      o.css('display', 'none').removeClass('beforeFadeIn');
+      a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');
+      m.removeClass('moveMain');
+    });
+    $(window).scroll(function(){
+      o.css("top",Math.max(80,260-$(this).scrollTop()));
+    });
+  });
+</script>
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+      var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+      if(ai.length>0){
+        ai.wrap('<div class="video-container" />');
+      };
+      if(ae.length>0){
+        ae.wrap('<div class="video-container" />');
+      };
+      if(ah.length==0){
+        t.css('display','none');
+      }else{
+        c.click(function(){
+          ta.css('display', 'block').addClass('fadeIn');
+        });
+        o.click(function(){
+          ta.css('display', 'none');
+        });
+        $(window).scroll(function(){
+          ta.css("top",Math.max(140,320-$(this).scrollTop()));
+        });
+      };
+    });
+  </script>
+
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+      var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+      var html = [
+        '<a href="#" class="overlay" id="qrcode"></a>',
+        '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+        '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+        '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+        '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+        '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+        '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+        '<span title="Share to"></span>'
+        ].join('');
+        $this.append(html);
+        $('.article-share-qrcode').click(function(){
+          var imgSrc = $('#qrcode-pic').attr('data-src');
+          $('#qrcode-pic').attr('src', imgSrc);
+          $('#qrcode-pic').load(function(){
+            $('.qrcode strong').text(' ');
+          });
+        });
+    });
+  </script>
+
+
+  
+    <script type="text/javascript">
+      var duoshuoQuery = {short_name:"paradeto"};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0]
+        || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+    </script>
+  
+  
+  
+
+
+
+
+
+
+
+
+
+
+  <div id="back-to-top">
+    <a title="返回顶部"><img src="/img/scrollup.png"/></a>
+  </div>
+  <script src="/js/back_to_top.js"></script>
+
+
+
+  </body>
+</html>
+

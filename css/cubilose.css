@@ -1,0 +1,131 @@
+primary-color ＝ #e9595c,
+html,
+body,
+ul,
+section,
+div,
+p,
+h2,
+footer {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  background-color: #efefef;
+}
+#back-to-top {
+  position: fixed;
+  right: 10px;
+  bottom: 10px;
+}
+html,
+body {
+  font-family: "Microsoft YaHei", "WenQuanYi Micro Hei", "Helvetica Neue", "Helvetica", Arial, sans-serif;
+  color: #333;
+  height: 100%;
+}
+#cubilosePage {
+  height: 100%;
+}
+#cubilosePage #header {
+  z-index: 88;
+  height: 80px;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  background: rgba(255,255,255,0.8);
+}
+#cubilosePage #header nav {
+  height: 100%;
+  width: 60%;
+  margin: 0 auto;
+}
+#cubilosePage #header nav a {
+  display: inline-block;
+  text-decoration: none;
+  color: #111;
+}
+#cubilosePage #header nav .logo {
+  display: inline-block;
+  height: 80px;
+}
+#cubilosePage #header nav #menu {
+  margin: 0;
+  vertical-align: middle;
+  display: inline-block;
+  height: 100%;
+  line-height: 80px;
+  width: 60%;
+  float: right;
+}
+#cubilosePage #header nav #menu >li {
+  list-style: none;
+  display: inline-block;
+  margin-right: 60px;
+}
+#cubilosePage section {
+  height: 100%;
+  width: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+#cubilosePage section .container {
+  height: 100%;
+  margin: 0 auto;
+  max-width: 1200px;
+  padding-top: 20%;
+  padding-left: 10%;
+  padding-right: 10%;
+}
+#cubilosePage section .container h2 {
+  font-size: 30px;
+  position: relative;
+  margin-bottom: 20px;
+}
+#cubilosePage section .container h2:after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: -10px;
+  height: 4px;
+  width: 40px;
+  background-color: #e9595c;
+  display: inline-block;
+}
+#cubilosePage section .container p {
+  margin-bottom: 5px;
+}
+#cubilosePage #banner {
+  background-image: url("/img/cubilose/home_bg_banner.jpeg");
+  text-align: center;
+  color: #e9595c;
+  font-size: 26px;
+  letter-spacing: 1.5px;
+}
+#cubilosePage #section1 {
+  background-image: url("/img/cubilose/home_bg_1.png");
+}
+#cubilosePage #section2 {
+  background-image: url("/img/cubilose/home_bg_2.png");
+}
+#cubilosePage #section3 {
+  background-image: url("/img/cubilose/home_bg_3.jpg");
+}
+#cubilosePage #footer {
+  display: block;
+  margin: 0 auto;
+  max-width: 400px;
+  width: 100%;
+  padding: 10px;
+}
+#cubilosePage #footer h3 {
+  font-size: 16px;
+}
+#cubilosePage #footer p {
+  font-size: 14px;
+}
+#cubilosePage #footer img {
+  width: 80px;
+}

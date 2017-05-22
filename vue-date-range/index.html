@@ -1,0 +1,302 @@
+
+    
+    <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>vue-date-range | Ayou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="Ayou">
+    
+    <meta name="description" content="一名转行的菜鸡程序员">
+    
+    
+    
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/yaht.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/yaht.jpg">
+    
+    
+        <link rel="stylesheet" href="/css/style.css">
+    
+    
+    <link rel="stylesheet" href="/css/vue-date-range.css">
+    
+    
+<script type="text/javascript">
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "//hm.baidu.com/hm.js?bc27adb5eec6cd3b858ecca2a190876a";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+
+</head>
+
+    <body>
+
+    <div class="vue-date-range-wrapper">
+	<a href="https://github.com/ParadeTo/vue-date-range">
+		<img style="position: absolute; top: 0; left: 0; border: 0;"
+				 src="https://camo.githubusercontent.com/121cd7cbdc3e4855075ea8b558508b91ac463ac2/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f677265656e5f3030373230302e706e67"
+				 alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_green_007200.png"></a>
+	<section>
+		<h2>calendar</h2>
+		<div id="calendar" class="calendar-wrapper">
+			<span>{{date.format('YYYY-MM-DD')}}</span>
+			<calendar class="calendar"
+								:first-day-of-week="1"
+								:default-date="date"
+								:lang="lang" @change="onChange"></calendar>
+			<button @click.stop.prevent="setDate(-1)">Yesterday</button>
+			<button @click.stop.prevent="setDate(0)">Today</button>
+		</div>
+		<div class="code-wrapper">
+			<pre>
+				<code>
+            &lt;div id="calendar"&gt;
+                &lt;span&gt;{{date.format('YYYY-MM-DD')}}&lt;/span&gt;
+                &lt;calendar class="calendar"
+                      :first-day-of-week="1"
+                      :default-date="date"
+                      :lang="lang" @change="onChange"&gt;&lt;/calendar&gt;
+                &lt;button @click.stop.prevent="setDate(-1)"&gt;Yesterday&lt;/button&gt;
+                &lt;button @click.stop.prevent="setDate(0)"&gt;Today&lt;/button&gt;
+            &lt;/div&gt;
+
+            new Vue({
+                el: '#calendar',
+                components: {
+                  'calendar':daterange.Calendar
+                },
+                data() {
+                  return {
+                    dayOfMonth: moment().add(1, 'months'),
+                    selectedDate: moment().add(1, 'months'),
+                    disableDaysBeforeToday: true,
+                    lang: 'en',
+                    date: moment().format('YYYY-MM-DD')
+                  };
+                },
+                methods: {
+                  onChange(date) {
+                    this.date = date.format('YYYY-MM-DD');
+                  }
+                }
+            });
+        </code>
+			</pre>
+		</div>
+	</section>
+	<section>
+		<h2>calendar with lunar</h2>
+		<div id="calendarLunar" class="calendar-wrapper">
+			<span>{{date.format('YYYY-MM-DD')}}</span>
+			<calendar class="calendar"
+								:show-lunar="true"
+								:first-day-of-week="1"
+								:disable-days-before-today="disableDaysBeforeToday"
+								:default-date="date"
+								:lang="lang" @change="onChange"></calendar>
+		</div>
+		<div class="code-wrapper">
+			<pre>
+			        <code>
+            &lt;div id="calendarLunar"&gt;
+                &lt;span&gt;{{date.format('YYYY-MM-DD')}}&lt;/span&gt;
+                &lt;calendar :show-lunar="true"
+                          :first-day-of-week="1"
+                          :disable-days-before-today="disableDaysBeforeToday"
+                          :default-date="date"
+                          :lang="lang" @change="onChange"&gt;&lt;/calendar&gt;
+            &lt;/div&gt;
+
+            new Vue({
+              el: '#calendarLunar',
+              components: {
+                'calendar':daterange.Calendar
+              },
+              data() {
+                return {
+                  disableDaysBeforeToday: true,
+                  lang: 'zh',
+                  date: moment()
+                };
+              },
+              methods: {
+                onChange(date) {
+                  this.date = date;
+                }
+              }
+            });
+        </code>
+
+			</pre>
+		</div>
+	</section>
+	<section>
+		<h2>date-range</h2>
+		<div id="range" class="calendar-wrapper">
+			<span>{{range.startDate.format('YYYY-MM-DD')}}</span>~<span>{{range.endDate.format('YYYY-MM-DD')}}</span>
+			<daterange class="calendar" :default-range="range" :lang="lang" @change="onChange"></daterange>
+			<button @click.stop.prevent="setRange(-7)">Last 7 days</button>
+			<button @click.stop.prevent="setRange(-30)">Last 1 month</button>
+		</div>
+		<div class="code-wrapper">
+			<pre>
+				        <code>
+            &lt;div id="range"&gt;
+                &lt;span&gt;{{range.startDate.format('YYYY-MM-DD')}}&lt;/span&gt;~&lt;span&gt;{{range.endDate.format('YYYY-MM-DD')}}&lt;/span&gt;
+                &lt;daterange :default-range="range" :lang="lang" @change="onChange"&gt;&lt;/daterange&gt;
+                &lt;button @click.stop.prevent="setRange(-7)"&gt;Last 7 days&lt;/button&gt;
+                &lt;button @click.stop.prevent="setRange(-30)"&gt;Last 1 month&lt;/button&gt;
+            &lt;/div&gt;
+
+            new Vue({
+                el: '#range',
+                components: {
+                    'daterange':daterange.DateRange
+                },
+                data() {
+                  return {
+                    lang: 'en',
+                    range: {
+                      startDate: moment(),
+                      endDate: moment().add(7, 'days')
+                    }
+                  };
+                },
+                methods: {
+                  onChange(range) {
+                    this.range = range;
+                  },
+                  setRange (p) {
+                    if (typeof p === 'number') {
+                      console.log(p)
+                      this.range = {
+                        startDate: moment().add(p, 'days'),
+                        endDate: moment()
+                      }
+                    }
+                  },
+                }
+            });
+        </code>
+
+			</pre>
+		</div>
+	</section>
+	<section>
+		<h2>custom style</h2>
+		<div id="custom-style" class="calendar-wrapper">
+			<span>{{range.startDate.format('YYYY-MM-DD')}}</span>~<span>{{range.endDate.format('YYYY-MM-DD')}}</span>
+			<daterange class="calendar" :range="range" :lang="lang" @change="onChange"></daterange>
+		</div>
+		<div class="code-wrapper">
+			<pre>
+				<code>
+            &lt;div id="custom-style"&gt;
+                &lt;span&gt;{{range.startDate.format('YYYY-MM-DD')}}&lt;/span&gt;~&lt;span&gt;{{range.endDate.format('YYYY-MM-DD')}}&lt;/span&gt;
+                &lt;daterange :range="range" :lang="lang" @change="onChange"&gt;&lt;/daterange&gt;
+            &lt;/div&gt;
+
+
+            #custom-style .ayou-day-cell .selected {
+                background-color: orange;
+            }
+            #custom-style .ayou-day-cell .in-range {
+                background-color: orange;
+            }
+        </code>
+			</pre>
+		</div>
+	</section>
+</div>
+
+
+
+
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<!--canvas-->
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.navbar').click(function(){
+      $('header nav').toggleClass('shownav');
+    });
+    var myWidth = 0;
+    function getSize(){
+      if( typeof( window.innerWidth ) == 'number' ) {
+        myWidth = window.innerWidth;
+      } else if( document.documentElement && document.documentElement.clientWidth) {
+        myWidth = document.documentElement.clientWidth;
+      };
+    };
+    var m = $('#main'),
+    a = $('#asidepart'),
+    c = $('.closeaside'),
+    o = $('.openaside');
+    $(window).resize(function(){
+      getSize();
+      if (myWidth >= 1024) {
+        $('header nav').removeClass('shownav');
+      }else
+      {
+        m.removeClass('moveMain');
+        a.css('display', 'block').removeClass('fadeOut');
+        o.css('display', 'none');
+        
+      }
+    });
+    c.click(function(){
+      a.addClass('fadeOut').css('display', 'none');
+      o.css('display', 'block').addClass('fadeIn');
+      m.addClass('moveMain');
+    });
+    o.click(function(){
+      o.css('display', 'none').removeClass('beforeFadeIn');
+      a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');
+      m.removeClass('moveMain');
+    });
+    $(window).scroll(function(){
+      o.css("top",Math.max(80,260-$(this).scrollTop()));
+    });
+  });
+</script>
+
+
+
+
+
+
+
+
+
+<script src="//cdn.bootcss.com/moment.js/2.17.1/moment.min.js"></script>
+<script src="//cdn.bootcss.com/vue/2.2.1/vue.min.js"></script>
+<script src="/js/vue-date-range/vue-date-range.js"></script>
+<script src="/js/vue-date-range/index.js"></script>
+
+
+
+
+  <div id="back-to-top">
+    <a title="返回顶部"><img src="/img/scrollup.png"/></a>
+  </div>
+  <script src="/js/back_to_top.js"></script>
+
+
+
+    </body>
+    </html>
+    
+

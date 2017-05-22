@@ -1,0 +1,448 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>实现一个简单的Promise/Deferred框架 | Ayou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="Ayou">
+    
+    <meta name="description" itemprop="description" content="实现一个简单的Promise/Deferred框架">
+    
+    
+    
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/yaht.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/yaht.jpg">
+    
+    
+        <link rel="stylesheet" href="/css/style.css">
+    
+    
+    
+<script type="text/javascript">
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "//hm.baidu.com/hm.js?bc27adb5eec6cd3b858ecca2a190876a";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+
+</head>
+
+  <body>
+    <header>
+      <canvas id="headerCanvas">
+
+</canvas>
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Ayou" title="Ayou"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Ayou">Ayou</a></h1>
+				<h2 class="blog-motto">Good Good Study, Day Day Up!</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/resume">Resume</a></li>
+					
+						<li><a href="/demo">Demo</a></li>
+					
+					<li>
+					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:www.paradeto.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/10/10/promise-frame/" title="实现一个简单的Promise/Deferred框架" itemprop="url">实现一个简单的Promise/Deferred框架</a>
+  </h1>
+  <p class="article-author">By
+    
+      <a href="http://www.paradeto.com" title="Ayou">Ayou</a>
+    </p>
+  <p class="article-time">
+    <time datetime="2016-10-10T08:31:06.000Z" itemprop="datePublished">2016-10-10</time>
+    更新日期:<time datetime="2016-11-19T08:25:18.000Z" itemprop="dateModified">2016-11-19</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Promise"><span class="toc-number">1.</span> <span class="toc-text">Promise</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Deferred"><span class="toc-number">2.</span> <span class="toc-text">Deferred</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#使用方法"><span class="toc-number">3.</span> <span class="toc-text">使用方法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#实现链式调用"><span class="toc-number">4.</span> <span class="toc-text">实现链式调用</span></a></li></ol>
+		</div>
+		
+		<p>&#x5229;&#x7528;nodejs&#x7684;<code>event</code>&#x6A21;&#x5757;&#xFF0C;&#x53EF;&#x4EE5;&#x5B9E;&#x73B0;&#x4E00;&#x4E2A;&#x6700;&#x7B80;&#x5355;&#x7684;<code>Promise/Deferred</code>&#x6846;&#x67B6;&#xFF1A;</p>
+<h1 id="Promise"><a href="#Promise" class="headerlink" title="Promise"></a>Promise</h1><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Promise &#x7EE7;&#x627F;&#x81EA;EventEmitter</span></div><div class="line"><span class="keyword">var</span> <span class="built_in">Promise</span> = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>{</div><div class="line">  EventEmitter.call(<span class="keyword">this</span>);</div><div class="line">};</div><div class="line">util.inherits(<span class="built_in">Promise</span>,EventEmitter);</div><div class="line"></div><div class="line"><span class="comment">// then&#x65B9;&#x6CD5;&#xFF0C;&#x7ED1;&#x5B9A;&#x6210;&#x529F;&#x3001;&#x5931;&#x8D25;&#x3001;&#x8FDB;&#x5EA6;&#x4E8B;&#x4EF6;</span></div><div class="line"><span class="built_in">Promise</span>.prototype.then = <span class="function"><span class="keyword">function</span> (<span class="params">fulfilledHandler, errorHandler, progressHandler</span>) </span>{</div><div class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> fulfilledHandler === <span class="string">&apos;function&apos;</span>) {</div><div class="line">    <span class="keyword">this</span>.once(<span class="string">&apos;success&apos;</span>,fulfilledHandler)</div><div class="line">  }</div><div class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> errorHandler === <span class="string">&apos;function&apos;</span>) {</div><div class="line">    <span class="keyword">this</span>.once(<span class="string">&apos;error&apos;</span>, errorHandler);</div><div class="line">  }</div><div class="line">  <span class="keyword">return</span> <span class="keyword">this</span>;</div><div class="line">};</div></pre></td></tr></table></figure>
+<h1 id="Deferred"><a href="#Deferred" class="headerlink" title="Deferred"></a>Deferred</h1><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> Deferred = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>{</div><div class="line">  <span class="keyword">this</span>.state = <span class="string">&apos;unfulfilled&apos;</span>;</div><div class="line">  <span class="keyword">this</span>.promise = <span class="keyword">new</span> <span class="built_in">Promise</span>();</div><div class="line">};</div><div class="line"><span class="comment">// &#x89E6;&#x53D1;&#x6210;&#x529F;&#x4E8B;&#x4EF6;</span></div><div class="line">Deferred.prototype.resolve = <span class="function"><span class="keyword">function</span> (<span class="params">obj</span>) </span>{</div><div class="line">  <span class="keyword">this</span>.state = <span class="string">&apos;fulfilled&apos;</span>;</div><div class="line">  <span class="keyword">this</span>.promise.emit(<span class="string">&apos;success&apos;</span>,obj);</div><div class="line">};</div><div class="line"><span class="comment">// &#x89E6;&#x53D1;&#x5931;&#x8D25;&#x4E8B;&#x4EF6;</span></div><div class="line">Deferred.prototype.reject = <span class="function"><span class="keyword">function</span> (<span class="params">err</span>) </span>{</div><div class="line">  <span class="keyword">this</span>.state = <span class="string">&apos;failed&apos;</span>;</div><div class="line">  <span class="keyword">this</span>.promise.emit(<span class="string">&apos;error&apos;</span>,err);</div><div class="line">};</div></pre></td></tr></table></figure>
+<h1 id="&#x4F7F;&#x7528;&#x65B9;&#x6CD5;"><a href="#&#x4F7F;&#x7528;&#x65B9;&#x6CD5;" class="headerlink" title="&#x4F7F;&#x7528;&#x65B9;&#x6CD5;"></a>&#x4F7F;&#x7528;&#x65B9;&#x6CD5;</h1><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">test</span>(<span class="params"></span>) </span>{</div><div class="line">  <span class="keyword">var</span> defer = <span class="keyword">new</span> Deferred();</div><div class="line">  setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>{</div><div class="line">      defer.resolve(<span class="string">&apos;test&apos;</span>)</div><div class="line">  },<span class="number">0</span>);</div><div class="line">  <span class="keyword">return</span> defer.promise;</div><div class="line">}</div><div class="line"></div><div class="line">test()</div><div class="line">  .then(<span class="function"><span class="keyword">function</span>(<span class="params">msg</span>)</span>{</div><div class="line">    <span class="built_in">console</span>.log(msg); <span class="comment">// test</span></div><div class="line">  })</div></pre></td></tr></table></figure>
+<h1 id="&#x5B9E;&#x73B0;&#x94FE;&#x5F0F;&#x8C03;&#x7528;"><a href="#&#x5B9E;&#x73B0;&#x94FE;&#x5F0F;&#x8C03;&#x7528;" class="headerlink" title="&#x5B9E;&#x73B0;&#x94FE;&#x5F0F;&#x8C03;&#x7528;"></a>&#x5B9E;&#x73B0;&#x94FE;&#x5F0F;&#x8C03;&#x7528;</h1><ul>
+<li>Promise</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> <span class="built_in">Promise</span> = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>{</div><div class="line">  EventEmitter.call(<span class="keyword">this</span>);</div><div class="line">  <span class="comment">// &#x961F;&#x5217;&#x7528;&#x4E8E;&#x5B58;&#x50A8;&#x5F85;&#x6267;&#x884C;&#x7684;&#x56DE;&#x8C03;&#x51FD;&#x6570;</span></div><div class="line">  <span class="keyword">this</span>.queue = [];</div><div class="line">  <span class="keyword">this</span>.isPromise = <span class="literal">true</span>;</div><div class="line">};</div><div class="line">util.inherits(<span class="built_in">Promise</span>,EventEmitter);</div><div class="line"></div><div class="line"><span class="built_in">Promise</span>.prototype.then = <span class="function"><span class="keyword">function</span> (<span class="params">fulfilledHandler, errorHandler, progressHandler</span>) </span>{</div><div class="line">  <span class="keyword">var</span> handler = {};</div><div class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> fulfilledHandler === <span class="string">&apos;function&apos;</span>) {</div><div class="line">    handler.fulfilled = fulfilledHandler;</div><div class="line">  }</div><div class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> errorHandler === <span class="string">&apos;function&apos;</span>) {</div><div class="line">    handler.error = errorHandler;</div><div class="line">  }</div><div class="line">  <span class="comment">// &#x5C06;then&#x4E2D;&#x4F20;&#x5165;&#x7684;&#x51FD;&#x6570;&#x90FD;&#x6DFB;&#x52A0;&#x5230;promise&#x7684;&#x961F;&#x5217;&#x4E2D;</span></div><div class="line">  <span class="keyword">this</span>.queue.push(handler);</div><div class="line">  <span class="comment">// then&#x51FD;&#x6570;&#x8FD4;&#x56DE;&#x81EA;&#x8EAB;</span></div><div class="line">  <span class="keyword">return</span> <span class="keyword">this</span>;</div><div class="line">};</div></pre></td></tr></table></figure>
+<ul>
+<li>Deferred</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> Deferred = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>{</div><div class="line">  <span class="keyword">this</span>.state = <span class="string">&apos;unfulfilled&apos;</span>;</div><div class="line">  <span class="keyword">this</span>.promise = <span class="keyword">new</span> <span class="built_in">Promise</span>();</div><div class="line">};</div><div class="line"></div><div class="line">Deferred.prototype.resolve = <span class="function"><span class="keyword">function</span> (<span class="params">obj</span>) </span>{</div><div class="line">  <span class="keyword">var</span> promise = <span class="keyword">this</span>.promise;</div><div class="line">  <span class="keyword">var</span> handler;</div><div class="line">  <span class="keyword">while</span> ((handler = promise.queue.shift())) {</div><div class="line">    <span class="keyword">if</span> (handler &amp;&amp; handler.fulfilled) {</div><div class="line">      <span class="comment">// &#x6B63;&#x5E38;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;fulfilled&#x51FD;&#x6570;&#x4F1A;&#x7EE7;&#x7EED;&#x8FD4;&#x56DE;&#x4E00;&#x4E2A;promise</span></div><div class="line">      <span class="keyword">var</span> ret = handler.fulfilled(obj);</div><div class="line">      <span class="keyword">if</span> (ret &amp;&amp; ret.isPromise) {</div><div class="line">        <span class="comment">// &#x5C06;&#x5F53;&#x524D;Defferred&#x5BF9;&#x8C61;&#x7684;promise&#x5F15;&#x7528;&#x6539;&#x4E3A;&#x65B0;&#x7684;Promise&#x5BF9;&#x8C61;&#xFF0C;&#x5C06;&#x961F;&#x5217;&#x4E2D;&#x4F59;&#x4E0B;&#x7684;&#x56DE;&#x8C03;&#x8F6C;&#x4EA4;&#x7ED9;&#x5B83;</span></div><div class="line">        ret.queue = promise.queue;</div><div class="line">        <span class="keyword">this</span>.promise = ret;</div><div class="line">        <span class="keyword">return</span>;</div><div class="line">      }</div><div class="line">    }</div><div class="line">  }</div><div class="line">};</div><div class="line"></div><div class="line">Deferred.prototype.reject = <span class="function"><span class="keyword">function</span> (<span class="params">err</span>) </span>{</div><div class="line">  <span class="keyword">var</span> promise = <span class="keyword">this</span>.promise;</div><div class="line">  <span class="keyword">var</span> handler;</div><div class="line">  <span class="keyword">while</span> ((handler = promise.queue.shift())) {</div><div class="line">    <span class="keyword">if</span> (handler &amp;&amp; handler.error) {</div><div class="line">      <span class="keyword">var</span> ret = handler.error(err);</div><div class="line">      <span class="keyword">if</span> (ret &amp;&amp; ret.isPromise) {</div><div class="line">        ret.queue = promise.queue;</div><div class="line">        <span class="keyword">this</span>.promise = ret;</div><div class="line">        <span class="keyword">return</span>;</div><div class="line">      }</div><div class="line">    }</div><div class="line">  }</div><div class="line">};</div></pre></td></tr></table></figure>
+<ul>
+<li>&#x4F7F;&#x7528;</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">test</span>(<span class="params"></span>) </span>{</div><div class="line">  <span class="keyword">var</span> defer = <span class="keyword">new</span> Deferred();</div><div class="line">  setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>{</div><div class="line">      defer.resolve(<span class="string">&apos;test1&apos;</span>)</div><div class="line">  },<span class="number">0</span>);</div><div class="line">  <span class="keyword">return</span> defer.promise;</div><div class="line">}</div><div class="line"></div><div class="line">test()</div><div class="line">  .then(<span class="function"><span class="keyword">function</span>(<span class="params">msg</span>)</span>{</div><div class="line">    <span class="built_in">console</span>.log(msg);</div><div class="line">    <span class="keyword">var</span> defer = <span class="keyword">new</span> Deferred();</div><div class="line">    setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>{</div><div class="line">            defer.resolve(<span class="string">&apos;test2&apos;</span>)</div><div class="line">    })</div><div class="line">      <span class="keyword">return</span> defer.promise;</div><div class="line">  })</div><div class="line">  .then(<span class="function"><span class="keyword">function</span>(<span class="params">msg</span>)</span>{</div><div class="line">    <span class="built_in">console</span>.log(msg)</div><div class="line">  })</div></pre></td></tr></table></figure>  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/nodejs/">nodejs</a><a href="/tags/promise/">promise</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/nodejs/">nodejs</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="http://www.paradeto.com/2016/10/10/promise-frame/" data-title="实现一个简单的Promise/Deferred框架 | Ayou" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/11/22/mmsfReconstruction/" title="妈妈送房代码重构方案">
+  <strong>PREVIOUS:</strong><br/>
+  <span>
+  妈妈送房代码重构方案</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/10/10/page-switch/"  title="jquery轮播图插件">
+ <strong>NEXT:</strong><br/> 
+ <span>jquery轮播图插件
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	<div class="ds-thread"></div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+  <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Promise"><span class="toc-number">1.</span> <span class="toc-text">Promise</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Deferred"><span class="toc-number">2.</span> <span class="toc-text">Deferred</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#使用方法"><span class="toc-number">3.</span> <span class="toc-text">使用方法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#实现链式调用"><span class="toc-number">4.</span> <span class="toc-text">实现链式调用</span></a></li></ol>
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+			<li><a href="/categories/html-css/" title="html/css">html/css<sup>4</sup></a></li>
+		
+			<li><a href="/categories/javascript/" title="javascript">javascript<sup>4</sup></a></li>
+		
+			<li><a href="/categories/mongodb/" title="mongodb">mongodb<sup>1</sup></a></li>
+		
+			<li><a href="/categories/nodejs/" title="nodejs">nodejs<sup>2</sup></a></li>
+		
+			<li><a href="/categories/前端工具/" title="前端工具">前端工具<sup>1</sup></a></li>
+		
+			<li><a href="/categories/前端框架/" title="前端框架">前端框架<sup>4</sup></a></li>
+		
+			<li><a href="/categories/前端理论/" title="前端理论">前端理论<sup>1</sup></a></li>
+		
+			<li><a href="/categories/算法/" title="算法">算法<sup>8</sup></a></li>
+		
+			<li><a href="/categories/读书笔记/" title="读书笔记">读书笔记<sup>3</sup></a></li>
+		
+			<li><a href="/categories/转载/" title="转载">转载<sup>1</sup></a></li>
+		
+			<li><a href="/categories/项目实战/" title="项目实战">项目实战<sup>3</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			<li><a href="/tags/WEB安全/" title="WEB安全">WEB安全<sup>2</sup></a></li>
+		
+			<li><a href="/tags/angularjs/" title="angularjs">angularjs<sup>2</sup></a></li>
+		
+			<li><a href="/tags/angularjs2/" title="angularjs2">angularjs2<sup>1</sup></a></li>
+		
+			<li><a href="/tags/canvas/" title="canvas">canvas<sup>3</sup></a></li>
+		
+			<li><a href="/tags/chrome插件/" title="chrome插件">chrome插件<sup>1</sup></a></li>
+		
+			<li><a href="/tags/css/" title="css">css<sup>1</sup></a></li>
+		
+			<li><a href="/tags/helmet/" title="helmet">helmet<sup>1</sup></a></li>
+		
+			<li><a href="/tags/html/" title="html">html<sup>3</sup></a></li>
+		
+			<li><a href="/tags/http/" title="http">http<sup>2</sup></a></li>
+		
+			<li><a href="/tags/https/" title="https">https<sup>1</sup></a></li>
+		
+			<li><a href="/tags/javascript/" title="javascript">javascript<sup>5</sup></a></li>
+		
+			<li><a href="/tags/jquery插件/" title="jquery插件">jquery插件<sup>1</sup></a></li>
+		
+			<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>4</sup></a></li>
+		
+			<li><a href="/tags/promise/" title="promise">promise<sup>1</sup></a></li>
+		
+			<li><a href="/tags/react/" title="react">react<sup>2</sup></a></li>
+		
+			<li><a href="/tags/replica/" title="replica">replica<sup>1</sup></a></li>
+		
+			<li><a href="/tags/sharding/" title="sharding">sharding<sup>1</sup></a></li>
+		
+			<li><a href="/tags/slb/" title="slb">slb<sup>1</sup></a></li>
+		
+			<li><a href="/tags/webpack/" title="webpack">webpack<sup>2</sup></a></li>
+		
+			<li><a href="/tags/事件/" title="事件">事件<sup>1</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  <div class="rsspart">
+	<a href="null" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+	</div>
+		<p class="copyright">Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/zhyu/yaht" target="_blank" title="YAHT">YAHT</a> © 2017 
+		
+		<a href="http://www.paradeto.com" target="_blank" title="Ayou">Ayou</a>
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<!--canvas-->
+
+<script src="/js/canvas.js"></script>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.navbar').click(function(){
+      $('header nav').toggleClass('shownav');
+    });
+    var myWidth = 0;
+    function getSize(){
+      if( typeof( window.innerWidth ) == 'number' ) {
+        myWidth = window.innerWidth;
+      } else if( document.documentElement && document.documentElement.clientWidth) {
+        myWidth = document.documentElement.clientWidth;
+      };
+    };
+    var m = $('#main'),
+    a = $('#asidepart'),
+    c = $('.closeaside'),
+    o = $('.openaside');
+    $(window).resize(function(){
+      getSize();
+      if (myWidth >= 1024) {
+        $('header nav').removeClass('shownav');
+      }else
+      {
+        m.removeClass('moveMain');
+        a.css('display', 'block').removeClass('fadeOut');
+        o.css('display', 'none');
+        
+            $('#toc.toc-aside').css('display', 'none');
+          
+      }
+    });
+    c.click(function(){
+      a.addClass('fadeOut').css('display', 'none');
+      o.css('display', 'block').addClass('fadeIn');
+      m.addClass('moveMain');
+    });
+    o.click(function(){
+      o.css('display', 'none').removeClass('beforeFadeIn');
+      a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');
+      m.removeClass('moveMain');
+    });
+    $(window).scroll(function(){
+      o.css("top",Math.max(80,260-$(this).scrollTop()));
+    });
+  });
+</script>
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+      var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+      if(ai.length>0){
+        ai.wrap('<div class="video-container" />');
+      };
+      if(ae.length>0){
+        ae.wrap('<div class="video-container" />');
+      };
+      if(ah.length==0){
+        t.css('display','none');
+      }else{
+        c.click(function(){
+          ta.css('display', 'block').addClass('fadeIn');
+        });
+        o.click(function(){
+          ta.css('display', 'none');
+        });
+        $(window).scroll(function(){
+          ta.css("top",Math.max(140,320-$(this).scrollTop()));
+        });
+      };
+    });
+  </script>
+
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+      var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+      var html = [
+        '<a href="#" class="overlay" id="qrcode"></a>',
+        '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+        '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+        '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+        '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+        '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+        '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+        '<span title="Share to"></span>'
+        ].join('');
+        $this.append(html);
+        $('.article-share-qrcode').click(function(){
+          var imgSrc = $('#qrcode-pic').attr('data-src');
+          $('#qrcode-pic').attr('src', imgSrc);
+          $('#qrcode-pic').load(function(){
+            $('.qrcode strong').text(' ');
+          });
+        });
+    });
+  </script>
+
+
+  
+    <script type="text/javascript">
+      var duoshuoQuery = {short_name:"paradeto"};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0]
+        || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+    </script>
+  
+  
+  
+
+
+
+
+
+
+
+
+
+
+  <div id="back-to-top">
+    <a title="返回顶部"><img src="/img/scrollup.png"/></a>
+  </div>
+  <script src="/js/back_to_top.js"></script>
+
+
+
+  </body>
+</html>
+
