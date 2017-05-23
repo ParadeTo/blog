@@ -52,7 +52,7 @@ description: 机器学习实战k近邻算法
 5. 返回前k个点出现频率最高的类别作为当前点的预测分类。
 
 ## 代码实现
-```
+```python
 from numpy import tile, operator
 
 def classify0(inX, dataSet, labels, k):
@@ -99,14 +99,14 @@ def classify0(inX, dataSet, labels, k):
 
 ## 数据
 
-|每年飞行常客里程数|玩视频游戏所耗时间百分比|每周消费冰激凌公升数|类型
+|每年飞行常客里程数|玩视频游戏所耗时间百分比|每周消费冰激凌公升数|吸引力类型
 |-------|-------|-------|------|
 |40920|	8.32697|0.953952|largeDoses|
 |14488|7.153469|1.673904|smallDoses|
 |...|...|...|...|
 
 ## 解析数据
-```
+```python
 def file2matrix(filename):
     fr = open(filename)
     numberOfLines = len(fr.readlines())         #get the number of lines in the file
@@ -135,7 +135,7 @@ backend: TkAgg
 ```
 
 ### 绘图
-```
+```python
 plt.figure()
 l = plt.scatter(datingDataMat[:,1], datingDataMat[:,2], 6*array(datingLabels), (datingLabels), label='1')
 plt.axis([-2,25,-0.2,2.0])
@@ -157,19 +157,16 @@ newValue = (oldValue-min)/(max-min)
 
 实现代码：
 
-```
+```python
 def autoNorm(dataSet):
     """
     [
         [ 1  1 -2]
         [-2 -2 -5]
     ]
-    
-    [-2 -2 -5]
-    [ 1  1 -2]
     """
-    minVals = dataSet.min(0)
-    maxVals = dataSet.max(0)
+    minVals = dataSet.min(0) # [-2 -2 -5]
+    maxVals = dataSet.max(0) # [ 1  1 -2]
     ranges = maxVals - minVals
     normDataSet = zeros(shape(dataSet))
     m = dataSet.shape[0]
@@ -179,3 +176,156 @@ def autoNorm(dataSet):
 ```
 
 ## 测试算法
+```python
+def datingClassTest():
+    # 测试数据的占比
+    hoRatio = 0.50
+    datingDataMat, datingLabels = file2matrix('datingTestSet2.txt')
+    # 归一化
+    normMat, ranges, minVals = autoNorm(datingDataMat)
+    m = normMat.shape[0]
+    numTestVecs = int(m * hoRatio)
+    errorCount = 0.0
+    for i in range(numTestVecs):
+        classifierResult = classify0(normMat[i, :], normMat[numTestVecs:m, :], datingLabels[numTestVecs:m], 3)
+        print "the classifier came back with: %d, the real answer is: %d" % (classifierResult, datingLabels[i])
+        if (classifierResult != datingLabels[i]): errorCount += 1.0
+    print "the total error rate is: %f" % (errorCount / float(numTestVecs))
+    print errorCount
+...
+the classifier came back with: 2, the real answer is: 2
+the classifier came back with: 1, the real answer is: 1
+the classifier came back with: 1, the real answer is: 1
+the classifier came back with: 2, the real answer is: 2
+the total error rate is: 0.064000
+32.0
+
+```
+
+在测试数据为50%的情况下，得到了6.4%的误差率，分类效果还可以。
+
+## 完善分类器的应用
+接下来就是利用该分类器来对数据进行分类了，即判断约会对象的吸引力：
+
+```python
+def classifyPerson():
+    resultList = ['不喜欢', '一点点喜欢', '非常喜欢']
+    percentTats = float(raw_input("花在玩游戏的时间比例:"))
+    ffMiles = float(raw_input("每年飞行里程数:"))
+    iceCream = float(raw_input("每年消费的冰激凌公升数:"))
+    datingDataMat, datingLabels = file2matrix('datingTestSet2.txt')
+    normMat, ranges, minVals = autoNorm(datingDataMat)
+    inArr = array([ffMiles, percentTats, iceCream])
+    classifierResult = classify0((inArr-minVals)/ranges, normMat, datingLabels, 3)
+    print "你会喜欢这个人吗？", resultList[classifierResult - 1]
+...
+    
+花在玩游戏的时间比例:4
+每年飞行里程数:0
+每年消费的冰激凌公升数:0.01
+你会喜欢这个人吗？ 一点点喜欢 # 原来我还是有点吸引力的
+```
+
+# 实例：手写识别系统
+为简单起见，这里只处理``0-9``的数字。原始图像经过处理后，得到如下所示的数据：
+
+```
+00000000000001100000000000000000
+00000000000000111000000000000000
+00000000000111111100000000000000
+00000000000111111110000000000000
+00000000011111111110000000000000
+00000000001111100111100000000000
+00000000011111000111100000000000
+00000001111110000011100000000000
+00000000111111000001110000000000
+00000000111111000001111100000000
+00000001111111000001111100000000
+00000000111110000000011110000000
+00000000111100000000011110000000
+00000000111100000000011110000000
+00000001111100000000001110000000
+00000001111110000000000111000000
+00000001111100000000000111000000
+00000001111100000000000111000000
+00000000111110000000000011100000
+00000000111110000000000011100000
+00000000111110000000000111100000
+00000000111110000000001111100000
+00000000011111100000001111110000
+00000000011111100000001111100000
+00000000011100000000111111000000
+00000000001110000000111111000000
+00000000011111000111111110000000
+00000000001111111111111100000000
+00000000000111111111111100000000
+00000000000111111111110000000000
+00000000000011111111000000000000
+00000000000000100000000000000000
+
+```
+
+上图是数字``0``的二维数据(``32*32``)，需要先转为``1*1024``的数据才能使用前面的分类算法。
+
+```python
+def img2vector(filename):
+    returnVect = zeros((1, 1024))
+    fr = open(filename)
+    # 遍历行
+    for i in range(32):
+        lineStr = fr.readline()
+        # 遍历每行的每个数字
+        for j in range(32):
+            returnVect[0, 32 * i + j] = int(lineStr[j])
+    return returnVect
+```
+
+接下来，测试分类器的分类效果：
+
+```python
+def handwritingClassTest():
+    # 训练数据的类标签向量
+    hwLabels = []
+    trainingFileList = listdir('trainingDigits')
+    # 初始化训练矩阵
+    m = len(trainingFileList)
+    trainingMat = zeros((m, 1024))
+    # 遍历每个文件
+    for i in range(m):
+        # 得到类别
+        fileNameStr = trainingFileList[i]
+        fileStr = fileNameStr.split('.')[0]
+        classNumStr = int(fileStr.split('_')[0])
+        hwLabels.append(classNumStr)
+        # 得到属性向量
+        trainingMat[i, :] = img2vector('trainingDigits/%s' % fileNameStr)
+    # 测试文件
+    testFileList = listdir('testDigits')
+    errorCount = 0.0
+    mTest = len(testFileList)
+    for i in range(mTest):
+        # 分类
+        fileNameStr = testFileList[i]
+        fileStr = fileNameStr.split('.')[0]  # take off .txt
+        classNumStr = int(fileStr.split('_')[0])
+        vectorUnderTest = img2vector('testDigits/%s' % fileNameStr)
+        classifierResult = classify0(vectorUnderTest, trainingMat, hwLabels, 3)
+        # 检测分类结果
+        print "the classifier came back with: %d, the real answer is: %d" % (classifierResult, classNumStr)
+        if (classifierResult != classNumStr): errorCount += 1.0
+    print "\nthe total number of errors is: %d" % errorCount
+    print "\nthe total error rate is: %f" % (errorCount / float(mTest))
+
+...
+the classifier came back with: 9, the real answer is: 9
+the classifier came back with: 9, the real answer is: 9
+the total number of errors is: 11
+the total error rate is: 0.011628
+```
+
+# 小结
+上述代码稍微运行了一会才出来结果，因为需要对每个测试向量计算2000次距离计算，包括1024个浮点运算，比较耗时。
+
+另外，如果训练数据很大，需要使用大量的存储空间。
+
+k近邻算法的另外一个缺陷是它无法给出任何数据的基础结构信息，因此也无法知晓平均实例样本和典型实例样本具有什么特征。
