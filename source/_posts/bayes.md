@@ -236,7 +236,7 @@ def bagOfWords2VecMN(vocabList, inputSet):
 
 ## 分类器构建及测试
 
-```
+```python
 def spamTest():
     docList=[]; classList = []; fullText =[]
     for i in range(1,26):
@@ -271,7 +271,31 @@ def spamTest():
         if classifyNB(array(wordVector),p0V,p1V,pSpam) != classList[docIndex]:
             errorCount += 1
             print "classification error",docList[docIndex]
+            print "true class is:", 'spam' if classList[docIndex] == 1 else 'ham'
     print 'the error rate is: ',float(errorCount)/len(testSet)
 ```
+
+运行，得到如下结果：
+```python
+classification error ['home', 'based', 'business', 'opportunity', 'knocking', 'your', 'door', 'don', 'rude', 'and', 'let', 'this', 'chance', 'you', 'can', 'earn', 'great', 'income', 'and', 'find', 'your', 'financial', 'life', 'transformed', 'learn', 'more', 'here', 'your', 'success', 'work', 'from', 'home', 'finder', 'experts']
+true class is: spam
+the error rate is:  0.1
+```
+
+将垃圾邮件误分为正常邮件，这种错误比将正常邮件分为垃圾邮件要可以接受。后面将会介绍如何修正分类器。
+
+
+# 小结
+贝叶斯分类基于独立性假设来构建，尽管并不正确，但是其仍然是一种有效的分类器。
+
+实际使用时需要处理溢出等问题，可以通过取对数来解决。
+
+词袋模型在解决文档分类问题上比词集模型有所提高。
+
+可以通过移除停用词来进一步优化。
+
+
+
+
 
 
