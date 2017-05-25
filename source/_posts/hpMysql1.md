@@ -254,3 +254,45 @@ UPDATE
 	* SERIALIZABLE则会对所有读取的行都加锁
 
 # mysql的存储引擎
+## InnoDB
+* mysql默认
+* 间隙锁防止幻读
+* 热备份
+
+## MyISAM
+* 不支持事务和行级锁
+* 指针长度6个字节，通过``MAX_ROWS``和``AVG_ROW_LENGTH``来修改
+* 表锁
+* 支持全文索引
+* 压缩表
+
+## 其他
+暂略
+
+## 转换表的引擎
+* ALTER TABLE
+
+	```sql
+	ALTER TABLE mytable ENGINE = InnoDB;
+	```
+
+	* 执行时间长，mysql会按行复制到一个新表，原表加读锁
+	* InnoDB->MyISAM->InnoDB，原InnoDB上所有的外键将丢失
+
+* 导出导入
+* 创建与查询
+
+	```sql
+	CREATE TABLE innodb_table LIKE myisam_table;
+	ALTER TABLE innodb_table ENGINE=InnoDB;
+	INSERT INTO innodb_table SELECT * FROM myisam_table;
+	```
+
+	数据太大时，分批处理
+
+	```sql
+	START TRANSACTION;
+	INSERT INTO innodb_table SELECT * FROM myisam_table WHERE id BETWEEN x AND y;
+	COMMIT;
+	```
+	
