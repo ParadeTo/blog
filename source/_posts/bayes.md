@@ -68,7 +68,7 @@ def createVocabList(dataSet):
 
 def setOfWords2Vec(vocabList, inputSet):
     """
-    返回一个向量，表示文档中的词汇是否出现在词汇表中
+    返回一个向量，表示文档中的词汇是否出现在词汇表中，其实这里并没有反映字频信息，比如bitch出现了多次的文章，肯定比出现一次的文章要更加偏向于不和谐的文章，后面会有阐述
     [0, 1, 0...
     """
     returnVec = [0]*len(vocabList)
@@ -89,11 +89,189 @@ print bayes.setOfWords2Vec(vocabList, listOPosts[0]) # [0, 0, 1, 0, 0, 0, 1, 0, 
 ```
 
 ## 训练算法
-由上面的贝叶斯原理，得到伪代码如下：
+由上面的贝叶斯原理，得到代码如下：
 
 ```python
-对每篇训练文档（经过setOfWords2Vec处理）
+def trainNB0(trainMatrix,trainCategory):
+    """
+    :param trainMatrix:
+    [
+        [1,0,...],
+        [0,1,...]
+    ]
+    :param trainCategory:
+    [1,0,...]
+    :return:
+    """
+    numTrainDocs = len(trainMatrix)
+    numWords = len(trainMatrix[0])
+    # 不和谐文档的概率
+    pAbusive = sum(trainCategory)/float(numTrainDocs)
+    # 每个词出现的次数初始化为1，防止后面计算p(x1|c)p(x2|c)...p(xn|c)的时候为0
+    p0Num = ones(numWords); p1Num = ones(numWords)
+    p0Denom = 2.0; p1Denom = 2.0
+    for i in range(numTrainDocs):
+        if trainCategory[i] == 1:
+            # 向量和，统计类比1下每个词的总数
+            p1Num += trainMatrix[i]
+            # 得到类别1下的总次数
+            p1Denom += sum(trainMatrix[i])
+        else:
+            p0Num += trainMatrix[i]
+            p0Denom += sum(trainMatrix[i])
+    # 避免p(x1|c)p(x2|c)...p(xn|c)得到很小的数最后四舍五入为0
+    p1Vect = log(p1Num/p1Denom)
+    p0Vect = log(p0Num/p0Denom)
+    # 返回p(w|0) p(w|1) p(1) 这里w是向量
+    return p0Vect,p1Vect,pAbusive
 ```
 
+有两处特殊处理：
+1. 将每个词的出现次数初始化为，这是为了防止计算``p(x1|c)p(x2|c)...p(xn|c)``的时候为0
+2. 求条件概率的时候转为了对数，这是为了防止``p(x1|c)p(x2|c)...p(xn|c)``得到很小的数最后四舍五入为0
+
+最后得到分类函数，很简单：
+
+```python
+def classifyNB(vec2Classify, p0Vec, p1Vec, pClass1):
+    # vec2Classify * p1Vec
+    # [1,0,...] * [-3.1122,-2.122,...]
+    # 为什么是求和，因为已经转为了对数
+    # log(p(w|c)p(c)) = log(p(w|c)) + log(p(c))
+    p1 = sum(vec2Classify * p1Vec) + log(pClass1)
+    p0 = sum(vec2Classify * p0Vec) + log(1.0 - pClass1)
+    if p1 > p0:
+        return 1
+    else: 
+        return 0
+```
+
+测试：
+
+```python
+...
+testEntry = ['love', 'my', 'dalmation']
+thisDoc = array(setOfWords2Vec(myVocabList, testEntry))
+print testEntry,'classified as: ',classifyNB(thisDoc,p0V,p1V,pAb)
+testEntry = ['stupid', 'garbage']
+thisDoc = array(setOfWords2Vec(myVocabList, testEntry))
+print testEntry,'classified as: ',classifyNB(thisDoc,p0V,p1V,pAb)
+...
+['love', 'my', 'dalmation'] classified as:  0
+['stupid', 'garbage'] classified as:  1
+```
+
+## 文档词袋模型
+上面将每个词的出现与否作为一个特征，称为词集模型。如果将词的出现频率作为特征，则称为词袋模型。
+下面是词袋模型：
+
+```python
+def bagOfWords2VecMN(vocabList, inputSet):
+    returnVec = [0]*len(vocabList)
+    for word in inputSet:
+        if word in vocabList:
+            returnVec[vocabList.index(word)] += 1
+    return returnVec
+```
+
+# 示例：使用朴素贝叶斯过滤垃圾邮件
+## 数据
+```
+└─email
+   ├─ham # 正常邮件
+   │      1.txt
+   │      10.tx
+   │      11.tx
+   │      12.tx
+   │      13.tx
+   │      14.tx
+   │      15.tx
+   │      16.tx
+   │      17.tx
+   │      18.tx
+   │      19.tx
+   │      2.txt
+   │      20.tx
+   │      21.tx
+   │      22.tx
+   │      23.tx
+   │      24.tx
+   │      25.tx
+   │      3.txt
+   │      4.txt
+   │      5.txt
+   │      6.txt
+   │      7.txt
+   │      8.txt
+   │      9.txt
+   │
+   └─spam # 垃圾邮件
+           1.txt
+           10.tx
+           11.tx
+           12.tx
+           13.tx
+           14.tx
+           15.tx
+           16.tx
+           17.tx
+           18.tx
+           19.tx
+           2.txt
+           20.tx
+           21.tx
+           22.tx
+           23.tx
+           24.tx
+           25.tx
+           3.txt
+           4.txt
+           5.txt
+           6.txt
+           7.txt
+           8.txt
+           9.txt
+```
+
+
+## 分类器构建及测试
+
+```
+def spamTest():
+    docList=[]; classList = []; fullText =[]
+    for i in range(1,26):
+        # 垃圾邮件
+        wordList = textParse(open('email/spam/%d.txt' % i).read())
+        docList.append(wordList)
+        fullText.extend(wordList)
+        classList.append(1)
+        # 正常邮件
+        wordList = textParse(open('email/ham/%d.txt' % i).read())
+        docList.append(wordList)
+        fullText.extend(wordList)
+        classList.append(0)
+    # 词典
+    vocabList = createVocabList(docList)
+    trainingSet = range(50); testSet=[]
+    # 随机抽出测试文章索引号
+    for i in range(10):
+        randIndex = int(random.uniform(0,len(trainingSet)))
+        testSet.append(trainingSet[randIndex])
+        del(trainingSet[randIndex])
+    # 得到词的条件概率
+    trainMat=[]; trainClasses = []
+    for docIndex in trainingSet:
+        trainMat.append(bagOfWords2VecMN(vocabList, docList[docIndex]))
+        trainClasses.append(classList[docIndex])
+    p0V,p1V,pSpam = trainNB0(array(trainMat),array(trainClasses))
+    errorCount = 0
+    # 测试
+    for docIndex in testSet:
+        wordVector = bagOfWords2VecMN(vocabList, docList[docIndex])
+        if classifyNB(array(wordVector),p0V,p1V,pSpam) != classList[docIndex]:
+            errorCount += 1
+            print "classification error",docList[docIndex]
+    print 'the error rate is: ',float(errorCount)/len(testSet)
+```
 
 
