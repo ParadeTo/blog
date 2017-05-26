@@ -148,6 +148,14 @@ SELECT * from test;
 |2|2|
 |3|3|
 
+# A:但是！！！！！！如果我更新数据呢，变啦
+update test set num=num+1 where id=1;
+SELECT * from test;
+|id|num|
+|1|11|
+|2|2|
+|3|3|
+
 # B:插入一条新的数据
 INSERT INTO test (num) values(4);
 SELECT * FROM test;
