@@ -364,8 +364,43 @@ print(product)
 * range(start,stop,step)
 * reversed(i)
 * sorted(i,key,reverse)
+
+	```python
+	x = []
+	for t in zip(range(-10, 0, 1), range(0, 10, 2), range(1, 10, 2)):
+	    x += t
+	
+	y = sorted(x, key=abs)
+	print(y)	
+	```
+
+	等价于
+
+	```python
+	temp = []
+	for item in x:
+	    temp.append((abs(item), item))
+	y = []
+	for key, value in sorted(temp):
+	    y.append(value)
+	print(y)
+	```
+
 * sum(i,start) i中的和加上start
+
 * zip(i1,...,iN)
+
+	```python
+	for t in zip(range(4), range(0,10,2), range(1,10,2)):
+		print(t)
+	(0, 0, 1)
+	(1, 2, 3)
+	(2, 4, 5)
+	(3, 6, 7)
+	```
+
+	虽然后面两个序列有5项，但是由于第一个序列只有4项，最后也只生成了四组数据
+
 * enumerate()
 
 	```python
@@ -380,8 +415,242 @@ print(product)
 				print("{0}:{1}:{2:.40}".format(filename, lino, line.rstrip()))
 	```
 
+* ``*``操作符
 
+	```python
+	calculate(*(1,2,3))
+	calculate(*range(1,5))
+	```
 
+## 组合类型的复制
+* 拷贝一个序列的副本
 
+	```python
+	songs = ["because","boys","carol"]
+	beatles = songs[:]
+	# 这只是浅拷贝！
+	x = [53, 68, ["A", "B"]]
+	y = x[:]
+	x[2][0] = 'Q'
+	print(x, y)
+	[53, 68, ['Q', 'B']] [53, 68, ['Q', 'B']]
+	```
+
+* 深拷贝
+	
+	```python
+	import copy
+	x = [53, 68, ["A", "B"]]
+	y = copy.deepcopy(x)
+	x[2][0] = 'Q'
+	print(x,y)
+	[53, 68, ['Q', 'B']] [53, 68, ['A', 'B']]
+	```
 
 	
+# 实例
+## 一
+有如下数据：
+
+```python
+1601:Alert:Lukas:Montgomery:Legal
+3702:Alert:Lukas:Montgomery:Sales
+4730:Nadelle::Landale:Warehousing
+```
+
+分别表示id，forename，middlename，surname，department，要求输出：
+
+```python
+Name                              ID  Username 
+-----------------------------------------------
+Landale,Nadelle.................(4730)nlandale 
+Montgomery,AlertL...............(1601)almontgo 
+Montgomery,AlertL...............(3702)almontgo1
+```
+
+其中Name列由``{surname},{forename}{middlename[0]}``组成，Username由``{forename[0]}{middlename[0]}{surname}``组成且都是小写，若是相同则在后面添加数字
+
+
+```python
+import sys
+
+import collections
+
+ID, FORENAME, MIDDLENAME, SURNAME, DEPARTMENT = range(5)
+User = collections.namedtuple("User",
+              "username forename middlename surname id")
+
+def generate_username(fields, usernames):
+    """
+    :param fields: 当前用户各字段
+    :param usernames: 用户名集合
+    :return: 独一无二的用户名
+    """
+    # fields[MIDDLENAME][:1] 当MIDDLENAME为空时返回空字符串，避免抛异常
+    username = ((fields[FORENAME][0] + fields[MIDDLENAME][:1] +
+                 fields[SURNAME]).replace("-","").replace("'",""))
+    username = original_name = username[:8].lower()
+    count = 1
+    while username in usernames:
+        username = "{0}{1}".format(original_name, count)
+        count += 1
+    usernames.add(username)
+    return username
+
+def process_line(line, usernames):
+    fields = line.split(":")
+    username = generate_username(fields, usernames)
+    user = User(username, fields[FORENAME], fields[MIDDLENAME], fields[SURNAME], fields[ID])
+    return user
+
+def print_users(users):
+    namewidth = 32
+    usernamewidth = 9
+    # 左对齐32个字符 中间对齐6个字符 左对齐9个字符
+    print("{0:<{nw}}{1:^6}{2:{uw}}".format(
+        "Name", "ID", "Username", nw=namewidth, uw=usernamewidth))
+    print("{0:-<{nw}}{0:-<6}{0:-<{uw}}".format(
+        "", nw=namewidth, uw=usernamewidth))
+
+    for key in sorted(users):
+        user = users[key]
+        initial = ""
+        if user.middlename:
+            initial = "" + user.middlename[0]
+        name = "{0.surname},{0.forename}{1}".format(user, initial)
+        print("{0:.<{nw}}({1.id:4}){1.username:{uw}}".format(
+            name, user, nw=namewidth, uw=usernamewidth
+        ))
+
+if __name__ == '__main__':
+    if len(sys.argv) == 1 or sys.argv[1] in ["-h","--help"]:
+        print("usage:{0} file1 [file2 [...fileN]]".format(
+            sys.argv[0]
+        ))
+        sys.exit()
+
+    usernames = set()
+    users = {}
+    for filename in sys.argv[1:]:
+        for line in open(filename, encoding="utf8"):
+            line = line.rsplit()[0]
+            if line:
+                user = process_line(line, usernames)
+                users[(user.surname.lower(), user.forename.lower(), user.id)] = user
+    print_users(users)
+```
+
+## 二
+下面是分析文件中数字的基本统计信息的程序：
+
+
+```python
+# -*- coding: utf-8 -*-
+import collections
+
+import sys
+
+import math
+
+Statistics = collections.namedtuple("Statistics", "mean mode median std_dev")
+
+def read_data(filename, numbers, frequencies):
+    for lino, line in enumerate(open(filename, encoding="ascii"), start=1):
+        for x in line.split():
+            try:
+                number = float(x)
+                numbers.append(number)
+                frequencies[number] += 1
+            except ValueError as err:
+                print("{filename}:{lino}: skipping {x}: {err}".format(
+                    **locals()
+                ))
+
+def calculate_mode(frequencies, maximum_modes):
+    highest_frequency = max(frequencies.values())
+    mode = [num for num, frequency in frequencies.items() if frequency == highest_frequency]
+    if not (1 <= len(mode) <= maximum_modes):
+        mode = None
+    else:
+        mode.sort()
+    return mode
+
+def calculate_median(numbers):
+    numbers = sorted(numbers)
+    # 取整
+    middle = len(numbers) // 2
+    median = numbers[middle]
+    # 偶数个
+    if len(numbers) % 2 == 0:
+        median = (median + numbers[middle-1]) / 2
+    return median
+
+def calculate_std_dev(numbers, mean):
+    total = 0
+    for num in numbers:
+        total += ((num - mean) ** 2)
+    variance = total / (len(numbers) - 1)
+    return math.sqrt(variance)
+
+def calculate_statistics(numbers, frequencies):
+    mean = sum(numbers) / len(numbers)
+    mode = calculate_mode(frequencies, 3)
+    median = calculate_median(numbers)
+    std_dev = calculate_std_dev(numbers, mean)
+    return Statistics(mean, mode, median, std_dev)
+
+def print_results(count, statistics):
+    real = '9.2f'
+
+    if statistics.mode is None:
+        modeline = ''
+    elif len(statistics.mode) == 1:
+        modeline = "mode  = {0:{fmt}}\n".format(statistics.mode[0], fmt=real)
+    else:
+        modeline = "mode  = [" + ",".join(["{0:.2f}".format(m) for m in statistics.mode]) + "]\n"
+
+    print("""
+
+    count = {0:6}
+    mean = {mean:{fmt}}
+    median = {median:{fmt}}
+    {1}\
+    std.dev. = {std_dev:{fmt}}""".format(
+        count, modeline, fmt=real, **statistics._asdict()
+    ))
+
+
+if __name__ == '__main__':
+    if len(sys.argv) == 1 or sys.argv[1] in ["-h","--help"]:
+        print("usage:{0} file1 [file2 [...fileN]]".format(
+            sys.argv[0]
+        ))
+        sys.exit()
+
+    numbers = []
+    frequencies = collections.defaultdict(int)
+    for filename in sys.argv[1:]:
+        read_data(filename, numbers, frequencies)
+    if numbers:
+        statistics = calculate_statistics(numbers, frequencies)
+        print_results(len(numbers), statistics)
+    else:
+        print("no numbers found")
+```
+
+输入数据：
+
+```python
+12 87 23 12 34 46 5
+123 234 12 34
+```
+
+结果：
+
+```python
+    count =     11
+    mean =     56.55
+    median =     34.00
+    mode  =     12.00
+    std.dev. =     69.06
+```
