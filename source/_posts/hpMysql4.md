@@ -109,4 +109,189 @@ description: 高性能MySQL(第3版)第四章-Schema与数据类型优化
 * 在整数列上进行按位操作
 
 ## 选择标识符
+* 确保关联的字段用同样的类型，包括像UNSIGNED这样的属性
+* 整数类型
+* 避免使用ENUM和SET类型
+* 避免使用字符串类型，包括MD5，SHA1，UUID，这些函数生成的新值会任意分布在很大的空间内，导致INSERT以及一些SELECT语句很慢
+* 如果使用UUID，应该移除“-”符号；更好的做法：用UNHEX()函数转换UUID值为16字节的数字，并且存储在一个BINARY(16)列中，检索时通过HEX()函数来格式化为十六进制格式。
+* 小心ORM系统！
+
+## 特殊类型数据
+* 不要用VARCHAR(15)来存储IP地址，用UNSIGNED INT
+
+```sql
+SELECT INET_ATON('209.207.224.40'); 
+SELECT INET_NTOA(3520061480)
+```
+
+# MySQL schema 设计中的陷阱
+* 太多的列:存储引擎API工作时需要在服务器层和存储引擎层之间通过行缓冲格式拷贝数据，然后在服务器层将缓冲内容解码成各个列。从行缓冲中将编码过的列转换成行数据结构的操作代价是非常高的。
+* 太多的关联：限制最多只能有61张表关联
+* 全能的枚举
+* 变相的枚举：枚举容易与SET混乱，SET可以是多个
+* 非此发明的NULL（到底是用还是不用呢），不要像下面这样：
+	
+	```sql
+	CREATE TABLE ...（
+		dt DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00'
+	```
+
+# 范式和反范式
+* 范式：每个事实数据会出现并且只出现一次
+* 反范式：存在信息冗余
+
+## 范式的优点和缺点
+优点：
+
+* 更新操作快
+* 重复数据少，修改时，修改的数据少
+* 表更小，可以更好的放在内存里，执行操作更快
+* 更少需要DISTINCT或者GROUP BY语句
+
+缺点：
+
+* 需要关联
+
+## 反范式的优点和缺点
+优点：
+
+* 避免关联
+
+## 一个例子对比
+假设有一个网站，允许用户发送消息，并且一些用户是付费用户，现在想查看付费用户最近的10条信息。如果是范式化的结构并且索引了发送日期字段published，这个查询也许看起来像这样：
+
+```sql
+SELECT message_text, user_name
+FROM message
+	INNER JOIN user ON message.user_id=user.id
+WHERE user.account_type='premiumv'
+ORDER BY message.published DESC LIMIT 10;
+```
+
+要更有效地执行这个查询，mysql需要扫描message表的published字段的索引。对于每一行找到的数据，将需要到user表里检查这个用户是不是付费用户。如果只有一小部分用户是付费账户，那么这是效率低下的做法。
+
+如果采用反范式化组织数据，将两个表的字段合并，并且增加一个索引(account, published)，就可以不通过关联写出这个查询，非常高效：
+
+```sql
+SELECT message_text, user_name
+FROM user_messages
+WHERE account_type='premium'
+ORDER BY published DESC
+LIMIT 10;
+```
+
+## 混用范式化和反范式化
+* 复制或缓存，使用触发器更新缓存值。例如如果需要显示每个用户发了多少消息，可以每次执行一个昂贵的子查询来计算并显示它；也可以在user表中建一个num_messages列，每当用户发新消息时更新这个值。
+
+# 缓存表和汇总表
+* 缓存表：用来存储哪些可以比较简单地从schema其他表获取（但是每次获取的速度比较慢）数据的表
+* 汇总表：保存是使用GROUP BY语句聚合数据的表
+* 重建汇总表和缓存表
+	
+	```sql
+	DROP TABLE IF EXISTS my_summary_new, my_summary_old;
+	CREATE TABLE my_summary_new LIKE my_summary;
+	...填充数据
+	RENAME TABLE my_summary TO my_summary_old, my_summary_new TO my_summary;
+	```
+
+## 物化视图
+略
+
+## 计数器表
+假设有一个计数器表，只有一行数据，记录网站的点击次数:
+
+```python
+CREATE TABLE hit_counter (
+	cnt int unsigned not null
+) ENGINE=InnoDB;
+```
+
+对于任何想要更新这一行的事务来说，这条记录上都有一个全局的互斥锁，这会使得这些事务智能串行执行。可以将计数器保存在多行中，每次随机选择一行进行更新。
+
+```sql
+CREATE TABLE hit_counter (
+	slot tinyint unsigned not null primary key,
+	cnt int unsigned not null
+) ENGINE=InnoDB;
+...预先增加100行数据，初始化为0
+UPDATE hit_counter SET cnt=cnt+1 WHERE slot=RAND()*100;
+SELECT SUM(cnt) FROM hit_counter;
+```
+
+一个常见的需求是每隔一段时间开始一个新的计数器，可以这样：
+
+```sql
+CREATE TABLE daily_hit_counter (
+	day date not null,
+	slot tinyint unsigned not null,
+	cnt int unsigned  not null,
+	primary key(day, slot)
+) ENGINE=InnoDB;
+
+INSERT INTO daily_hit_counter(day, slot, cnt)
+	VALUES(CURRENT_DATE, RAND()*100, 1)
+	ON DUPLICATE KEY UPDATE cnt=cnt+1;
+```
+
+如果希望减少表的行数，以避免表变得太大，可以写一个周期执行的任务，合并所有结果到0号槽，并且删除所有其他的槽：
+
+```python
+UPDATE daily_hit_count as c
+	INNER JOIN (
+		SELECT day, SUM(cnt) AS cnt, MIN(slot) AS mslot
+		FROM daily_hit_counter
+		GROUP BY day
+	) AS x USING(day)
+SET c.cnt = IF(c.slot = x.mslot, x.cnt, 0),
+	c.slot = IF(c.slot = x.mslot, 0, c.slot);
+
+DELETE FROM daily_hit_counter WHERE slot <> 0 AND cnt=0;
+```
+
+# 加快ALTER TABLE操作的速度
+mysql中执行大部分修改表结构操作的方法是：
+
+1.用新的结构创建一个空表
+2.复制数据，删除旧表
+
+这是一个非常耗时的工作！有一些技巧：
+
+1.在不提供服务的机器上执行，然后与主库切换
+2.手动创建新表然后重命名和删除
+
+并不是所有的都很慢，例如，有两种方法可以改变或者删除一个列的默认值：
+
+1.慢方法：
+
+	```python
+	ALTER TABLE sakila.film
+	MODIFY COLUMN rental_duration TINYINT(3) NOT NULL DEFAULT 5;	
+	```
+
+2.快方法：这个会直接修改.frm文件而不涉及表数据
+
+	```python
+	ALTER TABLE sakila.film
+	ALTER COLUMN rental_duration SET DEFAULT 5;		
+	```
+
+## 只修改.frm文件
+以下操作是有风险的！！！！
+
+1.创建一张有相同结构的空表，并进行所需要的修改
+2.执行FLUSH TABLES WITH READ LOCK。关闭所有正在使用的表，并且禁止任何表被打开。
+3.交换.frm文件
+4.执行UNLOCK TABLES来释放第2步的读锁
+
+
+## 快速创建MyISAM索引
+```sql
+ALTER TABLE test.load_data DISABLE KEYS;
+...load data
+ALTER TABLE test.load_data ENABLE KEYS;
+```
+
+然后通过排序来构建索引，这样会快很多，并且使得索引树的碎片更少、更紧凑，仅对非唯一索引有效。
+
 
