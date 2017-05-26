@@ -2,7 +2,7 @@
 title: 机器学习实战-k近邻算法
 date: 2017-05-21 18:07:59
 tags:
-- 机器学习 k近邻
+- 机器学习 
 categories:
 - 机器学习
 description: 机器学习实战k近邻算法
