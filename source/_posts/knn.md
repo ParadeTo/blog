@@ -329,3 +329,5 @@ the total error rate is: 0.011628
 另外，如果训练数据很大，需要使用大量的存储空间。
 
 k近邻算法的另外一个缺陷是它无法给出任何数据的基础结构信息，因此也无法知晓平均实例样本和典型实例样本具有什么特征。
+
+[machine learning in js](http://burakkanber.com/blog/machine-learning-in-js-k-nearest-neighbor-part-1/)
