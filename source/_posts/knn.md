@@ -323,6 +323,8 @@ the total number of errors is: 11
 the total error rate is: 0.011628
 ```
 
+#
+
 # 小结
 上述代码稍微运行了一会才出来结果，因为需要对每个测试向量计算2000次距离计算，包括1024个浮点运算，比较耗时。
 
@@ -330,4 +332,5 @@ the total error rate is: 0.011628
 
 k近邻算法的另外一个缺陷是它无法给出任何数据的基础结构信息，因此也无法知晓平均实例样本和典型实例样本具有什么特征。
 
+# 附录-js实现knn
 [machine learning in js](http://burakkanber.com/blog/machine-learning-in-js-k-nearest-neighbor-part-1/)

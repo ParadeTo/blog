@@ -331,6 +331,67 @@ MyISAM压缩每个索引块的方法是：
 * 可以节省空间
 * 某些操作可能变慢，无法使用二分查找，倒叙扫描不是很好
 
+## 冗余和重复索引
+重复索引是指在相同的列上按照相同的顺序创建相同类型的索引。应该避免这样创建，发现后应该立即移除。如：
 
+```sql
+CREATE TABLE test (
+	ID INT NOT NULL PRIMARY KEY,
+	A INT NOT NULL,
+	B INT NOT NULL,
+	UNIQUE(ID),
+	INDEX(ID)
+) ENGINE=InnoDB;
+```
+
+冗余索引和重复索引有一些不同，如果创建了索引(A, B), 再创建索引(A)就是冗余索引。但是如果再创建(B, A)，则不是冗余索引。
+
+有时候出于性能方面的考虑需要冗余索引，因为拓展已有的索引会导致其变得太大，从而影响其他使用该索引的查询的性能。
+
+例如，假设有userinfo表，表中有1000000行，每个state_id值大概有20000条记录。在state_id列有一个索引对下面的查询有用，假设查询名为Q1：
+
+```sql
+SELECT count(*) FROM userinfo WHERE state_id=5;
+```
+
+另外一个查询记为Q2:
+
+```sql
+SELECT state_id, city, address FROM userinfo WHERE state_id=5;
+```
+
+对于这个查询，其查询效率较低，一个解决办法是增加索引(state_id, city, address)，这样就存在了冗余索引了。
+
+找出冗余索引的工具：
+
+* shlomi noach的common_schema(http://code.google.com/p/common-schema/)
+* Percona Toolkit的pt-duplicate-key-checker
+
+## 未使用的索引
+如何定位：
+
+* Percona Server或者MariaDB中打开userstates服务器变量，然后让服务器运行一段时间，再通过查询INFORMATION_SCHEMA.INDEX_STATISTICS
+* Percona Toolkit中的pt-index-usage，可读取查询日志，并对日志中的每条查询进行EXPLAIN操作，然后打印关于索引和查询的报告。
+
+## 索引和锁
+索引可以让查询锁定更少的行。但这只有当InnoDB在存储引擎层能够过滤掉所有不需要的行时才有效。如果无法过滤掉无效的行，那么在检索到数据并返回给服务器后，服务器才能应用WHERE子句，这时已经无法避免锁定行了。
+
+通过下面的例子可以解释这个情况：
+
+
+# 索引案例学习
+假设要设计一个在线约会网站，用户信息表有很多列，包括国家、地区、城市、性别、眼睛、颜色等。网站必须支持上面这些特征的各种组合来搜索用户，还必须允许根据用户的最后在线时间、其他会员对用户的评分等对用户进行排序并对结果进行限制。如何设计索引呢？
+
+## 支持多种过滤条件
+现在看看哪些列拥有很多不同的取值，哪些列在WHERE子句中出现得最频繁。在有更多不同值得列上创建索引的选择性会更好。
+
+country列的选择性通常不高，但可能很多查询都会用到。sex列的选择性肯定很低，但也会经常用到。所以考虑到使用的频率，还是建议在创建不同组合索引的时候将(sex, country)列作为前缀。
+
+我们在查询的时候，即使不需要sex列，也可以在查询条件中加上``AND SEX IN ('m', 'f')``。这样写的目的是让mysql匹配索引的最左前缀。
+
+接下来可能还要考虑像(sex, country, age), (sex, country, region, age), (sex, country, region, city, age)等这样的组合索引。为什么将age放在索引的最后面？因为查询只能使用索引的最左前缀，直到遇到第一个范围条件列。前面提到的列在WHERE子句中都是等于条件，但是age列则多半是范围查询。**尽可能将需要做范围查询的列放到索引的后面**
+
+
+## 避免多个范围条件
 
 
