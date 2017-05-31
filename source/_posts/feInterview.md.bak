@@ -12,6 +12,7 @@ description: 各种面试题汇总
 
 ## ES6
 1. 分别用ES5和ES6实现函数默认参数
+
     ```javascript
     function log1(x, y) {
       y = y || 'world'
@@ -22,13 +23,62 @@ description: 各种面试题汇总
       console.log(x, y)
     }
     ```
+    
     问题：当y转换为Boolean类型的值为False时，会有不合理的情况出现
+    
     ```javascript
     log1(1, '') // 1 'world'
     log2(1, '') // 1 ''
     ```
+2. let var区别
+	
+	* let有块级作用域
+	* let不存在变量提升
+	* 不允许重复声明
+	* 暂时性死区
+	
+		```javascript
+		var tmp = 123;
+
+		if (true) {
+		  tmp = 'abc'; // ReferenceError
+		  let tmp;
+		}
+		```
+		
+3. class实现私有方法
+
+	```javascript
+	const bar = Symbol('bar')
+
+	class MyClass {
+	  // 公有办法
+	  foo(baz) {
+	    this[bar](baz)
+	  }
+	
+	  // 私有方法
+	  [bar](baz) {
+	    console.log(baz)
+	  }
+	}
+	```
+
+4. const 定义的对象，能够添加属性吗？
+
+	可以，如果要实现不能添加属性，可以用``Object.freeze()`` 
     
-    
+5. 利用Set对数组去重
+
+	```javascript
+	[...new Set(array)]
+	//
+	Array.from(new Set(array))
+	```
+6. Javascript的对象有什么缺点？为什么需要Map?
+	
+	``{}``只能用字符串作为键。
+
 # 实战
 1. 手机调试方法
 
