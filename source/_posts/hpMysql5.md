@@ -393,5 +393,73 @@ country列的选择性通常不高，但可能很多查询都会用到。sex列�
 
 
 ## 避免多个范围条件
+假设我们有一个last_online列并希望通过下面的查询显示在过去几周上线过的用户：
 
+```sql
+WHERE eye_color IN('brown', 'blue', 'hazel')
+	AND hair_color IN('black', 'red', 'blonde', 'brown')
+	AND sex IN('M', 'F')
+	AND last_online > DATE_SUB(NOW(), INTERVAL 7 DAY)
+	AND age BETWEEN 18 AND 25
+```
+
+这里有两个范围条件：mysql可以使用last_online列索引或者age索引，但无法同时使用它们。
+
+
+## 优化排序
+有如下查询：
+
+```sql
+SELECT <cols> FROM profiles WHERE sex='M' ORDER BY rating LIMIT 100000, 10;
+```
+
+即使有(sex, rating)索引，这种查询都是个严重的问题。因为随着偏移量的增加，Mysql需要花费大量的时间来扫描需要丢弃的数据。优化这类索引的策略是使用延迟关联：
+
+```sql
+SELECT <cols> FROM profiles INNER JOIN (
+	SELECT <primary key cols> FROM profiles
+	WHERE x.sex='M' ORDER BY rating LIMIT 100000, 10
+) AS x USING(<primary key cols>);
+```
+
+通过覆盖索引查询返回需要的主键，再根据这些主键关联原表获得需要的行。
+
+# 维护索引和表
+## 找到并修复损坏的表
+CHECK TABLE 通常能够找出大多数的表和索引的错误
+
+REPAIR TABLE可以修复损坏的表，或者使用不做任何操作的ALTER来重建表：
+
+```sql
+ALTER TABLE innodb_tbl ENGINE=INNODB;
+```
+
+InnoDB数据恢复工具箱：http://www.percona.com/software/mysql-innodb-data-recovery-tools
+
+## 更新索引统计信息
+查询优化器会通过两个API来了解存储引擎的索引值的分布信息：
+
+* records_in_range() 向存储引擎传入两个边界值获取在这个范围大概有多少条记录
+* info() 返回各种类型的数据，包括索引的基数（每个键值有多少条记录）
+* SHOW INDEX FROM ***
+
+## 减少索引和数据的碎片
+有三种类型的数据碎片：
+
+* 行碎片：数据行被存储为多个地方的多个片段中。即使查询只从索引中访问一行记录，行碎片也会导致性能下降
+* 行间碎片：逻辑上顺序的页，在磁盘上不是顺序存储的。
+* 剩余空间碎片：数据页中有大量的空余空间。
+
+可以通过执行OPTIMIZE TABLE或者导出再导入的方式来重新整理数据。或者通过不做任何操作的ALTER来实现：
+
+```sql
+ALTER TABLE <table> ENGINE=<engine>;
+```
+
+# 总结
+在选择索引和编写利用这些索引的查询时，有如下三个原则始终需要记住：
+
+1. 单行访问是很慢的。
+2. 按顺序访问范围数据是很快的。
+3. 索引覆盖查询是很快的。如果一个索引包含了查询需要的所有行，那么存储引擎就不需要再回表查找行。
 
