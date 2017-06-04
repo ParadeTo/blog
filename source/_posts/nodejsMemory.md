@@ -79,8 +79,62 @@ V8堆的整体大小 = 新生代 + 老生代
 
 
 
+# 高效使用内存
+在js中，无法立即回收的内存有闭包和全局变量引用这两种情况。要十分小心此类变量是否无限制增加，因为它会导致老生代中的对象增多。
 
+# 内存指标
+* rss是resident set size的缩写，即进程的常驻内存部分。
+* node的内存构成主要由通过V8进行分配的部分和Node自行分配的部分。
+* 受V8的垃圾回收限制的主要是V8的堆内存
 
+# 内存泄漏
+一般有如下原因：
+
+* 缓存
+* 队列消费不及时
+* 作用域未释放
+
+## 慎将内存当做缓存
+* 缓存限制策略
+* 外部缓存
+
+# 内存泄漏排查
+先构造一份包含内存泄漏的代码：
+
+```javascript
+var http = require('http')
+
+var leakArray = []
+var leak = function () {
+  leakArray.push("leak" + Math.random())
+}
+
+http.createServer((req, res) => {
+  leak()
+  res.writeHead(200, {'Content-Type': 'text/plain'})
+  res.end('Hello World\n')
+}).listen(1337)
+```
+
+下面测试下``node-heapdump``和``node-memwatch``这两个工具
+
+## node-heapdump
+在代码头部增加``var heapdump = require('heapdump')``，通过终端发送命令``kill -USR2 <pid>``，会生成类似``heapdump-8030961.310539.heapsnapshot``的文件。
+
+## node-memwatch
+暂略
+
+# 大内存应用
+* 使用流
+	
+	```javascript
+	var reader = fs.createReadStream('in.txt')
+	var writer = fs.createWriteStream('out.txt')
+	```
+	
+* 使用Buffer
+
+	
 
 
 
