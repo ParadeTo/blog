@@ -169,7 +169,52 @@ Number of bytes|Bits for code point|First code point|Last code point|Byte 1|Byte
 
 上面例子在处理buf1时，前面九个元素刚好符合UTF8的编码规则，所以输出无误。当处理到``Oxe6``时，按照编码规则，后面应该再接上2个字节（一共三个字节）一起进行编码，而此时只有2个字节，所以这两个字节被保留在StringDecoder实例内部，放到后面继续处理。
 
-目前只能处理UTF-8，Base64，和UCS-2/UTF-16LE这三种编码。
+目前只能处理UTF-8，Base64，和UCS-2/UTF-16LE这三种编码。所以这种方法也不能从根本上解决问题。
 
 ## 正确的拼接Buffer
+正确的拼接Buffer方式应该如下面所示：
+
+```javascript
+var fs = require('fs')
+
+var rs = fs.createReadStream('./test.md', {highWaterMark: 11})
+
+var chunks = []
+var size = 0
+rs.on("data", function (chunk) {
+  chunks.push(chunk)
+  size += chunk.length
+})
+rs.on("end", function () {
+  var buf = Buffer.concat(chunks, size)
+  var str = buf.toString('utf8')
+  console.log(str)
+})
+```
+
+# Buffer与性能
+通过预先转换静态内容为Buffer对象，可以有效地减少CPU的重复使用，节省服务器资源（我用siege测试发现没什么区别啊）：
+
+```javascript
+var http = require('http')
+var helloworld = ""
+
+for (var i = 0; i < 1024 * 10; i++) {
+  helloworld += "a"
+}
+
+helloworld = new Buffer(helloworld)
+
+http.createServer((req, res) => {
+  res.writeHead(200)
+  res.end(helloworld)
+}).listen(8001)
+```
+
+**文件读取**
+highWaterMark设置的大小对性能有两个影响的点：
+
+* 对Buffer内存的分配和使用有一定影响
+* 设置过小会导致系统调用次数过多
+
 
