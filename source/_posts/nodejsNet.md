@@ -85,9 +85,383 @@ client connected
 client disconnected
 ```
 
-## TCP服务的事件
+## TCP（传输控制协议）服务的事件
 ### 服务器事件
 * listening：在调用``server.listen()``后触发
 * connection：客户端连接到服务器时触发，简洁写法为通过``net.createServer()``最后一个参数传递
 * close：服务器关闭时触发
 * error：服务器发生异常时触发，比如监听一个使用中的端口
+
+### 连接时间
+服务器可以与多个客户端连接，每个连接是典型的可写可读Stream对象。
+
+* data：当一端调用``wirte()``发送数据时，另一端会触发data事件
+* end：当连接中的任意一端发送了FIN数据时，将会触发该事件
+* connet：该事件用于客户端，当套接字与服务器端连接成功时会被触发
+* drain：任意一端调用``write()``发送数据时，当前这端会触发该事件
+* error：当异常发生时，触发该事件
+* close：当套接字完全关闭时，触发该事件
+* timeout：当一定时间后连接不再活跃时，触发
+
+```javascript
+var net = require('net')
+
+var server = net.createServer(function (socket) {
+  socket.write('Echo server\r\n')
+  // 从客户端来的数据又发送回客户端
+  socket.pipe(socket)
+})
+
+server.listen(1337, '127.0.0.1')
+...
+
+Echo server
+ssssss112233dddddddddd33333333aa11
+```
+
+**Nagle算法**
+
+* 合并小数据包再发送，减少网络资源的浪费，可能延迟发送
+* socket.setNoDelay(true)关闭
+
+
+# 构建UDP（用户数据包协议）服务
+## 创建UDP服务器端
+
+```javascript
+var dgram = require('dgram')
+var server = dgram.createSocket('udp4')
+
+var reply = new Buffer('收到你的来信！')
+server.on('message', function (msg, rinfo) {
+  console.log('server got: ' + msg + ' from ' + rinfo.address + ':' + rinfo.port)
+})
+
+server.on('listening', function () {
+  var address = server.address()
+  console.log('server listening' + address.address + ':' + address.port)
+})
+
+server.bind(41234)
+```
+
+## 客户端
+
+```javascript
+var dgram = require('dgram')
+
+var message = new Buffer('深入浅出node.js')
+var client = dgram.createSocket('udp4')
+client.send(message, 0, message.length, 41234, 'localhost', function (err, bytes) {
+  client.close()
+})
+```
+
+## UDP套接字事件
+
+* message：接收到消息后触发
+* listening：开始监听时触发
+* close：调用close事件触发
+* error：发生异常时触发
+
+# 构建HTTP服务
+
+```javascript
+var http = require('http')
+http.createServer(function (req, res) {
+  res.writeHead(200, {'Content-Type': 'text/plain'})
+  res.end('Hello World\n')
+}).listen(1337, '127.0.0.1')
+```
+
+## http模块
+**请求**
+
+```javascript
+GET / HTTP/1.1
+User-Agent: ***
+Host: 127.0.0.1:1337
+Accept: */*
+```
+
+* 报文头被解析后放置在``req.headers``属性上
+* 报文体部分抽象为一个只读流对象，如果业务逻辑需要读取报文体中的数据，则要在这个数据流结束后才能进行操作：
+
+```
+function (req, res) {
+  var buffers = []
+  req.on('data', function(trunk) {
+    buffers.push(trunk)
+  }).on('end', function() {
+    var buffer = Buffer.concat(buffers)
+    res.end('Hello world')
+  })
+}
+```
+
+**响应**
+```javascript
+HTTP/1.1 200 OK
+Content-Type: text/plain
+Date: ***
+Connection: keep-alive
+...
+```
+
+* 一旦开始了数据的发送，``writeHead()``和``setHeader``将不再生效，如果调用会报``Can't set headers after they are sent``的错误
+* 无论服务器端在处理业务逻辑时是否发送异常，务必在结束时调用``res.end()``结束请求，否则客户端将一直处于等待的状态。
+
+**事件**
+
+* connection：在开始HTTP请求和响应前，客户端与服务器端需要建立底层的TCP连接，这个连接可能因为开启了``keep-alive``，可以在多次请求响应之间使用；当这个连接建立时，服务器触发一次connection事件。
+
+```javascript
+var http = require('http')
+var server = http.createServer(function (req, res) {
+  // res.setHeader('Connection', 'close')
+  res.end('Hello World\n')
+}).listen(1337, '127.0.0.1')
+
+server.on('connection', function() {
+  console.log('connect')
+})
+```
+
+* request：解析出HTTP请求后触发
+* close：``server.close()``调用后触发
+* checkContinue：客户端发送``Expect：100-continue``的请求（发送较大数据时，不直接发送）到服务器触发。与request事件互斥
+* connect：客户端发起connect请求触发，HTTP代理时出现
+* upgrade：客户端要求升级协议时触发
+* clientError：客户端触发error事件时，这个错误会传递到服务器
+
+## HTTP客户端
+
+```javascript
+var http = require('http')
+
+var options = {
+  hostname: '127.0.0.1',
+  port: 1337,
+  path: '/',
+  method: 'GET'
+}
+
+var req = http.request(options, function (res) {
+  console.log('STATUS: ' + res.statusCode)
+  console.log('HEADERS: ' + JSON.stringify(res.headers))
+  res.setEncoding('utf8')
+  res.on('data', function (chunk) {
+    console.log(chunk)
+  })
+})
+```
+
+**HTTP代理**
+
+在keepalive的情况下，一个底层会话连接可以多次用于请求。为了重用TCP连接，http模块包含了一个默认的客户端代理对象http.globalAgent。对每个服务器端的连接进行管理，默认对同一个服务器发起的HTTP请求最多可以创建5个连接（实际上是个连接池）。
+
+可以自行构造代理对象：
+
+```javascript
+var agent = new http.Agent({
+  maxSockets: 10
+})
+
+var options = {
+  hostname: '127.0.0.1',
+  port: 1337,
+  path: '/',
+  method: 'GET',
+  agent: agent
+}
+```
+
+也可以设置agent选项为false值，脱离连接池的管理，不受并发的限制。
+
+Agent对象的sockets和requests属性分别表示当前连接池中的连接数的处于等待状态的请求数，可以监视这两个值从而发现业务状态的繁忙程度。
+
+**事件**
+* response：得到服务器响应时
+* socket：底层连接池中建立的连接分配给当前请求对象时
+* connect：客户端向服务器端发起connect请求且服务器响应了200
+* upgrade：客户端发起upgrade请求服务器响应101 switching protocols
+* continue：客户端发起Expect: 100-continue，服务器响应100 continue
+
+# 构建WebSocket服务
+WebSocket协议与Node之间配合堪称完美：
+
+* 时间模型相差无几
+* Node事件驱动方式擅长与大量的客户端保持高并发
+
+## WebSocket握手
+这个部分是建立HTTP之上的
+
+```javascript
+GET / HTTP/1.1
+...
+Upgrade: websocket
+Connection: upgrade
+Sec-WebSocket-Key: *******
+Sec-WebSocket-Protocol: char, superchat
+Sec-WebSocket-Version: 12
+```
+
+其中，
+
+```
+Upgrade: websocket
+Connection: upgrade
+```
+
+表示请求服务器端升级协议为WebSocket。``Sec-WebSocket-Key``用于安全校验，随机生成的Base64编码的字符串。服务器接收到之后将其与字符串``**********``（这个应该是客户端和服务器端都知道，因为后面客户端要校验）相连，形成字符串，通过sha1计算结果后，再进行base64编码，返回给客户端。剩下的两个字段指定子协议和版本号。
+
+服务器处理完后响应：
+
+```
+HTTP/1.1 101 Switching Protocols
+Upgrade: websocket
+Connection: Upgrade
+Sec-WebSocket-Accept: ******* (基于key生成的字符串)
+Sec-WebSocket-Protocol: char （选中的子协议）
+```
+
+**Node模拟该过程**
+首先，创建一个简单的``WebSocket``类：
+
+```javascript
+/**
+ * Created by ayou on 2017/6/9.
+ */
+var crypto = require('crypto')
+var http = require('http')
+
+var WebSocket = function (url) {
+  this.options = url ? this.parseUrl(url) : {}
+  this.options.protocolVersion = 13
+  this.connect()
+}
+
+WebSocket.prototype.parseUrl = function (url) {
+  var address = url.split('//')[1]
+  var hostname = address.split(':')[0]
+  var port = address.split(':')[1]
+  return {
+    port: port,
+    hostname: hostname
+  }
+}
+
+WebSocket.prototype.onopen = function () {
+  this.send('I am client')
+}
+
+WebSocket.prototype.send = function (msg) {
+  this.socket.write(msg)
+}
+
+WebSocket.prototype.setSocket = function (socket) {
+  this.socket = socket
+  this.socket.on('data', this.receiver)
+}
+
+WebSocket.prototype.receiver = function (chunk) {
+  console.log(chunk.toString())
+}
+
+WebSocket.prototype.connect = function () {
+  var that = this
+  var key = new Buffer(that.options.protocolVersion + '-' + Date.now()).toString('base64')
+  var shasum = crypto.createHash('sha1')
+  var expected = shasum.update(key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11').digest('base64')
+
+  var options = {
+    port: this.options.port,
+    host: this.options.hostname,
+    headers: {
+      'Connection': 'Upgrade',
+      'Upgrade': 'websocket',
+      'Sec-WebSocket-Version': this.options.protocolVersion,
+      'Sec-WebSocket-Key': key
+    }
+  }
+  var req = http.request(options)
+  req.end()
+
+  req.on('upgrade', function (res, socket, upgradeHead) {
+    // 连接成功
+    that.setSocket(socket)
+    // 触发open事件
+    that.onopen()
+  })
+}
+
+module.exports = WebSocket
+```
+
+然后，编写``server``端代码：
+
+```javascript
+var crypto = require('crypto')
+var http = require('http')
+var WebSocket = require('./WebSocket')
+
+var server = http.createServer(function (req, res) {
+  res.writeHead(200, {'Content-Type': 'text/plain'})
+  res.end('Hello World\nAyou')
+})
+server.listen(12010)
+
+
+server.on('upgrade', function (req, socket, upgradeHead) {
+  console.log(req.headers)
+  var key = req.headers['sec-websocket-key']
+  var shasum = crypto.createHash('sha1')
+  key = shasum.update(key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11').digest('base64')
+  var headers = [
+    'HTTP/1.1 101 Switching Protocols',
+    'Upgrade: websocket',
+    'Connection: Upgrade',
+    'Sec-WebSocket-Accept: ' + key,
+    'Sec-WebSocket-Protocol: chat'
+  ]
+
+  // 让数据立即发送
+  socket.setNoDelay(true)
+  socket.write(headers.concat('','').join('\r\n'))
+  // 建立服务器端WebSocket连接
+  var websocket = new WebSocket()
+  websocket.setSocket(socket)
+  websocket.send('I am server')
+})
+```
+
+最后，编写``client``端代码：
+
+```javascript
+var WebSocket = require('./WebSocket')
+var ws = new WebSocket('ws://localhost:12010')
+```
+
+Websocket发送数据时，可能会将这个数据封装为一帧或多帧数据发送。下面，以客户端发送``hello world!``到服务器端，服务器端以``yakexi``作为回应这个流程来研究数据帧协议的实现过程。
+
+![](nodejsNet/1.png)
+
+* fin:最后一帧为1，其余为0
+* rsv1，rsv2，rsv3：用于拓展
+* opcode：0表示附加数据帧，1表示文本数据帧，2表示二进制数据帧，8表示一个连接关闭的数据帧，9表示ping数据帧，10表示pong数据帧。ping和pong用于心跳检测，当一端发送ping时，另一端发送pong作为响应
+* masked：客户端发送给服务器时为1，服务器发送给客户端时为0
+* payload length：一个7、7+16、7+64位长的数据位，标识数据的长度，如果值在0~125之间，那么该值就是数据的真实长度；如果是126，则后面16位的值是数据的真实长度；如果值为127，则后面64位的值是数据的真实长度
+* masking key：当masked为1时存在，是一个32位长的数据位，用于解密数据
+* payload data：目标数据，位数为8的倍数
+
+当客户端发送hello时，报文应当如下：
+
+```
+fin(1) + res(000) + opcode(0001) + masked(1) + payload length(1100000) + masking key(32位) + payload data(hello world!加密后的二进制位)
+```
+
+服务器回复yakexi时，报文如下：
+
+```
+fin(1) + res(000) + opcode(0001) + masked(0) + payload length(1100000) + payload data(yakexi的二进制)
+```
