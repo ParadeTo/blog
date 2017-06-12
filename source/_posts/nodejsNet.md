@@ -465,3 +465,168 @@ fin(1) + res(000) + opcode(0001) + masked(1) + payload length(1100000) + masking
 ```
 fin(1) + res(000) + opcode(0001) + masked(0) + payload length(1100000) + payload data(yakexi的二进制)
 ```
+
+# 网络服务与安全
+node在网络安全上提供了3个模块，分别为``crypto``（用于加解密）、``tls``（与net模块类似）、``https``
+
+## TLS/SSL
+**密钥**
+生成私钥：
+
+```javascript
+// 服务器端私钥
+openssl genrsa -out server.key 1024
+// 客户端私钥
+openssl genrsa -out client.key 1024
+```
+
+通过上面的私钥生成公钥：
+
+```javascript
+// 服务器端公钥
+openssl rsa -in server.key -pubout -out server.pem
+// 客户端私钥
+openssl rsa -in client.key -pubout -out client.pem
+```
+
+为了防止中间人攻击，需要对公钥进行认证，以确认得到的公钥是出自目标服务器，从而引入了数字证书。
+
+**数字证书**
+典型的数字证书结构如下所示：
+
+![](nodejsNet/2.png)
+
+自签名：
+
+```javascript
+// 生成ca私钥
+openssl genrsa -out ca.key 1024
+// 生成csr文件
+openssl req -new -key ca.key -out ca.csr
+// 生成crt文件
+openssl x509 -req -in ca.csr -signkey ca.key -out ca.crt
+```
+
+服务器端申请签名证书：
+
+```javascript
+# 注意这里必须填服务器的域名地址:Organization Name (eg, company) [Internet Widgits Pty Ltd]:localhost
+openssl req -new -key server.key -out server.csr
+openssl x509 -req -CA ca.crt -CAkey ca.key -CAcreateserial -in server.csr -out server.crt
+```
+
+客户端申请签名证书：
+
+```javascript
+openssl req -new -key client.key -out client.csr
+openssl x509 -req -CA ca.crt -CAkey ca.key -CAcreateserial -in client.csr -out client.crt
+```
+
+## TLS服务
+**创建服务器端**
+
+```javascript
+var tls = require('tls')
+var fs = require('fs')
+
+var options = {
+  key: fs.readFileSync('./server.key'),
+  cert: fs.readFileSync('./server.crt'),
+  requestCert: true,
+  ca: [fs.readFileSync('./ca.crt')]
+}
+
+var server = tls.createServer(options, function (stream) {
+  console.log('server connected', stream.authorized ? 'authorized' : 'unauthorized')
+  stream.write('welcome!\n')
+  stream.setEncoding("utf8")
+  stream.pipe(stream)
+})
+
+server.listen(8000, function () {
+  console.log('server bound')
+})
+```
+
+**TLS客户端**
+这里还有些问题！！！！
+
+```javascript
+var tls = require('tls')
+var fs = require('fs')
+
+var options = {
+  key: fs.readFileSync('./client.key'),
+  cert: fs.readFileSync('./client.crt'),
+  ca: [fs.readFileSync('./ca.crt')]
+}
+
+var stream = tls.connect(8000, options, function () {
+  console.log('client connected', stream.authorized ? 'authorized' : 'unauthorized')
+  process.stdin.pipe(stream)
+  process.stdin.resume()
+})
+
+stream.setEncoding('utf8')
+stream.on('data', function (data) {
+  console.log(data)
+})
+stream.on('end', function () {
+  // server.close()
+})
+```
+
+## HTTPS服务
+
+```javascript
+var https = require('https')
+var fs = require('fs')
+
+var options = {
+  key: fs.readFileSync('./server.key'),
+  cert: fs.readFileSync('./server.crt')
+}
+
+https.createServer(options, function (req, res) {
+  console.log(req.headers.authorization)
+  res.setHeader('Connection', 'close')
+  res.end('Hello World\n')
+}).listen(8000)
+```
+
+通过curl进行测试，结果为：
+
+```javascript
+curl: (60) SSL certificate problem: unable to get local issuer certificate
+More details here: http://curl.haxx.se/docs/sslcerts.html
+
+curl performs SSL certificate verification by default, using a "bundle"
+ of Certificate Authority (CA) public keys (CA certs). If the default
+ bundle file isn't adequate, you can specify an alternate file
+ using the --cacert option.
+If this HTTPS server uses a certificate signed by a CA represented in
+ the bundle, the certificate verification probably failed due to a
+ problem with the certificate (it might be expired, or the name might
+ not match the domain name in the URL).
+If you'd like to turn off curl's verification of the certificate, use
+ the -k (or --insecure) option.
+```
+
+* 加-k选项，忽略验证
+* 设置--cacert，告知CA证书使之完成对服务器证书的验证:``curl --cacert ca.crt https://localhost:8000``
+
+
+***https公钥交换过程简述***
+
+服务器提交自己的公钥，比如abc，得到一个数字证书（用来把服务器的公钥告诉给浏览器）
+
+ayouWeb
+abc
+org(第三方机构)
+证书中的ayouWeb,abc,org进过hash算法计算出来一个摘要yyyooo，经过org的私钥计算（其实就是解密）得到一个签名：sdgjg
+
+浏览器检查：
+
+1. org是知名的，浏览器有org的公钥：浏览器用公钥加密数字签名（sdgjg）得到的结果与摘要进行对比，如果一致说明证书可靠，如果不一致，说明证书被篡改或者签名不正确
+
+2. 不知名，会提示用户
