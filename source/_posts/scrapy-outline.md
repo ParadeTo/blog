@@ -8,7 +8,7 @@ categories:
 description: scrapy架构分析
 ---
 
-![](scrapyArchi/1.png)
+![](scrapy-outline/1.png)
 
 1. ``spider`` ``yield``一个``request``对象给``engine``
 2. ``engine``将``request``直接给``scheduler``。从代码看是调用了``scheduler``的``enqueue_request``方法。而``scheduler``则会把``request``放到队列里面

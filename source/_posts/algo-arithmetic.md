@@ -13,7 +13,7 @@ description: 利用栈实现四则表达式运算-js版
 ### 用二叉树来存储表达式
 例如：a×(b+c)-d 用二叉树可以表示为：
 
-![algorithm1](algorithm1/1.jpg)
+![algorithm1](algo-arithmetic/1.jpg)
 
 对其进行后序遍历得到后缀表达式为：
 abc+×d-
@@ -35,7 +35,7 @@ abc+×d-
 （4）弹出栈内元素即为结果。
 
 # 手工演算
-![algorithm1](algorithm1/2.jpg)
+![algorithm1](algo-arithmetic/2.jpg)
 
 # 代码实现-js版
 

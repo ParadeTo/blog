@@ -45,7 +45,7 @@ shouldComponentUpdate(nextProps, nextState) {
 
 ## shouldComponentUpdate 实战
 下图是一个组件树。``SCU``表示``shouldComponentUpdate``的返回值，``vDOMEq``表示前后两次虚拟DOM是否相同，圆圈颜色表示组件是否需要更新。
-![should-component-update](should-component-update.png)
+![should-component-update](react-optimize/should-component-update.png)
 
 介于C2的``shouldComponentUpdate``返回``false``，React不会尝试重新渲染C2，甚至不会调用C4和C5的``shouldComponentUpdate``方法。
 

@@ -35,12 +35,12 @@ app.use(function(req, res, next) {
 
 结果是，生产环境上报502错误，意思是SLB无法检测到健康的服务，无法将请求进行转发。
 后来仔细想了想，按照上面的做法，是这么个情况:
-![1.jpg](slb/1.jpg)
+![1.jpg](web-slb/1.jpg)
 
 由于SLB到NODE都是http协议，所以NODE所处理的请求都会进行重定向，并返回301到SLB，而SLB是有一个健康检查的机制，详情可以[看这里](https://help.aliyun.com/knowledge_detail/13057332.html)，我们生产上是配置的返回2**的状态码才认为服务正常。所以，就有了上面的错误。
 
 解决办法，在node端再启动一个服务，监听81端口，SLB监听80端口（http）的数据转发给此服务：
-![2.png](slb/2.png)
+![2.png](web-slb/2.png)
 
 这样的话，81端口SLB的健康检查机制就必须要用TCP的方法。
 

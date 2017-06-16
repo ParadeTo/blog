@@ -6,6 +6,7 @@ tags:
 categories:
 - 机器学习
 description: 机器学习实战Logistic回归算法
+mathjax: true
 ---
 
 Logistic回归进行分类的主要思想是：根据现有数据对分类边界建立回归公式，以此进行分类。
@@ -17,9 +18,8 @@ Logistic回归进行分类的主要思想是：根据现有数据对分类边界
 # 基于Logistic回归和Sigmoid函数的分类
 sigmoid函数：
 
-```python
-S(z) = 1 / (1+e^-z)
-```
+$$S(z) = \frac{1}{1+e^{-z}}$$
+
 
 当z为0时，其值为0.5；当z增大时，其值逼近于1；当z减小，其值逼近于0.
 

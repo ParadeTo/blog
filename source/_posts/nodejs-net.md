@@ -444,7 +444,7 @@ var ws = new WebSocket('ws://localhost:12010')
 
 Websocket发送数据时，可能会将这个数据封装为一帧或多帧数据发送。下面，以客户端发送``hello world!``到服务器端，服务器端以``yakexi``作为回应这个流程来研究数据帧协议的实现过程。
 
-![](nodejsNet/1.png)
+![](nodejs-net/1.png)
 
 * fin:最后一帧为1，其余为0
 * rsv1，rsv2，rsv3：用于拓展
@@ -494,7 +494,7 @@ openssl rsa -in client.key -pubout -out client.pem
 **数字证书**
 典型的数字证书结构如下所示：
 
-![](nodejsNet/2.png)
+![](nodejs-net/2.png)
 
 自签名：
 

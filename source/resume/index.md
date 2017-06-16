@@ -7,33 +7,27 @@ resumeCh:
   name: 游行至
   vocation: 前端工程师
   birthday: 1989/12
-  intro: 虽然是一名转行的IT从业者，好在乐于折腾，乱七八糟折腾过很多东西，包括hadoop、spark、scala、机器学习、docker（这些都忘得差不多了）等。最近一年机缘巧合投身于WEB前端，会点前端三板斧，nodejs也能搞一搞，http也略懂一点，网络安全也多少了解，似乎“知道”得那么多，似乎什么又都不懂。还是好好学习，天天向上吧！
+  intro: 研究生毕业后转行做起了IT，摸爬滚打3年，乱七八糟折腾过Java、Hadoop、Spark、Docker、机器学习等东西，现在专注于Web前端
   skills:
     - name: html, css, javascript
+      score: 70
+    - name: vue
       score: 60
+    - name: nodejs, express
+      score: 55
     - name: reactjs
       score: 50
-    - name: nodejs, express
-      score: 50
-    - name: http, web安全
+    - name: http
       score: 30
-    - name: mysql
-      score: 24
-    - name: hadoop等
-      score: 20
   experience:
-    - corp: 深圳妈妈资本管理有线公司
+    - corp: 深圳极视角科技有限公司
       vocation: 高级前端工程师
       period: 2016/08 ~ 今
-      work: 前端项目react框架研究及搭建</br>引入并推动前后端分离的开发方式</br>妈妈送房项目前端重构
+      work: 前端技术选型，项目架构设计
     - corp: 深圳齐牛互联网金融服务有限公司
       vocation: 前端工程师
-      period: 2015/03 ~ 2016/08
-      work: 负责公司官网及企业宝前端及nodejs开发</br>负责公司市场推广活动移动端开发，有微信开发经验
-    - corp: 西安中科空间信息技术有限公司
-      vocation: 初创公司，无明确职位
-      period: 2014/01 ~ 2015/03
-      work: 公司图像处理系统界面重构</br>公司官网开发(php+mysql)</br>大数据相关技术研究
+      period: 2014/07 ~ 2016/08
+      work: 负责公司官网及企业宝前端及nodejs开发</br>负责公司市场推广活动移动端开发，微信网页开发
   education:
     - school: 中国科学院大学
       major: 中科院遥感与数字地球研究所
@@ -54,7 +48,7 @@ resumeCh:
     - 全国计算机等级考试二级C、三级数据库技术、四级数据库工程师合格证书
     - 全国大学英语四级（CET-4）498分，全国大学英语六级（CET-6）488分
   projects:
-    - name: 一起牛官网
+    - name: 极视角移动端智能分析系统
       img: /img/projects/yiqiniu-home.png
       url: http://www.yiqiniu.com
     - name: 企业宝(移动端适配页)
@@ -74,30 +68,24 @@ resumeEn:
   intro: I am a freshman in IT technology. In the past year, I played with a lot of thing such as hadoop, spark, machine learning, docker etc. Now I decide to concentrate on Web Front End. I am familiar with html, css, javascript and nodejs. And I have been doing some research on http and Web security. It seem that I know so much, but I think that I know nothing. All I have to do is to Study hard, and make progress everyday!
   skills:
     - name: html, css, javascript
+      score: 70
+    - name: vue
       score: 60
+    - name: nodejs, express
+      score: 55
     - name: reactjs
       score: 50
-    - name: nodejs, express
-      score: 50
-    - name: http, web安全
+    - name: http
       score: 30
-    - name: mysql
-      score: 24
-    - name: hadoop etc.
-      score: 20
   experience:
-    - corp: Shenzhen Mama Captical Management Co., LTD
+    - corp: Extreme Vision Technology Co., LTD
       vocation: Senior Web Front End Developer
       period: 2016/08 ~ now
-      work: Research and construction of front-end project</br>Introduce and promote the developing mode, separation of front-end and back-end</br>Reconstruction of mmsf project
+      work: Research and construction of front-end project
     - corp: Shenzhen Qiniu Internet Financial Service Co., LTD
       vocation: Web Front End Developer
-      period: 2015/03 ~ 2016/08
+      period: 2014/07 ~ 2016/08
       work:  Participated in developping web page of our company's backstage management system, and the development of official website, qiyebao website.</br>Involved in mobile web page, wechat h5 page development for marketing activities.
-    - corp: Xian Zhongke Space Information Technology Co., LTD
-      vocation: None
-      period: 2014/01 ~ 2015/03
-      work: Reconstruction for UI of Image Processing System</br>Developping of official website (php+mysql)</br>Research on Big Data Technology
   education:
     - school: University of Chinese Academy of Sciences
       major:  The Institute of Remote Sensing and Digital Earth, Chinese Academy of Sciences

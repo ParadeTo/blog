@@ -10,7 +10,7 @@ description: 机器学习实战之决策树算法
 
 决策树的概念非常简单，即使不知道它也可以通过简单的图形了解其工作原理，下图就是一个简单的决策树：
 
-![](decisionTree/decisionTree1.png)
+![](ml-decision-tree/decisionTree1.png)
 
 * 优点：计算复杂度不高，输出结果易于理解，对中间值的缺失不敏感，可以处理不相关特征数据。
 * 缺点：可能会产生过度匹配问题。

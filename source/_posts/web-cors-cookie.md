@@ -88,7 +88,7 @@ console.log("Server runing at port: " + PORT + ".");
 
 ### 结果
 果然没有发送cookie
-![Paste_Image.png](cors-cookie/1.png)
+![Paste_Image.png](web-cors-cookie/1.png)
 
 ## 修改
 ### 远程服务端
@@ -125,10 +125,10 @@ xhr.send(null);
 ### 结果
 * 浏览器日志
 发送了``id＝1``的cookie
-![Paste_Image.png](cors-cookie/2.png)
+![Paste_Image.png](web-cors-cookie/2.png)
 
-![Paste_Image.png](cors-cookie/3.png)
+![Paste_Image.png](web-cors-cookie/3.png)
 
 * 远程服务端
 
-![屏幕快照 2016-09-10 22.27.41.png](cors-cookie/4.png)
+![屏幕快照 2016-09-10 22.27.41.png](web-cors-cookie/4.png)

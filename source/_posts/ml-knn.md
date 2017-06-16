@@ -145,7 +145,7 @@ plt.show()
 ```
 
 
-![1.jpg](knn/Figure_1.png)
+![1.jpg](ml-knn/Figure_1.png)
 
 ## 数据归一化
 数据中不同的属性之间量程相差很大，需要对数据进行归一化处理，常用的
@@ -323,7 +323,6 @@ the total number of errors is: 11
 the total error rate is: 0.011628
 ```
 
-#
 
 # 小结
 上述代码稍微运行了一会才出来结果，因为需要对每个测试向量计算2000次距离计算，包括1024个浮点运算，比较耗时。

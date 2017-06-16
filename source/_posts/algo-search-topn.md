@@ -269,7 +269,7 @@ Heap.prototype.topN = function (arr, n) {
 ```
 
 # 4. 前端展示
-![](searchTopN/1.png)
+![](algo-search-topn/1.png)
 
 更多详见[github](https://github.com/ParadeTo/dataguru-algorithm/tree/master/lesson13)
 

@@ -14,7 +14,7 @@ description: Angularjs2-下拉列表实现(父子组件通信)
 [项目地址](https://github.com/ParadeTo/ng2-dropdown-demo)
 
 # demo
-![demo-new.gif](angularjs2-dropdown/demo-new.gif)
+![demo-new.gif](ng2-dropdown/demo-new.gif)
 
 # 列表内容由父组件传递
 这个主要利用到了ng2的``Input``，在子组件中声明一个变量，该变量的值可以从父组件获取：

@@ -13,7 +13,7 @@ description: 最短路径+最小生成树
 
 * 最小生成树是解决用最小的代价将图上的所有点连接起来的问题
 
-![](shortestRoute-leastGenTree/1.jpg)
+![](algo-shortestroute-leastgentree/1.jpg)
 
 # js实现
 

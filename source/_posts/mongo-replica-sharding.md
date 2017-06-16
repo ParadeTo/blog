@@ -19,7 +19,7 @@ description: mongodb replica sharding 实战
 
 ## 服务规划
 
-![outline.jpg](mongodbReplicaSharding/outline.jpg)
+![outline.jpg](mongo-replica-sharding/outline.jpg)
 
 * shard1 28017：shard1的数据服务
 * shard2 28018：shard2的数据服务
@@ -360,11 +360,11 @@ mongos --config /home/ayou/mongodb/mongos.conf
 ```
 
 # 查看运行状态
-![host1.png](mongodbReplicaSharding/host1.png)
+![host1.png](mongo-replica-sharding/host1.png)
 
-![host2.png](mongodbReplicaSharding/host2.png)
+![host2.png](mongo-replica-sharding/host2.png)
 
-![host3.png](mongodbReplicaSharding/host3.png)
+![host3.png](mongo-replica-sharding/host3.png)
 
 # 配置分片
 * 可以在任意台机器上进行如下操作
@@ -405,6 +405,6 @@ for(var i=0;i<1000000;i++) db.test.insert({name:"no"+i})
 
 查看分片状态
 
-![sharding1.png](mongodbReplicaSharding/sharding1.png)
+![sharding1.png](mongo-replica-sharding/sharding1.png)
 
-![sharding2.png](mongodbReplicaSharding/sharding2.png)
+![sharding2.png](mongo-replica-sharding/sharding2.png)

@@ -69,7 +69,7 @@ description: jquery轮播图插件
 * 支持自动播放（鼠标悬停到导航按钮上可暂停）
 * 支持键盘方向键和鼠标滑轮切换
 
-![demo.gif](page-switch/demo.gif)
+![demo.gif](demo-page-switch/demo.gif)
 
 
 ## 使用

@@ -61,7 +61,7 @@ description: canvas创建、基本绘图
     context.strokeStyle = "black";
     context.stroke();
 ```
-![](cavas-1/canvas-1-1.png)
+![](canvas-basis/canvas-1-1.png)
 这里与教程不同，教程中两条直线都是黑色，需要用context.beginPath()和context.closePath()来区分不同的绘制路径（**closePath会自动封闭图形**）。但是，当绘制填充多边形时，会有如下问题：
 ```javascript
 	// context.beginPath();
@@ -82,9 +82,9 @@ description: canvas创建、基本绘图
     context.fillStyle = "black";
     context.fill();
 ```
-![](cavas-1/canvas-1-2-1.png)
+![](canvas-basis/canvas-1-2-1.png)
 去掉代码中的注释，可以达到我们的预期效果
-![](cavas-1/canvas-1-2-2.png)
+![](canvas-basis/canvas-1-2-2.png)
 
 * 绘制一个七巧板
 ```javascript
@@ -120,7 +120,7 @@ description: canvas创建、基本绘图
       cxt.stroke();
     }
 ```
-![](cavas-1/canvas-1-3.png)
+![](canvas-basis/canvas-1-3.png)
 
 * 画圆
 ```javascript
@@ -149,4 +149,4 @@ context.arc(
       context.closePath(); // 对fill没什么用 
       context.fill();
 ```
-![](cavas-1/canvas-1-4.png)
+![](canvas-basis/canvas-1-4.png)

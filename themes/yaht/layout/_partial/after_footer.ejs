@@ -1,4 +1,8 @@
 <script src="<%- config.root %>js/jquery-2.1.0.min.js"></script>
+<!--公式-->
+<% if (page.mathjax) { %>
+<%- partial('mathjax') %>
+<% } %>
 <!--canvas-->
 <% if (page.module!='demo'){ %>
 <script src="<%- config.root %>js/canvas.js"></script>

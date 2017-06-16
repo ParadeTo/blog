@@ -10,7 +10,7 @@ description: 归并排序算法复杂度推导
 
 ### 迭代式
 《算法导论》上归并排序算法复杂度迭代式为：
-![dc-sort](dcsort/dc-sort.png)
+![dc-sort](algo-dcsort/dc-sort.png)
 
 ### 通式推导
 由此可以导出其通式，如下（分了分析方便，假设n是2的倍数）：

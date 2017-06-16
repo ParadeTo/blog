@@ -10,7 +10,7 @@ description: 用H5仿造的原生APP密码输入控件
 ---
 
 ## 效果图
-![pwd.jpg](imitate-app-pwd/pwd.jpg)
+![pwd.jpg](demo-app-pwd/pwd.jpg)
 
 ## 实现方式
 将input框移出屏幕，用label来代替其捕捉输入动作，监听input的input事件，根据input的值来绘制圆点，具体见下面的代码：

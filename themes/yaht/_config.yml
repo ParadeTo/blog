@@ -14,7 +14,7 @@ menu:
 #### Widgets
 widgets:
 - category
-- tag
+- tagcloud
 ## provide six widgets:category,tag,rss,archive,tagcloud,links.
 ## modify links in `/layout/_widget/links.ejs`.
 
@@ -62,17 +62,17 @@ back_to_top: true   ##show back-to-top in article
 #### Author information
 author:
   google_plus:    ## eg:116338260303228776998 for https://plus.google.com/u/0/116338260303228776998
-  intro_line1: "" ## eg: "Hello ,I'm Larry Page in Google."
-  intro_line2: "" ## eg: "This is my blog,believe it or not."
-  weibo:      ## e.g. 436062867 for http://weibo.com/436062867
+  intro_line1: "Hello, I'm ayou!" ## eg: "Hello ,I'm Larry Page in Google."
+  intro_line2: "This is my blog, believe it or not" ## eg: "This is my blog,believe it or not."
+  weibo: 2290700255     ## e.g. 436062867 for http://weibo.com/436062867
   twitter:    ## e.g. zhyu for https://twitter.com/zhyu
-  github:     ## e.g. zhyu for https://github.com/zhyu
+  github: paradeto    ## e.g. zhyu for https://github.com/zhyu
   facebook:   ## e.g. sora.zhyu for https://favebook.com/sora.zhyu
-  tsina:      ## e.g. 1664838973  Your weibo ID,It will be used in share button.
+  tsina: 2290700255     ## e.g. 1664838973  Your weibo ID,It will be used in share button.
 
 #### Comment
 duoshuo:
-  enable: true  ## duoshuo.com
+  enable: false  ## duoshuo.com
   short_name: paradeto  ## duoshuo short name.
 
 netease:

@@ -9,7 +9,7 @@ description: 利用canvas制作的一个倒计时小工具
 ---
 最近开始学习canvas，实现了[慕课网](http://www.imooc.com/learn/133)上的一个倒计时例子。
 ## 最终效果
-![](canvas-count-down/canvas-result.png)
+![](canvas-clock/canvas-result.png)
 最后的效果是不是很绚丽呢
 ## 数字表示方法
 用二维矩阵表示0~9，：，“天”这些后面需要用到的字符
@@ -163,7 +163,7 @@ digit =
     ];
 ```
 一个数字的绘制原理(详见[慕课网](http://www.imooc.com/video/2450)):
-![](canvas-count-down/canvas-digit.png)
+![](canvas-clock/canvas-digit.png)
 ## 模拟一个小球的运动
 例子中，当数字发生变化时，会出现很多彩色的运动的小球，这是怎么实现的呢，先从模拟一个小球的运动开始：
 ```javascript
@@ -230,7 +230,7 @@ function render(cxt) {
 }
 ```
 小球会先做一个斜抛运动，然后碰到底部后反弹起来，如此反复，一直到垂直速度为0.
-![](canvas-count-down/canvas-ball.png)
+![](canvas-clock/canvas-ball.png)
 
 ## 完整动画
 完整例子代码如下图所示：
@@ -458,4 +458,4 @@ function renderBalls(cxt) {
         }
 ```
 打印数组的长度，其长度不会无限增加
-![](canvas-count-down/canvas-length.png)
+![](canvas-clock/canvas-length.png)

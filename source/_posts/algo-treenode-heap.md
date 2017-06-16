@@ -16,7 +16,7 @@ description: 利用树节点实现一个堆
 * leftchild 指向左子节点
 * rightchild 指向右子节点
 
-![treenode](heapWithTreenode/treenode.png)
+![treenode](algo-treenode-heap/treenode.png)
 
 # 堆
 一个堆最重要的两个方法是：
@@ -24,11 +24,11 @@ description: 利用树节点实现一个堆
 * pop 交换堆首尾元素，取出队尾元素，将堆顶元素下行到合适位置
 
 ## 示例
-![heap](heapWithTreenode/heap.png)
+![heap](algo-treenode-heap/heap.png)
 
 ## 如何根据结点的序号快速的定位结点
 在堆的两个方法``push`` ``pop``需要解决如何快速地寻找队尾元素，可以采取如下的方法：
-![3](heapWithTreenode/3.png)
+![3](algo-treenode-heap/3.png)
 如上图，若现在堆大小为4，则插入元素位置应该在5，其二进制101表示其路径为：根节点->左子树->右子树
 
 # 代码实现

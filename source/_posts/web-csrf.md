@@ -11,22 +11,22 @@ description: 自己测试了下CSRF
 前端时间小小的研究了下网络安全，基于Express框架并亲身测试了一下CSRF(Cross-site request forgery跨站请求伪造)，以下是过程：
 
 ## 测试路由
-![router](csrf-1/router.png)
+![router](web-csrf/router.png)
 这个路由添加了一个验证登录的中间件，客户端若是未登录会重定向到登录页。
 
 ## 攻击页面
-![attack](csrf-1/attack.png)
+![attack](web-csrf/attack.png)
 发送了一个请求，并带上了名为money的参数
 
 ## 模拟受害者登录
-![login](csrf-1/login.png)
+![login](web-csrf/login.png)
 受害者首先登录了测试网站
 
 ## 模拟受害者无意中打开了攻击页面
-![open-attack](csrf-1/open-attack.png)
+![open-attack](web-csrf/open-attack.png)
 
 ## 中招了
-![result](csrf-1/result.png)
+![result](web-csrf/result.png)
 
 ## 原因
 以上CSRF能成功的原因是因为攻击页面向目标站点发送请求时，浏览器也会发送该站点下的Session Cookie（《白帽子讲WEB安全》）

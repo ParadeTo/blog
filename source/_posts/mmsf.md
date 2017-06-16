@@ -17,7 +17,7 @@ description: 利用react重构旧项目，并进行前后端分离
 
 # 项目路径规划
 因为SPA的代码最后都需要编译打包成一个文件，所以我把我的前端工程跟java工程放在一起，方便文件直接生成到java工程中
-![project.png](mmsfReconstruction/project.png)
+![project.png](mmsf/project.png)
 
 # webpack打包路径设置
 ```javascript
@@ -131,7 +131,7 @@ http {
 但是，我们的后端一开始并没有统一规划，所以也就没有区别接口的url地址和访问页面的url地址。
 
 最后想到的办法是，利用eclipse->server可以给工程配置一个统一的url根目录来解决：
-![house-web-web.png](mmsfReconstruction/house-web-web.png)
+![house-web-web.png](mmsf/house-web-web.png)
 
 然后``ngix``配置改成:
 ```javascript
@@ -206,7 +206,7 @@ import iconShare from '../../assets/i/mmsf/icon-share.png'
 
 # 后端url处理
 由于生产上还是需要使用真实路径，所以需要后端进行配合，所有用前端路由的url地址均渲染``mmsfIndex.vm``
-![index.png](mmsfReconstruction/index.png)
+![index.png](mmsf/index.png)
 
 # 总结
 总的下来，实现这一方案，用了很多非主流的方法，也让我知道了做技术只要掌握了原理，是可以根据自己的需要进行变通的。接下来就是逐步把原来的页面都迁移到新项目中来了，可以跟原来丑陋的代码说拜拜咯。
