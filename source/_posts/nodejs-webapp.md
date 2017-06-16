@@ -96,3 +96,123 @@ function unsign (val, secret) {
 
 ## 缓存
 
+* If-Modified-Since/Last-Modified
+当服务器返回``Last-Modified``时，下次浏览器请求会自动带上``If-Modified-Since``
+
+```javascript
+var handle = function (req, res) {
+  fs.stat('./test.js', function (err, stat) {
+    var lastModified = stat.mtime.toUTCString()
+    if (lastModified === req.headers['if-modified-since']) {
+      res.writeHead(304, "Not Modified")
+      res.end()
+    } else {
+      fs.readFile('./test.js', function (err, file) {
+        var lastModified = stat.mtime.toUTCString()
+        res.setHeader('Last-Modified', lastModified)
+        res.writeHead(200, "Ok")
+        res.end(file)
+      })
+    }
+  })
+}
+```
+
+* If-None-Match/ETag
+
+```javascript
+var getHash = function (str) {
+  var shasum = crypto.createHash('sha1')
+  return shasum.update(str).digest('base64')
+}
+
+var handle = function (req, res) {
+  fs.readFile('./test.js', function (err, file) {
+    var hash = getHash(file)
+    var noneMatch = req.headers['if-none-match']
+    if (hash === noneMatch) {
+      res.writeHead(304, "Not Modified")
+      res.end()
+    } else {
+      res.setHeader('ETag', hash)
+      res.writeHead(200, "Ok")
+      res.end(file)
+    }
+  })
+}
+
+```
+
+* Cache-Control/Expires
+
+略
+
+## Basic认证
+在Basic认证中，他会将用户和密码部分组合：``username + ":" + password``。然后进行Base64编码：
+
+```javascript
+var encode = function (username, password) {
+	return new Buffer(username +　":" + password).toString('base64')
+}
+```
+
+如果首次访问该页面，URL地址中也没有携带认证内容，服务器会返回401，浏览器会弹出一个登陆的窗口
+
+```javascript
+var checkUser = function (user, pass) {
+  if (user === 'ayou' && pass === '123456') {
+    return true
+  }
+  return false
+}
+
+var authorization = function (req, res) {
+  var auth = req.headers['authorization'] || ''
+  var parts = auth.split(' ')
+  var method = parts[0] || '' // Basic
+  var encoded = parts[1] || '' // sxnldglg
+  var decoded = new Buffer(encoded, 'base64').toString('utf-8').split(':')
+  var user = decoded[0]
+  var pass = decoded[1]
+  if (!checkUser(user, pass)) {
+    res.setHeader('WWW-Authenticate', 'Basic realm="Secure Area"')
+    res.writeHead(401)
+    res.end()
+  } else {
+    handle(req, res)
+  }
+}
+```
+
+# 数据上传
+## 表单数据
+默认的表单提交，请求头中的``Content-Type``字段为``application/x-www-form-urlencoded``,由于它的报文体跟查询字符串相同：``foo=bar&baz=val``,因此解析起来比较容易：
+
+```javascript
+var hasBody = function(req) {
+  return 'transfer-encoding' in req.headers || 'content-length' in req.headers  
+}
+
+function (req, res) {
+  if (hasBody(req)) {
+    var buffers = []
+    req.on('data', function(chunk) {
+      buffers.push(chunk)
+    })
+    req.on('end', function() {
+      req.rawBody = Buffer.concat(buffers).toString()
+      handle(req, res)
+    })
+  } else {
+    handle(req, res)
+  }
+}
+
+var handle = function (req, res) {
+  if (req.headers['content-type'] === 'application/x-www-form-urlencoded') {
+    req.body = querystring.parse(req.rawBody)
+  }
+}
+```
+
+## 其他格式
