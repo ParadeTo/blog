@@ -216,3 +216,44 @@ var handle = function (req, res) {
 ```
 
 ## 其他格式
+**JSON文件**
+
+```javascript
+var mine = function (req) {
+  var str = req.headers['content-type'] || ''
+  return str.split(';')[0]
+}
+
+var handle = function(req, res) {
+  if (mine(req) === 'application/json') {
+    try {
+      req.body = JSON.parse(req.rawBody)
+    } catch (e) {
+      res.writeHead(400)
+      res.end('Invalid JSON');
+      return
+    }
+  }
+  todo(req, res)
+}
+```
+
+**XML文件**
+
+```javascript
+var xml2js = require('xml2js')
+
+var handle = function(req, res) {
+  if (mine(req) === 'application/json') {
+	xml2js.parseString(req,rawBody, function (err, xml) {
+		if (err) {
+	      res.writeHead(400)
+	      res.end('Invalid XML');
+	      return
+		}
+		req.body = xml
+		todo(req, res)
+	})
+  }
+}
+```
