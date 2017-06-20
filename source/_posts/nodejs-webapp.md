@@ -325,7 +325,7 @@ var limit = function (req, res) {
 略
 ## MVC
 ### 路由映射
-1. 手工映射
+1.手工映射
 
 ```javascript
 var http = require('http')
@@ -456,7 +456,7 @@ if (matched) {
     
 ```
 
-2. 自然映射
+2.自然映射
 
 ```javascript
 var http = require('http')
@@ -491,3 +491,84 @@ exports.setting = function (req, res, month, year) {
   res.end(month + '/' + 'year')
 }
 ```
+
+## RESTful
+通过URL设计资源，通过请求方法定义资源的操作，通过Accept决定资源的表现形式
+
+```javascript
+var routes = {'all': []}
+var app = {}
+
+app.use = function (path, action) {
+  routes.all.push([pathRegexp(path), action])
+}
+
+var methods = ['get', 'put', 'delete', 'post']
+methods.forEach(function (method) {
+  routes[method] = [];
+  app[method] = function (path, action) {
+    routes[method].push([pathRegexp(path), action])
+  }
+})	
+
+var match = function (pathname, routes, req, res) {
+  for (var i = 0; i < routes.length; i++) {
+    var route = routes[i]
+    // 正则匹配
+    var reg = route[0].regexp
+    var keys = route[0].keys
+    var matched = reg.exec(pathname)
+    if (matched) {
+      // 抽取具体值
+      var params = {}
+      for (var i = 0; i < keys.length; i++) {
+        var value = matched[i + 1]
+        if (value) {
+          params[keys[i]] = value
+        }
+      }
+      req.params = params;
+      var action = route[1]
+      action(req, res)
+      return true
+    }
+  }
+  return false
+}
+
+http.createServer(function (req, res) {
+  var pathname = url.parse(req.url).pathname
+  // 将请求方法变为小写
+  var method = req.method.toLowerCase()
+  if (routes.hasOwnProperty(method)) {
+    // 根据请求方法分发
+    if (match(pathname, routes[method], req, res)) {
+      return;
+    } else {
+      // 如果路径没有匹配成功，尝试让all()来处理
+      if (match(pathname, routes.all, req, res)) {
+        return ;
+      }
+    }
+  } else {
+    // 直接让all()来处理
+    if (match(pathname, routes.all, req, res)) {
+      return ;
+    }
+  }
+
+  // 404
+  handle404(req, res)
+}).listen(1337, '127.0.0.1')
+
+var handle404 = function (req, res) {
+  res.writeHead(404)
+  res.end()
+}
+
+app.get('/user/:username', function (req, res) {
+  res.end(req.params.username)
+})
+```
+
+# 中间件
