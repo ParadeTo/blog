@@ -219,13 +219,13 @@ var handle = function (req, res) {
 **JSON文件**
 
 ```javascript
-var mine = function (req) {
+var mime = function (req) {
   var str = req.headers['content-type'] || ''
   return str.split(';')[0]
 }
 
 var handle = function(req, res) {
-  if (mine(req) === 'application/json') {
+  if (mime(req) === 'application/json') {
     try {
       req.body = JSON.parse(req.rawBody)
     } catch (e) {
@@ -244,7 +244,7 @@ var handle = function(req, res) {
 var xml2js = require('xml2js')
 
 var handle = function(req, res) {
-  if (mine(req) === 'application/json') {
+  if (mime(req) === 'application/json') {
 	xml2js.parseString(req,rawBody, function (err, xml) {
 		if (err) {
 	      res.writeHead(400)
@@ -258,6 +258,320 @@ var handle = function(req, res) {
 }
 ```
 
+## 附件上传
+```
+------WebKitFormBoundaryuNvMBwzIYUQBKoHY
+Content-Disposition: form-data; name="username"
+
+fdg
+------WebKitFormBoundaryuNvMBwzIYUQBKoHY
+Content-Disposition: form-data; name="file"; filename="7.pdf"
+Content-Type: application/pdf
+
+
+------WebKitFormBoundaryuNvMBwzIYUQBKoHY--
+```
+
+
+```javascript
+var handle = function (req, res) {
+  if (hasBody(req)) {
+    if (mime(req) === 'multipart/form-data') {
+      var form = new formidable.IncomingForm()
+      form.uploadDir = './'
+      form.parse(req, function (err, fields, files) {
+        console.log(fields, files)
+        req.body = fields
+        req.files = files
+        res.writeHead(200, 'ok')
+        res.end('success')
+      })
+    }
+  }
+}
+```
+
+## 数据上传与安全
+**上传大小限制**
+
+```javascript
+var bytes = 1024
+var limit = function (req, res) {
+  var received = 0
+  var len = req.headers['content-length'] ? parseInt(req.headers['content-length'], 10) : null
+
+  // 如果有content-length头
+  if (len && len > bytes) {
+    res.writeHead(413) // 实体过长
+    res.end()
+    return
+  }
+  
+  req.on('data', function (chunk) {
+    received += chunk.length
+    if (received > bytes) {
+      req.destroy()
+    }
+  })
+}
+```
+
+**CSRF**
+关于CSRF请查看[CSRF亲测](/2016/06/04/web-csrf/)
+
+
+# 路由解析
+## 文件路径型
+略
+## MVC
+### 路由映射
+1.手工映射
+
+```javascript
+var http = require('http')
+var url = require('url')
+
+var controllers = {
+  setting: function (req, res) {
+    res.end('setting')
+  }
+}
+
+
+var routes = []
+
+var use = function (path, action) {
+  routes.push([path, action])
+}
+
+use('/user/setting', controllers.setting)
+use('/setting/user', controllers.setting)
+
+http.createServer(function (req, res) {
+  var pathname = url.parse(req.url).pathname
+  for (var i = 0; i < routes.length; i++) {
+    var route = routes[i]
+    if (pathname === route[0]) {
+      var action = route[1]
+      action(req, res)
+      return
+    }
+  }
+  // 404
+  res.writeHead(404)
+  res.end()
+}).listen(1337, '127.0.0.1')
+```
+
+**正则匹配**
+
+```
+var use = function (path, action) {
+  routes.push([pathRegexp(path), action])
+}
+
+var pathRegexp = function (path, strict) {
+  path = path
+    .concat(strict ? '' : '/?')
+    .replace(/\/\(/g, '(?:/')
+    .replace(/(\/)?(\.)?:(\w+)(?:(\(.*?\)))?(\?)?(\*)?/g, function (_, slash, format, key, capture, optional, star) {
+      slash = slash || ''
+      return ''
+        + (optional ? '' : slash)
+        + '(?:'
+        + (optional ? slash : '')
+        + (format || '') + (capture || (format && '([^/.]+?)' || '([^/]+?)')) + ')'
+        + (optional || '')
+        + (star ? '(/*)?' : '')
+    })
+    .replace(/([\/.])/g, '\\$1')
+    .replace(/\*/g, '(.*)')
+
+  return new RegExp('^' + path + '$')
+}
+...
+for (var i = 0; i < routes.length; i++) {
+	var route = routes[i]
+	if (route[0].exec(pathname)) {
+	  var action = route[1]
+	  action(req, res)
+	  return
+	}
+}
+...
+use('/user/:d/:sdafg', controllers.setting)
+use('/setting/:dd/dsasg', controllers.setting)
+```
+
+**参数解析**
+
+```
+var pathRegexp = function (path, strict) {
+  var keys = []
+
+  path = path
+    .concat(strict ? '' : '/?')
+    .replace(/\/\(/g, '(?:/')
+    .replace(/(\/)?(\.)?:(\w+)(?:(\(.*?\)))?(\?)?(\*)?/g, function (_, slash, format, key, capture, optional, star) {
+      slash = slash || ''
+      keys.push(key)
+
+      return ''
+        + (optional ? '' : slash)
+        + '(?:'
+        + (optional ? slash : '')
+        + (format || '') + (capture || (format && '([^/.]+?)' || '([^/]+?)')) + ')'
+        + (optional || '')
+        + (star ? '(/*)?' : '')
+    })
+    .replace(/([\/.])/g, '\\$1')
+    .replace(/\*/g, '(.*)')
+
+  return {
+    keys: keys,
+    regexp: new RegExp('^' + path + '$')
+  }
+}
+...
+var route = routes[i]
+// 正则匹配
+var reg = route[0].regexp
+var keys = route[0].keys
+var matched = reg.exec(pathname)
+if (matched) {
+  // 抽取具体值
+  var params = {}
+  for (var i = 0; i < keys.length; i++) {
+    var value = matched[i + 1]
+    if (value) {
+      params[keys[i]] = value
+    }
+  }
+  req.params = params;
+  var action = route[1]
+  action(req, res)
+  return
+}
+...
+    
+```
+
+2.自然映射
+
+```javascript
+var http = require('http')
+var url = require('url')
+
+
+http.createServer(function (req, res) {
+  var pathname = url.parse(req.url).pathname
+  var paths = pathname.split('/')
+  var controller = paths[1] || 'index'
+  var action = paths[2] || 'index'
+  var args = paths.slice(3)
+  var module
+
+  try {
+    // require的缓存机制使得只有第一次是阻塞的
+    module = require('./controllers/' + controller)
+  } catch (e) {
+    // 处理500
+    return
+  }
+
+  var method = module[action]
+  if (method) {
+    method.apply(null, [req, res].concat(args))
+  } else {
+    // 500
+  }
+}).listen(1337, '127.0.0.1')
+...
+exports.setting = function (req, res, month, year) {
+  res.end(month + '/' + 'year')
+}
+```
+
+## RESTful
+通过URL设计资源，通过请求方法定义资源的操作，通过Accept决定资源的表现形式
+
+```javascript
+var routes = {'all': []}
+var app = {}
+
+app.use = function (path, action) {
+  routes.all.push([pathRegexp(path), action])
+}
+
+var methods = ['get', 'put', 'delete', 'post']
+methods.forEach(function (method) {
+  routes[method] = [];
+  app[method] = function (path, action) {
+    routes[method].push([pathRegexp(path), action])
+  }
+})	
+
+var match = function (pathname, routes, req, res) {
+  for (var i = 0; i < routes.length; i++) {
+    var route = routes[i]
+    // 正则匹配
+    var reg = route[0].regexp
+    var keys = route[0].keys
+    var matched = reg.exec(pathname)
+    if (matched) {
+      // 抽取具体值
+      var params = {}
+      for (var i = 0; i < keys.length; i++) {
+        var value = matched[i + 1]
+        if (value) {
+          params[keys[i]] = value
+        }
+      }
+      req.params = params;
+      var action = route[1]
+      action(req, res)
+      return true
+    }
+  }
+  return false
+}
+
+http.createServer(function (req, res) {
+  var pathname = url.parse(req.url).pathname
+  // 将请求方法变为小写
+  var method = req.method.toLowerCase()
+  if (routes.hasOwnProperty(method)) {
+    // 根据请求方法分发
+    if (match(pathname, routes[method], req, res)) {
+      return;
+    } else {
+      // 如果路径没有匹配成功，尝试让all()来处理
+      if (match(pathname, routes.all, req, res)) {
+        return ;
+      }
+    }
+  } else {
+    // 直接让all()来处理
+    if (match(pathname, routes.all, req, res)) {
+      return ;
+    }
+  }
+
+  // 404
+  handle404(req, res)
+}).listen(1337, '127.0.0.1')
+
+var handle404 = function (req, res) {
+  res.writeHead(404)
+  res.end()
+}
+
+app.get('/user/:username', function (req, res) {
+  res.end(req.params.username)
+})
+```
+
+# 中间件
 
 # 页面渲染
 ## 内容响应
@@ -645,4 +959,145 @@ console.log(render(compiled, {items: [{name: 'ayou'}, {name: 'xingzhi'}]}))
       $('#footer').html(_.render($('#tpl_body').html(), {users: data}))
     })
 </script>
+```
+
+```javascript
+var Bigpipe = function () {
+  this.callbacks = {}
+}
+
+Bigpipe.prototype.ready = function (key, callback) {
+  if (!this.callbacks[key]) {
+    this.callbacks[key] = []
+  }
+  this.callbacks[key].push(callback)
+}
+
+Bigpipe.prototype.set = function (key, data) {
+  var callbacks = this.callbacks[key] || []
+  for (var i = 0; i < callbacks.length; i++) {
+    callbacks[i].call(this, data)
+  }
+}
+```
+
+```javascript
+
+/**
+ * Created by ayou on 2017/6/23.
+ */
+var fs = require('fs')
+var path = require('path')
+var http = require('http')
+var url = require('url')
+var render = require('./render').render
+var compile = require('./render').compile
+
+var routes = {'all': []}
+var app = {}
+
+app.use = function (path, action) {
+  routes.all.push([pathRegexp(path), action])
+}
+
+var methods = ['get', 'put', 'delete', 'post']
+methods.forEach(function (method) {
+  routes[method] = [];
+  app[method] = function (path, action) {
+    routes[method].push([pathRegexp(path), action])
+  }
+})
+
+var pathRegexp = function (path, strict) {
+  var keys = []
+
+  path = path
+    .concat(strict ? '' : '/?')
+    .replace(/\/\(/g, '(?:/')
+    .replace(/(\/)?(\.)?:(\w+)(?:(\(.*?\)))?(\?)?(\*)?/g, function (_, slash, format, key, capture, optional, star) {
+      slash = slash || ''
+      keys.push(key)
+
+      return ''
+        + (optional ? '' : slash)
+        + '(?:'
+        + (optional ? slash : '')
+        + (format || '') + (capture || (format && '([^/.]+?)' || '([^/]+?)')) + ')'
+        + (optional || '')
+        + (star ? '(/*)?' : '')
+    })
+    .replace(/([\/.])/g, '\\$1')
+    .replace(/\*/g, '(.*)')
+
+  return {
+    keys: keys,
+    regexp: new RegExp('^' + path + '$')
+  }
+}
+
+var match = function (pathname, routes, req, res) {
+  for (var i = 0; i < routes.length; i++) {
+    var route = routes[i]
+    // 正则匹配
+    var reg = route[0].regexp
+    var keys = route[0].keys
+    var matched = reg.exec(pathname)
+    if (matched) {
+      // 抽取具体值
+      var params = {}
+      for (var i = 0; i < keys.length; i++) {
+        var value = matched[i + 1]
+        if (value) {
+          params[keys[i]] = value
+        }
+      }
+      req.params = params;
+      var action = route[1]
+      action(req, res)
+      return true
+    }
+  }
+  return false
+}
+
+http.createServer(function (req, res) {
+  var pathname = url.parse(req.url).pathname
+  // 将请求方法变为小写
+  var method = req.method.toLowerCase()
+  if (routes.hasOwnProperty(method)) {
+    // 根据请求方法分发
+    if (match(pathname, routes[method], req, res)) {
+      return;
+    } else {
+      // 如果路径没有匹配成功，尝试让all()来处理
+      if (match(pathname, routes.all, req, res)) {
+        return ;
+      }
+    }
+  } else {
+    // 直接让all()来处理
+    if (match(pathname, routes.all, req, res)) {
+      return ;
+    }
+  }
+
+  // 404
+  handle404(req, res)
+}).listen(1337, '127.0.0.1')
+
+var handle404 = function (req, res) {
+  res.writeHead(404)
+  res.end()
+}
+
+
+var cache = {}
+app.get('/profile', function (req, res) {
+  if (!cache['index']) {
+    cache['index'] = fs.readFileSync(path.join('./views/index.html'), 'utf8')
+  }
+
+  res.writeHead(200, {'Content-Type': 'text/html'})
+  res.write(render(compile(cache['index'])))
+})
 ```
