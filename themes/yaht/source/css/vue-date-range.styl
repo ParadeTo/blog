@@ -1,80 +1,76 @@
-body, code {
-  font-family: "Arial","Microsoft YaHei","黑体","宋体",sans-serif;;
-  background-color: #f5f5f5;
+html,body {
+  background: linear-gradient(to bottom right, #00ebcb, #dafffa) !important;
+  background-color: transparent !important;
 }
-div {
-  box-sizing: border-box;
-}
-section {
-  max-width: 800px;
-  margin: 1rem auto;
+
+.container {
+  max-width: 1024px !important;
   background-color: #fff;
-  border-radius: 10px;
-  padding: 1rem;
-  /*border: 1px solid #dbdbdb;*/
-  box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1);
+  padding: 0 0.5rem;
+  background-color: #fff;
+  margin-top: 1rem;
+  /*box-shadow: ;*/
 }
-h2 {
-  font-size: 2rem;
-  text-align: center;
+
+.date-container, .selected-container {
+  margin: 1rem auto;
+  padding: 0 !important;
+  min-width: 300px;
+  max-width: 400px !important;
 }
-code {
-  overflow-x auto
-  text-indent:0;
-  border-color:#000;
-  border-style:dashed;
-  border-width:1px;
-  display:block;
-  font-size:12px;
-  font-family:Courier, Calibri,"宋体";
-  margin:10px 0 0 0;
-  padding:10px 0 10px 5px;
-  -moz-border-radius:5px;
-  background:#f5f5f5;
-  color:#000;
+
+.wrapper {
+  min-height: 100vh;
+  padding: 0 0.5rem;
 }
-button {
-  background-color: #23d160;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 5px;
-  outline: none;
+
+.column {
+  padding-top: 0;
+  padding-bottom: 0.5rem;
 }
-button:hover {
-  cursor: pointer;
+
+@media screen and (min-width: 768px) {
+  .control:not(:last-child) {
+    margin-bottom: 0.2rem;
+  }
+
+  .is-full {
+    flex: 1;
+  }
+
+  .is-horizontal {
+    display: flex;
+    align-items: center;
+  }
+
+  .label {
+    margin-right: 1rem;
+  }
+}
+
+.date-picker {
+  position: relative;
 }
 .calendar-wrapper {
-  width: 50%;
-  float: left;
-  padding-right: 1rem;
+  border: 1px solid #bbbbbb;
+  position: absolute;
+  min-width: 300px;
+  max-width: 400px;
+  z-index: 999;
 }
-.code-wrapper {
-  width: 50%;
-  float: left;
-}
-@media all and (max-width: 800px) {
+@media all and (max-width: 375px) {
   .calendar-wrapper {
-    width: 100%;
+    width: 120%;
+    max-width: 120%;
+    left: 50%;
+    transform: translateX(-50%);
   }
-  .code-wrapper {
-    width: 100%;
-  }
 }
-section:after {
-  content: ".";
-  display: block;
-  height: 0;
-  clear: both;
-  visibility: hidden;
-}
-.calendar {
-  margin: 1rem 0;
-  border: 1px solid #dbdbdb;
-}
-#custom-style .ayou-day-cell .selected {
-  background-color: orange;
-}
-#custom-style .ayou-day-cell .in-range {
-  background-color: orange;
+.mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 998;
 }
