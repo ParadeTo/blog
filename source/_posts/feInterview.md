@@ -8,7 +8,53 @@ categories:
 description: 各种面试题汇总
 ---
 
+
+
+# html
+## meta viewport原理
+
+# css
+## float和display：inline-block的区别
+
+## 兼容ie6的水平垂直居中
+
+## css优先级
+
+# vue
+
 # js
+## react的setState
+
+## 对react有什么了解（直接说了react中虚拟dom内部表示，mount过程源码和同步过程源码）
+
+## amd和cmd区别，怎么了解到这些区别的，是否是去看了规范
+
+## 事件委托
+
+## 兼容ie的事件封装
+
+## web端cookie的设置和获取方法
+
+## 编写一个contextmunu的插件
+
+## 编写一个元素拖拽的插件
+
+## 事件模型解释
+
+## get和post的区别
+
+## 跨域
+
+## prototype和__proto__的关系是什么
+
+## 闭包
+
+## ajax如何实现、readyState五中状态的含义
+
+## jsonp如何实现
+
+## 作用域链
+
 ## 分别用ES5和ES6实现函数默认参数
 
 ```javascript
@@ -134,7 +180,23 @@ function require(...) {
 ### 全局安装VS本地安装
 * http://www.cnblogs.com/chyingp/p/npm-install-difference-between-local-global.html
 
-# 实战
-1. 手机调试方法
+# http
+## accept是什么，怎么用
 
-fiddle代理
+## http协议状态码，302和303的区别
+
+## 前端缓存如何实现、etag如何实现、etag和cache-control的max-age的优先级哪个比较高以及为什么、cache-control和expire优先级哪个比较高以及为什么
+
+# 其他
+## 域名收敛是什么
+
+## 前端优化策略列举
+
+## 首屏、白屏时间如何计算
+
+## h5和原生app的优缺点
+
+## 编写h5需要注意什么
+
+## xss和crsf的原理以及预防
+
