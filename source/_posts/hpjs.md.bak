@@ -1,0 +1,187 @@
+---
+title: 高性能JavaScript
+date: 2017-06-29 22:03:45
+tags:
+- javascript
+categories:
+- 读书笔记
+description: 高性能JavaScript摘录
+---
+
+# 加载和执行
+## defer async
+```javascript
+...
+  script(defer src='/static/js/test_defer/defer.js')
+  script(async src='/static/js/test_defer/async.js')
+  script(src='/static/js/test_defer/normal.js')
+  script.
+    window.onload = function () {
+      console.log("load")
+    }
+...
+
+normal
+defer
+async
+load    
+```
+
+## loadScript
+该方法加载的js文件不会阻塞页面
+
+```javascript
+function loadScript(url, callback) {
+  var script = document.createElement("script")
+  script.type = "text/javascript"
+
+  if (script.readyState) { // IE
+    script.onreadystatechange = function () {
+      if (script.readyState === "loaded" ||
+          script.readyState === "complete") {
+        script.onreadystatechange = null // 避免执行两次
+        callback()
+      }
+    }
+  } else {
+    script.onload = function () {
+      callback()
+    }
+  }
+
+  script.src = url
+  document.getElementsByTagName("head")[0].appendChild(script)
+}
+```
+
+# 数据存取
+## 作用域链、活动对象、全局对象
+还没搞懂！！！！
+
+## 闭包
+在计算机科学中，闭包（英语：Closure），又称词法闭包（Lexical Closure）或函数闭包（function closures），是引用了自由变量的函数。这个被引用的自由变量将和这个函数一同存在，即使已经离开了创造它的环境也不例外。所以，有另一种说法认为**闭包是由函数和与其相关的引用环境组合而成的实体**
+
+## 小结
+* 缓存全局变量（如果多次用到）
+* 属性方法过深最好进行缓存
+
+# DOM编程
+## HTML集合
+* 类数组(有length属性，可以通过下标访问): getElementsByName, getElementsByClassName, getElementsByTagName
+* 假定实时态，文档更新时也会更新
+* children和childNodes
+
+```javascript
+    <div id="myDiv">
+        <p>text1</p>
+        <p>text2</p>
+    </div>
+    
+    var div = document.getElementById('myDiv')
+    var childNodes = div.childNodes
+    var children = div.children
+    console.log('childNodes:')
+    for (var i = 0; i < childNodes.length; i++) {
+        console.log(childNodes[i], childNodes[i].nodeName, childNodes[i].nodeType)
+    }
+    console.log('children:')
+    for (var i = 0; i < children.length; i++) {
+      console.log(children[i])
+    }
+```
+
+```
+childNodes:
+#text "#text" 3
+<p>​text1​</p>​ "P" 1
+#text "#text" 3
+<p>​text2​</p>​ "P" 1
+#text "#text" 3
+children:
+<p>​text1​</p>​
+<p>​text2​</p>​
+```
+
+* 选择器API，querySelector, querySelectorAll, 速度要快些
+
+```javascript
+    <div id="myDiv">
+        <p>text1</p>
+        <p>text2</p>
+        <p>text3</p>
+    </div>
+
+//    var p = document.getElementsByTagName('p') // 实时，会删不干净
+    var p = document.querySelectorAll('p') // 非实时，会删干净
+
+    for (var i = 0; i < p.length; i++) {
+      p[i].parentNode.removeChild(p[i])
+    }
+```
+
+* 发生重排
+
+```javascript
+添加或删除可见的DOM元素
+元素位置改变
+元素尺寸改变
+内容改变
+页面渲染器初始化
+浏览器窗口尺寸改变
+```
+
+大多数浏览器通过队列批量执行来优化重排，可以通过获取布局信息强制刷新：
+
+```javascript
+offset(Top/Left/Width/Height)
+scroll(Top/Left/Width/Height)
+client(Top/Left/Width/Height)
+getComputedStyle()
+```
+
+* 批量修改DOM
+
+隐藏元素，修改，重新显示
+
+使用文档片段`document.createDocumentFragment()`
+
+* 事件委托
+
+# 算法和流程控制
+* 尽量不要用`for in`
+* 倒序遍历比正序遍历减少了一次`i < items.length)`的操作
+* 利用达夫设备减少迭代次数
+
+```javascript
+var items = [1,2,3,4,5,6,7,8,9]
+
+var process = function (item) {
+  console.log(item)
+}
+
+var i = 0
+var n = items.length % 8
+while (n--) {
+  process(items[i++])
+}
+
+n = Math.floor(items.length / 8)
+
+while (n--) {
+  process(items[i++])
+  process(items[i++])
+  process(items[i++])
+  process(items[i++])
+  process(items[i++])
+  process(items[i++])
+  process(items[i++])
+  process(items[i++])
+}
+```
+
+* 优化``if``,最可能的放到最前面
+
+* 迭代改写递归
+归并排序的例子！！！
+
+* memoization
