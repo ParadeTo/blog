@@ -15,8 +15,125 @@ description: 各种面试题汇总
 
 # css
 ## float和display：inline-block的区别
+* 文档流：float元素会脱离文档流，并使得周围元素环绕这个元素。而inline-block元素仍在文档流内（不需要清楚浮动）。
+* 水平位置：inline-block元素可以通过设置父元素的text-align来影响其位置
+* 垂直对齐：inline-block元素沿着默认的基线对齐。浮动元素紧贴顶部。
+* 空白：inline-block包含html空白节点。如果你的html中一系列元素每个元素之间都换行了，当你对这些元素设置inline-block时，这些元素之间就会出现空白。而浮动元素会忽略空白节点。可设置font-size：0属性来消除
+* 需要文字环绕容器，那浮动是不二选择。如果你需要居中对齐元素，inline-block是个好选择
+
+脱离文档流3d视图：
+
+https://www.zhihu.com/question/24529373/answer/29135021
+
+## display
+* block： 
+
+## 清除浮动
+[张大师](http://www.zhangxinxu.com/wordpress/2010/01/%E5%AF%B9overflow%E4%B8%8Ezoom%E6%B8%85%E9%99%A4%E6%B5%AE%E5%8A%A8%E7%9A%84%E4%B8%80%E4%BA%9B%E8%AE%A4%E8%AF%86/)
+
+[那些年我们清除过的浮动](http://www.iyunlu.com/view/css-xhtml/55.html)
+
+[前端精选文摘：BFC 神奇背后的原理](http://www.cnblogs.com/lhb25/p/inside-block-formatting-ontext.html)(感觉讲得比较好的)
+
+两类：
+其一，通过在浮动元素的末尾添加一个空元素，设置 clear：both属性，after伪元素其实也是通过 content 在元素的后面生成了内容为一个点的块级元素；
+
+其二，通过设置父元素 overflow 或者display：table 属性来闭合浮动，我们来探讨一下这里面的原理。
+
+**BFC(块级格式化上下文)**
+
+何时触发：
+
+* float除none以外的值
+* overflow除visible以外的值
+* display(table-cell, table-caption, inline-block)
+* position(absolute, fixed)
+* fieldset元素
+
+特性：
+
+* 块级格式化上下文会阻止外边距叠加
+* 块级格式化上下文不会重叠浮动元素
+* 块级格式化上下文通常可以包含浮动
+
+通俗地来说：创建了 BFC的元素就是一个独立的盒子，里面的子元素不会在布局上影响外面的元素，反之亦然，同时BFC任然属于文档中的普通流。
+
+### 添加额外标签
+```
+<div class="wrap" id="float1">
+	<h2>1）添加额外标签</h2>
+	<div class="main left">.main{float:left;}</div>
+	<div class="side left">.side{float:right;}</div>
+	<div style="clear:both;"></div>
+</div>
+<div class="footer">.footer</div>
+```
+
+### 使用br标签和其自身的html属性
+```
+<div class="wrap" id="float2">
+	<h2>2）使用 br标签和其自身的 html属性</h2>
+	<div class="main left">.main{float:left;}</div>
+	<div class="side left">.side{float:right;}</div>
+	<br clear="all" />
+</div>
+<div class="footer">.footer</div>
+```
+
+### 父元素设置overflow:hidden，浮动，table
+
+### 使用伪元素:after
+
+
 
 ## 兼容ie6的水平垂直居中
+```javascript
+<div id="wrap">  
+    <div id="subwrap">  
+        <div id="content">  
+            ss<br/>  
+            ss<br/>  
+            ss<br/>  
+            ss<br/>  
+        </div>  
+    </div>  
+</div>
+
+ #wrap {  
+    background-color:#FFCCFF;  
+    width:760px;   
+    height:400px;  
+    display:table; /*垂直居中因素*/  
+    _position:relative; /*垂直居中因素*/  
+ }  
+ #subwrap {  
+    text-align:center; /*水平居中因素*/  
+    vertical-align:middle; /*垂直居中因素*/  
+    display:table-cell; /*垂直居中因素*/  
+    _position:absolute; /*垂直居中因素*/  
+    _top:50%; /*垂直居中因素*/  
+ }  
+ #content {  
+    width:200px;   
+    background:#d0d0d0;    
+    margin-left:auto;  /*水平居中因素*/  
+    margin-right:auto; /*水平居中因素*/  
+    _position:relative; /*垂直居中因素*/  
+    _top:-50%; /*垂直居中因素*/  
+ }  
+```
+
+# 水平居中
+1. 行内: text-align: center
+2. 块状: margin auto
+3. 不定宽块状: 父元素设置  position:relative  和  left:50%，子元素设置  position:relative  和  left:50%
+
+# 垂直居中的方法
+1. 父元素高度确定的单行文本： heigh line-height
+2. 多行文本： 父元素display: table, 本身display:table-cell + vertical-align: middle
+3. 多行文本：一个多余的元素，高度与父元素高度一致，然后vertical-align: middle
+4. 绝对定位法：position: absolute; top: 50%; margin-left: -100px......
+
 
 ## css优先级
 
