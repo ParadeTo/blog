@@ -85,7 +85,6 @@ https://www.zhihu.com/question/24529373/answer/29135021
 ### 使用伪元素:after
 
 
-
 ## 兼容ie6的水平垂直居中
 ```javascript
 <div id="wrap">  
@@ -171,6 +170,26 @@ https://www.zhihu.com/question/24529373/answer/29135021
 ## jsonp如何实现
 
 ## 作用域链
+
+## querySelectorAll 与 getElementsByTagName
+```javascript
+var ul = document.getElementById('list')
+var li = ul.querySelectorAll('li')
+
+console.log(li.length) // 3
+li[0].parentNode.removeChild(li[0])
+console.log(li.length) // 3
+```
+
+```javascript
+var ul = document.getElementById('list')
+var li = ul.getElementsByTagName('li')
+
+
+console.log(li.length) // 3
+li[0].parentNode.removeChild(li[0])
+console.log(li.length) // 2
+```
 
 ## 分别用ES5和ES6实现函数默认参数
 
