@@ -11,6 +11,20 @@ description: 各种面试题汇总
 
 
 # html
+## 什么是盒子模型
+在网页中，一个元素占有空间的大小由几个部分构成，其中包括元素的内容（content），元素的内边距（padding），元素的边框（border），元素的外边距（margin）四个部分。这四个部分占有的空间中，有的部分可以显示相应的内容，而有的部分只用来分隔相邻的区域或区域。4个部分一起构成了css中元素的盒模型。
+
+## src与href的区别
+
+
+## web标准和w3c的理解和认识
+* 标签闭合、小写
+* 建议使用外链css和js脚本，从而达到结构与行为、结构与表现的分离
+* 样式与标签的分离，更合理的语义化标签，使内容能被更多的用户所访问、内容能被更广泛的设备所访问、更少的代码和组件， 从而降低维护成本、改版更方便
+* 不需要变动页面内容，便可提供打印版本而不需要复制内容，提高网站易用性
+
+## 浏览器内核
+
 ## meta viewport原理
 
 # css
@@ -26,10 +40,10 @@ description: 各种面试题汇总
 https://www.zhihu.com/question/24529373/answer/29135021
 
 ## display
-* block： 
+
 
 ## 清除浮动
-[张大师](http://www.zhangxinxu.com/wordpress/2010/01/%E5%AF%B9overflow%E4%B8%8Ezoom%E6%B8%85%E9%99%A4%E6%B5%AE%E5%8A%A8%E7%9A%84%E4%B8%80%E4%BA%9B%E8%AE%A4%E8%AF%86/)
+[张鑫旭](http://www.zhangxinxu.com/wordpress/2010/01/%E5%AF%B9overflow%E4%B8%8Ezoom%E6%B8%85%E9%99%A4%E6%B5%AE%E5%8A%A8%E7%9A%84%E4%B8%80%E4%BA%9B%E8%AE%A4%E8%AF%86/)
 
 [那些年我们清除过的浮动](http://www.iyunlu.com/view/css-xhtml/55.html)
 
@@ -50,11 +64,12 @@ https://www.zhihu.com/question/24529373/answer/29135021
 * position(absolute, fixed)
 * fieldset元素
 
-特性：
+布局规则：
 
 * 块级格式化上下文会阻止外边距叠加
 * 块级格式化上下文不会重叠浮动元素
 * 块级格式化上下文通常可以包含浮动
+* BFC就是页面上的一个隔离的独立容器，容器里面的子元素不会影响到外面的元素。反之也如此。（所以BFC中有浮动时，为了不影响外部元素的布局，BFC计算高度时会包括浮动元素）
 
 通俗地来说：创建了 BFC的元素就是一个独立的盒子，里面的子元素不会在布局上影响外面的元素，反之亦然，同时BFC任然属于文档中的普通流。
 
@@ -135,10 +150,132 @@ https://www.zhihu.com/question/24529373/answer/29135021
 
 
 ## css优先级
+http://davidshariff.com/quiz/#
+
+!important > 行内 > ID > 类=属性=伪类 > 标签=伪元素选择器
+
+## css导入方式和链接方式
+区别1：link是XHTML标签，除了加载CSS外，还可以定义RSS等其他事务；@import属于CSS范畴，只能加载CSS。
+
+区别2：link引用CSS时，在页面载入时同时加载；@import需要页面网页完全载入以后加载。
+
+区别3：link是XHTML标签，无兼容问题；@import是在CSS2.1提出的，低版本的浏览器不支持。
+
+区别4：ink支持使用Javascript控制DOM去改变样式；而@import不支持。
+
 
 # vue
 
 # js
+## 伪数组
+* childNodes
+* arguments
+
+## 数组去重
+* 用辅助的对象来判断
+* 用set
+
+## 怎样添加、移除、移动、复制、创建和查找节点？
+1. 创建新节点
+createDocumentFragment() //创建一个DOM片段
+
+createElement() //创建一个具体的元素
+
+createTextNode() //创建一个文本节点
+
+2. 添加，移除，替换，插入
+
+appendChild() //添加
+
+removeChild() //移除
+
+replaceChild() //替换
+
+insertBefore() //插入
+
+3. 查找
+
+getElementsByTagName() //通过标签名称
+
+getElementsByName() //通过元素的Name属性的值
+
+getElementById() //通过元素Id，唯一性
+
+
+## 数组中查找元素位置
+```javascript
+function indexOf(arr, item) {
+
+  if (Array.prototype.indexOf){
+
+      return arr.indexOf(item);
+
+  } else {
+
+      for (var i = 0; i < arr.length; i++){
+
+          if (arr[i] === item){
+
+              return i;
+
+          }
+
+      }
+
+  }     
+
+  return -1;
+}
+```
+
+## 数组求和
+* reduce
+* forEach
+* for 循环
+
+```javascript
+function sum(arr) {
+    return eval(arr.join("+"));
+};
+```
+
+## 在数组 arr 末尾添加元素 item。不要直接修改数组 arr，结果返回新的数组
+* 循环push
+* slice浅拷贝+push
+* concat
+
+## 删除第一个元素，不要修改原数组
+* slice+shift
+* 循环
+
+## match exec区别
+```javascript
+var someText= "web2.0 .net2.0" ;
+var pattern=/(\w+)(\d)\.(\d)/g;
+var outCome_exec=pattern.exec(someText);
+var outCome_matc=someText.match(pattern);
+
+outCome_exec
+["web2.0", "web", "2", "0", index: 0, input: "web2.0 .net2.0"]
+outCome_matc
+["web2.0", "net2.0"]
+
+```
+
+```javascript
+var someText= "web2.0 .net2.0" ;
+var pattern=/(\w+)(\d)\.(\d)/;
+var outCome_exec=pattern.exec(someText);
+var outCome_matc=someText.match(pattern);
+
+outCome_matc
+["web2.0", "web", "2", "0", index: 0, input: "web2.0 .net2.0"]
+outCome_exec
+["web2.0", "web", "2", "0", index: 0, input: "web2.0 .net2.0"]
+```
+
+
+
 ## react的setState
 
 ## 对react有什么了解（直接说了react中虚拟dom内部表示，mount过程源码和同步过程源码）
@@ -335,4 +472,33 @@ function require(...) {
 ## 编写h5需要注意什么
 
 ## xss和crsf的原理以及预防
+
+## 一次完整的HTTP事务
+基本流程：a. 域名解析
+
+b. 发起TCP的3次握手
+
+c. 建立TCP连接后发起http请求
+
+d. 服务器端响应http请求，浏览器得到html代码
+
+e. 浏览器解析html代码，并请求html代码中的资源
+
+f. 浏览器对页面进行渲染呈现给用户
+
+## 什么叫优雅降级和渐进增强
+
+渐进增强 progressive enhancement： 针对低版本浏览器进行构建页面，保证最基本的功能，然后再针对高级浏览器进行效果、交互等改进和追加功能达到更好的用户体验。
+
+优雅降级 graceful degradation： 一开始就构建完整的功能，然后再针对低版本浏览器进行兼容。
+
+区别： a. 优雅降级是从复杂的现状开始，并试图减少用户体验的供给 b. 渐进增强则是从一个非常基础的，能够起作用的版本开始，并不断扩充，以适应未来环境的需要 c. 降级（功能衰减）意味着往回看；而渐进增强则意味着朝前看，同时保证其根基处于安全地带
+
+## 线程与进程
+* 进程和线程都是一个时间段的描述，是CPU工作时间段的描述，颗粒大小不同
+
+## 减少页面加载时间的方法
+* 减少http请求，合并文件
+* 图片标明宽高
+
 
