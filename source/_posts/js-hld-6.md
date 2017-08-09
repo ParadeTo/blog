@@ -275,7 +275,7 @@ Person.prototype = {
 }
 ```
 
-但是上述方法会导致constructor的Enumerable设置为true，原生的constructor是不可枚举的，可以用defineProperty：
+但是上述方法会导致constructor的Enumerable设置为true，原生的constructor是不可枚举的，可以用defineProperty(node6.9.4中好像有些问题)：
 ```
 Object.defineProperty(Person.prototype,'constructor',{
   enumerable: false,

@@ -175,6 +175,27 @@ http://davidshariff.com/quiz/#
 * 用辅助的对象来判断
 * 用set
 
+## 斐波拉契
+```javascript
+var fib = (function() {
+  var cache = {
+    '0': 0,
+    '1': 1
+  }
+  
+  var shell = function (n) {
+    if(!cache.hasOwnProperty(n)) {
+      cache[n] = shell(n-1) + shell(n-2)
+    }
+    return cache[n]
+  }
+  return shell
+})()
+
+console.log(fib(3))
+console.log(fib(2))
+```
+
 ## 怎样添加、移除、移动、复制、创建和查找节点？
 1. 创建新节点
 createDocumentFragment() //创建一个DOM片段
