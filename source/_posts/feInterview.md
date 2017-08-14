@@ -12,6 +12,20 @@ description: 各种面试题汇总
 
 # html
 ## meta viewport原理
+[移动前端开发之viewport的深入理解](http://top.css88.com/archives/772)
+
+[移动端高清、多屏适配方案](http://div.io/topic/1092)
+搬过来！！！！！！！
+
+
+
+* 一个虚拟的窗口
+* width, height, initial-scale, minimum-scale, maximum-scale, user-scalable
+* 比如，下面相当去创建了一个2000px宽的画布，然后塞到屏幕中显示，屏幕为了显示全，必然要进行缩小
+```html
+<meta name="viewport" content="width=2000px">
+```
+
 
 # css
 ## float和display：inline-block的区别
