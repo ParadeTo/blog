@@ -71,3 +71,43 @@ background: linear-gradient(#fb3 33.3%, blue 0, blue 66.7%, red 0); /* 10px:10px
 background-size: 100% 30px;
 ```
 
+```javascript
+background: #58a;
+background-image: repeating-linear-gradient(30deg,
+            hsla(0, 0%, 100%, .1),
+            hsla(0, 0%, 100%, .1) 15px,
+            transparent 0, transparent 30px);
+```
+
+## 复杂的背景图案
+
+```javascript
+/* 波点 */
+background-image:
+    radial-gradient(tan 30%, transparent 0),
+    radial-gradient(tan 30%, transparent 0);
+background-size: 30px 30px;
+background-position: 0 0, 15px 15px;
+```
+
+```javascript
+/* 棋盘 */
+background-image:
+    linear-gradient(45deg, tan 25%, transparent 0),
+    linear-gradient(45deg, transparent 75%, red 0),
+    linear-gradient(45deg, blue 25%, transparent 0),
+    linear-gradient(45deg, transparent 75%, green 0);
+background-size: 30px 30px;
+background-position: 0 0, 15px 15px, 15px 15px, 0px 0px;
+
+or
+
+background-image:
+    linear-gradient(45deg, tan 25%, transparent 0, transparent 75%, tan 0),
+    linear-gradient(45deg, blue 25%, transparent 0, transparent 75%, blue 0);
+background-size: 30px 30px;
+background-position: 0 0, 15px 15px;
+```
+
+## 伪随机背景
+“蝉原则”
