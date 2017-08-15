@@ -485,6 +485,14 @@ function require(...) {
 ## 域名收敛是什么
 
 ## 前端优化策略列举
+### JS性能
+* 作用域，函数中缓存全局变量
+* 避免不必要的属性查找，（对于过深的属性，进行缓存）
+* 优化dom交互
+	* createDocumentFragment
+	* innerHTML
+	* 事件代理
+	* HTMLCollection
 
 ## 首屏、白屏时间如何计算
 
