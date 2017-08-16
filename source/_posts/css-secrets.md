@@ -288,3 +288,66 @@ div::before {
 ```
 
 ## 饼图
+一个饼图动画
+
+```javascript
+@keyframes spin {
+    to {transform: rotate(.5turn)}
+}
+@keyframes bg {
+    50% {background: #655}
+}
+.pie {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: yellowgreen;
+    background-image: linear-gradient(to right, transparent 50%, #655 0);
+}
+.pie::before {
+    content: '';
+    display: block;
+    margin-left: 50%;
+    height: 100%;
+    border-radius: 0 100% 100% 0 / 50%;
+    background-color: yellowgreen;
+    transform-origin: left;
+    animation: spin 3s linear infinite,
+                bg 6s step-end infinite;
+}
+```
+
+各种比率的饼图
+
+```javascript
+<!--五分之一的饼图 因为20/50/2-->
+<div class="pie" style="animation-delay: -20s"></div>
+
+@keyframes spin {
+            to {transform: rotate(.5turn)}
+        }
+        @keyframes bg {
+            50% {background: #655}
+        }
+        .pie {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: yellowgreen;
+            background-image: linear-gradient(to right, transparent 50%, #655 0);
+        }
+        .pie::before {
+            content: '';
+            display: block;
+            margin-left: 50%;
+            height: 100%;
+            border-radius: 0 100% 100% 0 / 50%;
+            background-color: yellowgreen;
+            transform-origin: left;
+            animation: spin 50s linear infinite,
+                        bg 100s step-end infinite;
+            animation-play-state: paused;
+            animation-delay: inherit;
+        }
+
+```
