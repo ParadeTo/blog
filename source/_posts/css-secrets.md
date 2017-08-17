@@ -13,6 +13,7 @@ description: CSS SECRETS 很有名的css经典著作
 
 # 背景与边框
 ## 半透明边框
+![](css-secrets/c2-1.png)
 ```css
 div {
     padding: 50px;
@@ -22,6 +23,7 @@ div {
 }
 ```
 ## 多重边框
+![](css-secrets/c2-2.png)
 ### box-shadow
 ```javascript
 box-shadow: 0 0 0 10px #655, 0 0 0 20px red;
@@ -36,6 +38,7 @@ box-shadow: 0 0 0 10px #655, 0 0 0 20px red;
 * 没有圆角
 
 ## 灵活的背景定位
+![](css-secrets/c2-3.png)
 ### background-position方案
 ```javascript
 background: url(***) no-repeat bottom right red; /* 回退方案 */
@@ -55,6 +58,7 @@ background-position: calc(100% - 20px) calc(100% - 10px);
 ```
 
 ## 边框内圆角
+![](css-secrets/c2-4.png)
 ```javascript
 background: tan;
 border-radius: .8em;
@@ -64,6 +68,7 @@ outline: .6em solid #655;
 ```
 
 ## 条纹背景
+![](css-secrets/c2-5.png)
 比较复杂，看书比较好理解
 
 另外，这个：
@@ -83,7 +88,8 @@ background-image: repeating-linear-gradient(30deg,
 ```
 
 ## 复杂的背景图案
-
+![](css-secrets/c2-6-1.png)
+![](css-secrets/c2-6-2.png)
 ```javascript
 /* 波点 */
 background-image:
@@ -92,7 +98,7 @@ background-image:
 background-size: 30px 30px;
 background-position: 0 0, 15px 15px;
 ```
-
+![](css-secrets/c2-6-3.png)
 ```javascript
 /* 棋盘 */
 background-image:
@@ -116,6 +122,7 @@ background-position: 0 0, 15px 15px;
 “蝉原则”，质数的思想
 
 ## 连续的图像边框
+![](css-secrets/c2-8-1.png)
 ```javascript
 /* 老式信封样式边框 */
 background: linear-gradient(white, white) padding-box,
@@ -181,6 +188,7 @@ button::before {
 ```
 
 ## 菱形图片
+![](css-secrets/c3-11.png)
 ```javascript
 .picture {
   margin: 200px auto;
@@ -210,7 +218,7 @@ img {
 
 ## 切角效果
 四个角的切角效果
-
+![](css-secrets/c3-12-1.png)
 ```javascript
 background: #58a;
 background:
@@ -223,7 +231,7 @@ background-repeat: no-repeat;
 ```
 
 内凹圆角
-
+![](css-secrets/c3-12-2.png)
 ```javascript
 background:
 	radial-gradient(circle at top left, transparent 15px, #58a 0) top left,
@@ -257,6 +265,7 @@ clip-path: polygon(
 ```
 
 ## 梯形标签页
+![](css-secrets/c3-13.png)
 ```javascript
 div::before {
   content: '';
@@ -324,30 +333,190 @@ div::before {
 <div class="pie" style="animation-delay: -20s"></div>
 
 @keyframes spin {
-            to {transform: rotate(.5turn)}
-        }
-        @keyframes bg {
-            50% {background: #655}
-        }
-        .pie {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: yellowgreen;
-            background-image: linear-gradient(to right, transparent 50%, #655 0);
-        }
-        .pie::before {
-            content: '';
-            display: block;
-            margin-left: 50%;
-            height: 100%;
-            border-radius: 0 100% 100% 0 / 50%;
-            background-color: yellowgreen;
-            transform-origin: left;
-            animation: spin 50s linear infinite,
-                        bg 100s step-end infinite;
-            animation-play-state: paused;
-            animation-delay: inherit;
-        }
+    to {transform: rotate(.5turn)}
+}
+@keyframes bg {
+    50% {background: #655}
+}
+.pie {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: yellowgreen;
+    background-image: linear-gradient(to right, transparent 50%, #655 0);
+}
+.pie::before {
+    content: '';
+    display: block;
+    margin-left: 50%;
+    height: 100%;
+    border-radius: 0 100% 100% 0 / 50%;
+    background-color: yellowgreen;
+    transform-origin: left;
+    animation: spin 50s linear infinite,
+                bg 100s step-end infinite;
+    animation-play-state: paused;
+    animation-delay: inherit;
+}
 
 ```
+
+SVG解决方案
+
+```javascript
+<svg viewBox="0 0 32 32">
+  <!--半径为16的圆周长约为100-->
+  <circle r="16" cx="16" cy="16" />
+</svg>
+
+@keyframes fillup {
+  to {
+    stroke-dasharray: 158 158;
+  }
+}
+svg {
+  width: 200px;
+  height: 200px;
+  transform: rotate(-90deg);
+  background: yellowgreen;
+  border-radius: 50%;
+}
+circle {
+  fill: yellowgreen;
+  stroke: #655;
+  stroke-width: 32;
+  stroke-dasharray: 0 158;
+  animation: fillup 5s linear infinite;
+}
+```
+
+# 视觉效果
+## 单侧投影
+```javascript
+box-shadow: 0px 5px 4px -4px rgba(0,0,0,.5);
+```
+
+## 邻边投影
+```javascript
+box-shadow: 3px 3px 4px -2px rgba(0,0,0,.5);
+```
+
+## 两侧投影
+```javascript
+box-shadow: 6px 0 4px -2px rgba(0,0,0,.5),
+          -6px 0 4px -2px rgba(0,0,0,.5);
+```
+
+## 不规则投影
+
+```javascript
+filter: drop-shadow(3px 3px 4px #000);
+```
+* 可以用到伪元素，边框等
+* 文字也会被打上投影，且不会受`text-shadow`的影响
+
+## 染色效果
+
+```javascript
+img {
+  transition: .5s filter;
+  filter: sepia(1) saturate(4) ;
+}
+img:hover,
+img:focus {
+  filter: none;
+}
+```
+
+基于混合模式的方案
+luminosity: 保留上层元素的HSL亮度信息，从下层吸取色相和饱和度信息
+
+```javascript
+<a>
+  <img src="./cat.png" alt="">
+</a>
+
+a {
+  display: inline-block;
+  background: hsl(335, 100%, 50%);
+}
+img {
+  mix-blend-mode: luminosity;
+}
+```
+
+或
+
+```javascript
+.tinted-image {
+  width: 640px;
+  height: 440px;
+  background-size: cover;
+  background-color: hsl(335, 100%, 50%);
+  background-blend-mode: luminosity;
+  transition: .5s background-color;
+}
+.tinted-image:hover {
+  background-color: transparent;
+}
+```
+
+## 毛玻璃效果
+```javascript
+filter: blur(20px);
+```
+
+## 折角效果
+![](css-secrets/c4-19.png)
+
+```javascript
+div {
+  background: #58a;
+  width: 300px;
+  height: 200px;
+  background:
+    linear-gradient(to left bottom,
+      transparent 50%, rgba(0, 0, 0, .4) 0)
+      no-repeat 100% 0 / 2em 2em,
+    linear-gradient(-135deg,
+            transparent 1.41em, #58a 0); /* 这里的2em是沿着渐变轴的所以要改成1.41 */
+}
+```
+
+30度的折角呢？
+
+![](css-secrets/c4-19-1.png)
+![](css-secrets/c4-19-2.png)
+
+```javascript
+div {
+  position: relative;
+  background: #58a;
+  width: 300px;
+  height: 200px;
+  border-radius: .5em;
+  background:
+    linear-gradient(-150deg,
+            transparent 1.5em, #58a 0);
+}
+div::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: linear-gradient(to left bottom,
+    transparent 50%, rgba(0, 0, 0, .2) 0, rgba(0, 0, 0, .4)) 100% 0 no-repeat;
+  width: 1.73em;
+  height: 3em;
+  transform: translateY(-1.3em) rotate(-30deg);
+  transform-origin: bottom right;
+  border-bottom-left-radius: inherit;
+  box-shadow: -.2em .2em .3em -.1em rgba(0, 0, 0, .2);
+}
+```
+![](css-secrets/c4-19-3.png)
+
+# 字体排印
+## 连字符断行
+
+
