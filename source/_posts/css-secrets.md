@@ -517,6 +517,90 @@ div::before {
 ![](css-secrets/c4-19-3.png)
 
 # 字体排印
-## 连字符断行
+## 插入换行
+![](css-secrets/c5-21.png)
 
+```javascript
+dt, dd {
+    display: inline;
+}
+dd {
+    margin: 0;
+    font-weight: bold;
+}
+dd + dt::before {
+    content: '\A';
+    white-space: pre;
+}
+dd + dd::before {
+    content: ', ';
+    font-weight: normal;
+}
 
+<dl>
+    <dt>Name:</dt>
+    <dd>Lea Verou</dd>
+    <dt>Email:</dt>
+    <dd>Verou@qq.com</dd><dd>youxingzhi@qq.com</dd>
+    <dt>Location:</dt>
+    <dd>Earth</dd>
+</dl>
+```
+
+## 文本行的斑马条纹
+![](css-secrets/c5-22.png)
+```javascript
+pre {
+    padding: .5em;
+    line-height: 1.5;
+    background: beige;
+    background-image: linear-gradient(rgba(0,0,0,.2) 50%, transparent 0);
+    background-size: auto 3em;
+    background-origin: content-box;
+}
+
+<pre>
+    while (true) {
+        var d = new Date();
+        if (d.getDate() == 1 && d.getMonth() == 3) {
+            alert('ddd')
+        }
+    }
+</pre>
+```
+
+## 调整tab的宽度
+```
+tab-size: 2
+```
+
+## 华丽的&符号
+![](css-secrets/c5-25.png)
+```javascript
+@font-face {
+    font-family: Ampersand;
+    src: local('Baskerville-Italic'),
+        local('GoudyOldStyleT-Italic'),
+        local('Palatino-Italic'),
+        local('BookAntiqua-Italic');
+    unicode-range: U+26; /* '&'.charCodeAt(0).toString(16) => 26 */
+}
+h1 {
+    font-family: Ampersand, Helvetica, sans-serif;
+}
+```
+
+## 自定义下划线
+![](css-secrets/c5-26.png)
+```javascript
+a[href] {
+    text-decoration: none;
+    font-size: 60px;
+    /*background: linear-gradient(gray, gray) no-repeat;*/
+    background: linear-gradient(90deg, gray 66%, transparent 0) repeat-x; /* 虚线 */
+    background-repeat: repeat-x;
+    background-size: .2em 1px;
+    background-position: 0 1.15em;
+    text-shadow: .05em 0 white, -.05em 0 white; /* 不让下划线穿过字母 */
+}
+```
