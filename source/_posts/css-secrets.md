@@ -604,3 +604,166 @@ a[href] {
     text-shadow: .05em 0 white, -.05em 0 white; /* 不让下划线穿过字母 */
 }
 ```
+
+## 现实中的文字效果
+### 凸版印刷效果
+1. 深色背景，浅色字体
+
+给文字顶部加深色投影:`text-shadow: 0 -1px 1px black`
+
+2. 浅色背景，深色字体
+
+给文字底部加浅色投影:`text-shadow: 0 1px 1px white`
+
+### 空心字效果
+```javascript
+div {
+    font-size: 100px;
+    width: 300px;
+    height: 200px;
+    background-color: deeppink;
+    color: white;
+    text-shadow: 1px 1px black, -1px -1px black,
+        1px -1px black, -1px 1px black;
+}
+```
+
+```javascript
+<div>
+    <svg width="2em" height="1.2em">
+        <use xlink:href="#css"/>
+        <text id="css" y="1em">CSS</text>
+    </svg>
+</div>
+
+div {
+    color: white;
+    font-size: 100px;
+}
+div text {
+    fill: currentColor;
+}
+div use {
+    stroke: black;
+    stroke-width: 6;
+    stroke-linejoin: round;
+}
+```
+
+### 文字外发光效果
+```javascript
+div {
+    font-size: 100px;
+    background: #203;
+    color: #ffc;
+    transition: 1s;
+}
+div:hover {
+    text-shadow: 0 0 .1em, 0 0 .3em;
+}
+```
+
+### 文字凸起效果
+![](css-secrets/c5-27-1.png)
+```javascript
+button {
+    outline: none;
+    border-radius: 20px;
+    border: none;
+    font-size: 100px;
+    background: hsl(204, 50%, 60%);
+    color: white;
+    box-shadow: 0 1px hsl(204, 50%, 60%),
+    0 2px hsl(204, 50%, 55%),
+    0 3px hsl(204, 50%, 50%),
+    0 4px hsl(204, 50%, 45%),
+    0 5px hsl(204, 50%, 40%),
+    0 5px 10px black;
+    text-shadow: 0 1px hsl(0, 0%, 85%),
+        0 2px hsl(0, 0%, 80%),
+        0 3px hsl(0, 0%, 75%),
+        0 4px hsl(0, 0%, 70%),
+        0 5px hsl(0, 0%, 65%),
+        0 5px 10px black;
+}
+button:active, button:focus {
+    box-shadow: none;
+    text-shadow: none;
+}
+
+@mixin test-3d($color: white, $depth: 5) {
+  $shadows: ();
+  $shadow-color: $color;
+
+  @for $i from 1 through $depth {
+    $shadow-color: darken($shadow-color, 10%);
+    $shadows: append($shadows, 0 ($i * 1px) $shadow-color, comma);
+  }
+
+  color: $color;
+  text-shadow: append($shadows,
+                0 ($depth * 1px) 10px black, comma);
+}
+```
+
+### 环形文字
+![](css-secrets/c5-28.png)
+```javascript
+.circular {
+    width: 400px;
+    height: 400px;
+    margin: 400px auto;
+}
+.circular path {
+    fill: none;
+}
+.circular svg {
+    overflow: visible;
+}
+
+<div class="circular">
+    <svg viewBox="0 0 100 100">
+        <!--
+            M 0，50 移动到点(0,50)
+            a 50,50 0 1,1 0,1 以当前所在的这个点为起点,以当前点右侧 0 单位、下方 1 单位的那个点为终点,画一段圆弧。
+            这段圆弧的水平 半径和垂直半径都必须是 50。如果存在两种可能的圆弧度数,选择 度数较大的那一种;
+            同时,如果存在两种可能的圆弧方向,选择画 在这两个点右侧的那一种,而不是左侧的
+            z 闭合
+        -->
+        <path d="M 0,50 a 50,50 0 1,1 0,1 z" id="circle" />
+        <text>
+            <textPath xlink:href="#circle">
+                circular reasoning works because
+            </textPath>
+        </text>
+    </svg>
+</div>
+```
+
+# 用户体验
+## 选用合适的鼠标光标
+* 禁用 `cursor: not-allowed`
+* 隐藏 `cursor: none`
+
+## 扩大可点击区域
+* 利用边框
+
+```javascript
+border: 10px solid trasparent;
+background-clip: padding-box; /* 防止背景扩张到边框 */
+```
+
+* 利用伪元素
+```javascript
+button::before {
+	content: '';
+	position: absolute;
+	top: -10px; right: -10px;
+	bottom: -10px; left: -10px;
+}
+```
+
+## 自定义复选框
+* 自定义复选框/单选框
+* 开关式按钮
+利用`label`，具体略
