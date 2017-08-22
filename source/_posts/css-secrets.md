@@ -767,3 +767,38 @@ button::before {
 * 自定义复选框/单选框
 * 开关式按钮
 利用`label`，具体略
+
+## 滚动提示
+```javascript
+<ul>
+    <li>1</li>
+    <li>2</li>
+    <li>3</li>
+    <li>4</li>
+    <li>5</li>
+    <li>6</li>
+    <li>7</li>
+    <li>8</li>
+    <li>9</li>
+    <li>10</li>
+    <li>11</li>
+</ul>
+
+ul {
+    overflow: auto;
+    width: 10em;
+    height: 8em;
+    padding: .3em .5em;
+    border: 1px solid silver;
+    background:
+            linear-gradient(white, hsla(0,0%,100%,0)),
+            radial-gradient(at 50% 0, rgba(0,0,0,.2),
+                    transparent 70%);
+    background-repeat: no-repeat;
+    background-size: 100% 50px, 100% 15px;
+    background-attachment: local, scroll;
+}
+```
+
+## 交互式的图片对比控件
+
