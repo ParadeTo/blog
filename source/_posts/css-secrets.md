@@ -1,7 +1,7 @@
 ---
 title: CSS SECRETS
 date: 2017-08-14 22:17:47
-tags: 
+tags:
 - css
 categories:
 - 读书笔记
@@ -49,7 +49,7 @@ background-position: right 10px bottom 10px;
 ```javascript
 padding: 10px;
 background: url(***) no-repeat red;
-background-origin: content-box; /* border-box padding-box(默认) */ 
+background-origin: content-box; /* border-box padding-box(默认) */
 ```
 
 ### calc()
@@ -801,4 +801,96 @@ ul {
 ```
 
 ## 交互式的图片对比控件
+1. resize方案
 
+![](css-secrets/c6-35-1.png)
+
+```javascript
+img {
+  user-select: none;
+}
+.image-slider {
+  position: relative;
+  display: inline-block;
+}
+.image-slider > div {
+  position: absolute;
+  top: 0; bottom: 0; left: 0; right: 0;
+  width: 50%;
+  max-width: 100%;
+  overflow: hidden;
+  resize: horizontal;
+}
+.image-slider > div::before {
+  content: '';
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 12px; height: 12px;
+  background: white;
+  cursor: ew-resize;
+  padding: 5px;
+  background: linear-gradient(-45deg, white 50%, transparent 0);
+  background-clip: content-box;
+}
+.image-slider img {
+  display: block;
+}
+
+<div class="image-slider">
+  <div>
+    <img src="cat.png" alt="">
+  </div>
+  <img src="cat-after.png" alt="">
+</div>
+```
+
+2. js方案
+
+```javascript
+img {
+  user-select: none;
+}
+.image-slider {
+  position: relative;
+  display: inline-block;
+}
+.image-slider > div {
+  position: absolute;
+  top: 0; bottom: 0; left: 0; right: 0;
+  width: 50%;
+  overflow: hidden;
+}
+.image-slider img {
+  display: block;
+}
+.image-slider input {
+  position: absolute;
+  left: 0; bottom: 10px;
+  width: 100%;
+  margin: 0;
+  filter: contrast(.5);
+  mix-blend-mode: luminosity;
+}
+
+<div class="image-slider">
+  <img src="cat.png" alt="">
+  <img src="cat-after.png" alt="">
+</div>
+
+var $$ = function (sel) {
+  return document.querySelectorAll(sel)
+}
+$$('.image-slider').forEach(function (slider) {
+  var div = document.createElement('div')
+  var img = slider.querySelector('img')
+  slider.insertBefore(div, img)
+  div.appendChild(img)
+
+  var range = document.createElement('input')
+  range.type = 'range'
+  range.oninput = function () {
+    div.style.width = this.value + '%'
+  }
+  slider.appendChild(range)
+})
+```
