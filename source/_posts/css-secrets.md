@@ -894,3 +894,115 @@ $$('.image-slider').forEach(function (slider) {
   slider.appendChild(range)
 })
 ```
+
+# 结构与布局
+## 自适应内部元素
+```javascript
+figure {
+  max-width: 300px;
+  border: 1px solid gray;
+  width: min-content; /* 解析为这个容器内部最大的不可断行元素的宽度 */
+  margin: auto;
+}
+figure > img {
+  max-width: inherit;
+}
+
+<p>Some text [...]</p>
+<figure>
+  <img src="cat.png" alt="">
+  <figcaption>
+    The great sir adam catlace was named after countess ada lovelace, the first programmer
+  </figcaption>
+</figure>
+<p>More text [...]</p>
+```
+
+## 精确控制表格列宽
+关于table几个重要的属性
+
+```javascript
+table-layout: fixed; /* 可以精确控制单元格的宽度 */
+border-collapse: collapse; /* 单元格的边框进行合并 */
+border-spacing: 0; /* 单元格之间的间距 */
+```
+
+## 根据兄弟元素的数量来设置样式
+![](css-secrets/c7-38-1.png)
+
+```javascript
+li {
+  list-style: none;
+  width: 100px;
+  height: 100px;
+  background-color: gray;
+  display: inline-block;
+}
+
+/*
+  li:first-child:nth-last-child(4) 即是第一个又是倒数第四个
+  li:first-child:nth-last-child(4) ~ li 它的所有后代li元素节点
+*/
+li:first-child:nth-last-child(4),
+li:first-child:nth-last-child(4) ~ li {
+  background-color: orange;
+}
+
+/* scss写法如下 */
+@mixin n-items($n) {
+  &:first-child:nth-last-child(#{$n}),
+  &:first-child:nth-last-child(#{$n}) ~ & {
+    @content;
+  }
+}
+
+li {
+  @include n-items(4) {
+    background-color: yellow;
+  }
+}
+
+
+<ul>
+  <li></li>
+  <li></li>
+  <li></li>
+</ul>
+
+<ul>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+</ul>
+
+<ul>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+</ul>
+```
+
+同理，可以利用这个技巧来实现列表项的总数大于等于4时选中所有列表:
+![](css-secrets/c7-38-2.png)
+
+```javascript
+li:first-child:nth-last-child(n+4),
+li:first-child:nth-last-child(n+4) ~ li {
+  background-color: orange;
+}
+```
+
+或者，当列表项为2~6时，选中整个列表：
+
+```javascript
+li:first-child:nth-last-child(n+2):nth-last-child(-n+6),
+li:first-child:nth-last-child(n+2):nth-last-child(-n+6) ~ li {
+  background-color: orange;
+}
+```
