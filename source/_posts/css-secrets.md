@@ -1006,3 +1006,150 @@ li:first-child:nth-last-child(n+2):nth-last-child(-n+6) ~ li {
   background-color: orange;
 }
 ```
+
+## 满幅的背景，定宽的内容
+一般做法：
+
+```javascript
+<footer>
+  <div class="wrapper">
+    <!-- 页脚内容 -->
+  </div>
+</footer>
+
+footer {
+  background: #333;
+}
+
+.wrapper {
+  max-width: 900px;
+  margin: 1em auto;
+}
+```
+
+更加简单的方法：
+
+```javascript
+<footer>
+  <!-- 页脚内容 -->
+</footer>
+
+footer {
+  padding: 1em; /* 回退 */
+  padding: 1em calc(50% - 450px);
+  background: red;
+}
+```
+
+## 垂直居中
+1. 基于绝对定位的方法
+
+2. 基于视口单位的解决方案
+
+只适用于视口居中，如果`main`的父元素出现了滚动条，则不适合
+
+```javascript
+main {
+  width: 18em;
+  background-color: red;
+  margin: 50vh auto 0;
+  transform: translateY(-50%);
+}
+```
+
+3. flexbox
+
+```javascript
+body {
+  display: flex;
+  min-height: 100vh;
+  margin: 0;
+}
+
+main {
+  margin: auto;
+}
+```
+
+## 紧贴底部的页脚
+参考：
+
+https://css-tricks.com/couple-takes-sticky-footer/
+
+1. 内容底部负边距
+
+```javascript
+.wrapper {
+  min-height: 100%;
+
+  /* Equal to height of footer */
+  /* But also accounting for potential margin-bottom of last child */
+  margin-bottom: -50px;
+}
+.footer, .push {
+  height: 50px;
+}
+
+<div class="wrapper">
+  <!-- 内容过多时用这个来占位 -->
+  <div class="push"></div>
+</div>
+<footer class="footer">footer</footer>
+```
+
+2. 页脚上部负边距
+
+```javascript
+.content {
+  min-height: 100%;
+}
+.content-inside {
+  padding-bottom: 50px;
+}
+.footer {
+  height: 50px;
+  margin-top: -50px;
+}
+
+<div class="content">
+  <div class="content-inside">
+    content
+  </div>
+</div>
+<footer class="footer"></footer>
+```
+
+3. calc
+
+局限：对容器中的布局不适合
+
+```javascript
+<div class="content">
+  content
+</div>
+<footer class="footer">footer</footer>
+
+.content {
+  min-height: calc(100vh - 50px);
+}
+.footer {
+  height: 50px;
+}
+```
+
+4. flexbox
+
+```javascript
+body {
+  display: flex;
+  flex-direction: column;
+}
+.content {
+  flex: 1 0 auto;
+}
+
+<div class="content">
+  content
+</div>
+<footer class="footer"></footer>
+```
