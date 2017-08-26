@@ -212,7 +212,10 @@
 <script src="<%- config.root %>js/game2048/support2048.js"></script>
 <script src="<%- config.root %>js/game2048/showanimation2048.js"></script>
 <script src="<%- config.root %>js/game2048/main2048.js"></script>
-<% }%>
+<% } %>
+<% if (page.layout=='game77'){ %>
+<script src="<%- config.root %>js/game77/index.js"></script>
+<% } %>
 <% if (page.layout && page.layout.indexOf('vue') > -1){ %>
 <script src="//cdn.bootcss.com/vue/2.2.1/vue.min.js"></script>
 <% }%>
