@@ -1153,3 +1153,49 @@ body {
 </div>
 <footer class="footer"></footer>
 ```
+
+# 过渡与动画
+## 缓动效果
+提示：
+1. 对取`auto`值的`height`属性进行动画效果不生效时可以使用`max-height`
+
+2. `transition: .5s height, .8s .5s width`
+
+参考：
+
+[贝塞尔曲线扫盲](http://www.html-js.com/article/1628)
+
+[CSS3动画那么强，requestAnimationFrame还有毛线用？](http://www.zhangxinxu.com/wordpress/2013/09/css3-animation-requestanimationframe-tween-%E5%8A%A8%E7%94%BB%E7%AE%97%E6%B3%95/)
+
+缓动提示框:
+
+```javascript
+label {
+  position: relative;
+}
+input:not(:focus) + .callout {
+  transform: scale(0);
+  transition-timing-function: ease; /* 防止 scale(1) => scale(0) 根据贝塞尔曲线会计算出 scale(-0.1)的值 */
+  transition-duration: .25s; /*消失的动画快一点*/
+}
+.callout {
+  position: absolute;
+  background-color: orange;
+  width: 200px;
+  padding: 10px;
+  border-radius: 4px;
+  top: 120%;
+  left: 0;
+  transition: .5s cubic-bezier(.25, .1, .3, 1.5);
+  transform-origin: 1.4em -.4em;
+}
+
+<label for="">
+  <input type="text">
+  <span class="callout">
+    Only letters, numbers, underscores(_) and hyphens(-) allowed!
+  </span>
+</label>
+```
+
+## 逐帧动画
