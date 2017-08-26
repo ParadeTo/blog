@@ -1,7 +1,7 @@
 ---
 title: CSS SECRETS
 date: 2017-08-14 22:17:47
-tags: 
+tags:
 - css
 categories:
 - 读书笔记
@@ -49,7 +49,7 @@ background-position: right 10px bottom 10px;
 ```javascript
 padding: 10px;
 background: url(***) no-repeat red;
-background-origin: content-box; /* border-box padding-box(默认) */ 
+background-origin: content-box; /* border-box padding-box(默认) */
 ```
 
 ### calc()
@@ -801,4 +801,401 @@ ul {
 ```
 
 ## 交互式的图片对比控件
+1. resize方案
 
+![](css-secrets/c6-35-1.png)
+
+```javascript
+img {
+  user-select: none;
+}
+.image-slider {
+  position: relative;
+  display: inline-block;
+}
+.image-slider > div {
+  position: absolute;
+  top: 0; bottom: 0; left: 0; right: 0;
+  width: 50%;
+  max-width: 100%;
+  overflow: hidden;
+  resize: horizontal;
+}
+.image-slider > div::before {
+  content: '';
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 12px; height: 12px;
+  background: white;
+  cursor: ew-resize;
+  padding: 5px;
+  background: linear-gradient(-45deg, white 50%, transparent 0);
+  background-clip: content-box;
+}
+.image-slider img {
+  display: block;
+}
+
+<div class="image-slider">
+  <div>
+    <img src="cat.png" alt="">
+  </div>
+  <img src="cat-after.png" alt="">
+</div>
+```
+
+2. js方案
+
+```javascript
+img {
+  user-select: none;
+}
+.image-slider {
+  position: relative;
+  display: inline-block;
+}
+.image-slider > div {
+  position: absolute;
+  top: 0; bottom: 0; left: 0; right: 0;
+  width: 50%;
+  overflow: hidden;
+}
+.image-slider img {
+  display: block;
+}
+.image-slider input {
+  position: absolute;
+  left: 0; bottom: 10px;
+  width: 100%;
+  margin: 0;
+  filter: contrast(.5);
+  mix-blend-mode: luminosity;
+}
+
+<div class="image-slider">
+  <img src="cat.png" alt="">
+  <img src="cat-after.png" alt="">
+</div>
+
+var $$ = function (sel) {
+  return document.querySelectorAll(sel)
+}
+$$('.image-slider').forEach(function (slider) {
+  var div = document.createElement('div')
+  var img = slider.querySelector('img')
+  slider.insertBefore(div, img)
+  div.appendChild(img)
+
+  var range = document.createElement('input')
+  range.type = 'range'
+  range.oninput = function () {
+    div.style.width = this.value + '%'
+  }
+  slider.appendChild(range)
+})
+```
+
+# 结构与布局
+## 自适应内部元素
+```javascript
+figure {
+  max-width: 300px;
+  border: 1px solid gray;
+  width: min-content; /* 解析为这个容器内部最大的不可断行元素的宽度 */
+  margin: auto;
+}
+figure > img {
+  max-width: inherit;
+}
+
+<p>Some text [...]</p>
+<figure>
+  <img src="cat.png" alt="">
+  <figcaption>
+    The great sir adam catlace was named after countess ada lovelace, the first programmer
+  </figcaption>
+</figure>
+<p>More text [...]</p>
+```
+
+## 精确控制表格列宽
+关于table几个重要的属性
+
+```javascript
+table-layout: fixed; /* 可以精确控制单元格的宽度 */
+border-collapse: collapse; /* 单元格的边框进行合并 */
+border-spacing: 0; /* 单元格之间的间距 */
+```
+
+## 根据兄弟元素的数量来设置样式
+![](css-secrets/c7-38-1.png)
+
+```javascript
+li {
+  list-style: none;
+  width: 100px;
+  height: 100px;
+  background-color: gray;
+  display: inline-block;
+}
+
+/*
+  li:first-child:nth-last-child(4) 即是第一个又是倒数第四个
+  li:first-child:nth-last-child(4) ~ li 它的所有后代li元素节点
+*/
+li:first-child:nth-last-child(4),
+li:first-child:nth-last-child(4) ~ li {
+  background-color: orange;
+}
+
+/* scss写法如下 */
+@mixin n-items($n) {
+  &:first-child:nth-last-child(#{$n}),
+  &:first-child:nth-last-child(#{$n}) ~ & {
+    @content;
+  }
+}
+
+li {
+  @include n-items(4) {
+    background-color: yellow;
+  }
+}
+
+
+<ul>
+  <li></li>
+  <li></li>
+  <li></li>
+</ul>
+
+<ul>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+</ul>
+
+<ul>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+</ul>
+```
+
+同理，可以利用这个技巧来实现列表项的总数大于等于4时选中所有列表:
+![](css-secrets/c7-38-2.png)
+
+```javascript
+li:first-child:nth-last-child(n+4),
+li:first-child:nth-last-child(n+4) ~ li {
+  background-color: orange;
+}
+```
+
+或者，当列表项为2~6时，选中整个列表：
+
+```javascript
+li:first-child:nth-last-child(n+2):nth-last-child(-n+6),
+li:first-child:nth-last-child(n+2):nth-last-child(-n+6) ~ li {
+  background-color: orange;
+}
+```
+
+## 满幅的背景，定宽的内容
+一般做法：
+
+```javascript
+<footer>
+  <div class="wrapper">
+    <!-- 页脚内容 -->
+  </div>
+</footer>
+
+footer {
+  background: #333;
+}
+
+.wrapper {
+  max-width: 900px;
+  margin: 1em auto;
+}
+```
+
+更加简单的方法：
+
+```javascript
+<footer>
+  <!-- 页脚内容 -->
+</footer>
+
+footer {
+  padding: 1em; /* 回退 */
+  padding: 1em calc(50% - 450px);
+  background: red;
+}
+```
+
+## 垂直居中
+1. 基于绝对定位的方法
+
+2. 基于视口单位的解决方案
+
+只适用于视口居中，如果`main`的父元素出现了滚动条，则不适合
+
+```javascript
+main {
+  width: 18em;
+  background-color: red;
+  margin: 50vh auto 0;
+  transform: translateY(-50%);
+}
+```
+
+3. flexbox
+
+```javascript
+body {
+  display: flex;
+  min-height: 100vh;
+  margin: 0;
+}
+
+main {
+  margin: auto;
+}
+```
+
+## 紧贴底部的页脚
+参考：
+
+https://css-tricks.com/couple-takes-sticky-footer/
+
+1. 内容底部负边距
+
+```javascript
+.wrapper {
+  min-height: 100%;
+
+  /* Equal to height of footer */
+  /* But also accounting for potential margin-bottom of last child */
+  margin-bottom: -50px;
+}
+.footer, .push {
+  height: 50px;
+}
+
+<div class="wrapper">
+  <!-- 内容过多时用这个来占位 -->
+  <div class="push"></div>
+</div>
+<footer class="footer">footer</footer>
+```
+
+2. 页脚上部负边距
+
+```javascript
+.content {
+  min-height: 100%;
+}
+.content-inside {
+  padding-bottom: 50px;
+}
+.footer {
+  height: 50px;
+  margin-top: -50px;
+}
+
+<div class="content">
+  <div class="content-inside">
+    content
+  </div>
+</div>
+<footer class="footer"></footer>
+```
+
+3. calc
+
+局限：对容器中的布局不适合
+
+```javascript
+<div class="content">
+  content
+</div>
+<footer class="footer">footer</footer>
+
+.content {
+  min-height: calc(100vh - 50px);
+}
+.footer {
+  height: 50px;
+}
+```
+
+4. flexbox
+
+```javascript
+body {
+  display: flex;
+  flex-direction: column;
+}
+.content {
+  flex: 1 0 auto;
+}
+
+<div class="content">
+  content
+</div>
+<footer class="footer"></footer>
+```
+
+# 过渡与动画
+## 缓动效果
+提示：
+1. 对取`auto`值的`height`属性进行动画效果不生效时可以使用`max-height`
+
+2. `transition: .5s height, .8s .5s width`
+
+参考：
+
+[贝塞尔曲线扫盲](http://www.html-js.com/article/1628)
+
+[CSS3动画那么强，requestAnimationFrame还有毛线用？](http://www.zhangxinxu.com/wordpress/2013/09/css3-animation-requestanimationframe-tween-%E5%8A%A8%E7%94%BB%E7%AE%97%E6%B3%95/)
+
+缓动提示框:
+
+```javascript
+label {
+  position: relative;
+}
+input:not(:focus) + .callout {
+  transform: scale(0);
+  transition-timing-function: ease; /* 防止 scale(1) => scale(0) 根据贝塞尔曲线会计算出 scale(-0.1)的值 */
+  transition-duration: .25s; /*消失的动画快一点*/
+}
+.callout {
+  position: absolute;
+  background-color: orange;
+  width: 200px;
+  padding: 10px;
+  border-radius: 4px;
+  top: 120%;
+  left: 0;
+  transition: .5s cubic-bezier(.25, .1, .3, 1.5);
+  transform-origin: 1.4em -.4em;
+}
+
+<label for="">
+  <input type="text">
+  <span class="callout">
+    Only letters, numbers, underscores(_) and hyphens(-) allowed!
+  </span>
+</label>
+```
+
+## 逐帧动画
