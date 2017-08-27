@@ -9,7 +9,7 @@
   var SEC = 60
   var SIZE = 30
   var SCORE_SUM = 0
-  var SCORE = 2
+  var SCORE = 3
   var V = {max: 0.5, min: 0.1}
   var ARROW_V = 20
   var WY_IMG = '/img/game77/wy.png'
@@ -27,6 +27,9 @@
   var RED_BTN = document.getElementById('redBtn')
   var RED_IMG = document.getElementById('redImg')
   var KISS = document.getElementById('kiss')
+  var RES = document.getElementById('res')
+  var RES_CONTAINER = document.getElementById('res-container')
+  var XQ = document.getElementById('xq')
   var ANIMALS = []
   var ARROWS = []
   var DIRECTION = {left: false, right: false}
@@ -61,9 +64,20 @@
       RED_IMG.className = 'rotate'
       setTimeout(function () {
         RED_IMG.style.display = 'none'
-        KISS.style.display = 'block'
-      }, 2000)
+        showRes()
+      }, 1500)
     })
+  }
+
+  function showRes() {
+    RES.style.display = 'block'
+    // XQ.className = 'move'
+    setTimeout(function () {
+      XQ.className = 'move'
+      setTimeout(function() {
+        RES_CONTAINER.style.transform = 'translateX(-50%)'
+      }, 2000)
+    }, 1000)
   }
 
   function preLoadImgs (imgs) {
@@ -263,7 +277,8 @@
   function clear() {
     clearInterval(INTERVAL_ID)
     clearInterval(COUNTDOWN_ID)
-    BOW.style.left = 0
+    setPro(0)
+    SCORE_SUM = 0
     for (var i = ANIMALS.length-1; i >= 0; i--) {
       ANIMALS[i].dom.parentNode.removeChild(ANIMALS[i].dom)
     }

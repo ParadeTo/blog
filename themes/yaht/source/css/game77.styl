@@ -139,7 +139,7 @@ body {
   padding: 10px;
 }
 
-.red-wrapper, .kiss-wrapper {
+.red-wrapper {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -148,8 +148,8 @@ body {
 }
 
 .rotate {
-  animation: rotate 2s linear infinite,
-          op 2s linear infinite;
+  animation: rotate 2s linear 1,
+          op 2s linear 1;
 }
 
 .red-button {
@@ -162,17 +162,6 @@ body {
   transform: translateX(-50%);
   background-color: transparent;
   border: none;
-}
-
-.mask {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background-image: url(/img/game77/flower.png);
-  background-size: contain;
-  background-color: rgb(255, 255, 255);
 }
 
 .seconds {
@@ -195,5 +184,64 @@ body {
 }
 .gif.punish {
   right: -100px;
+}
+
+
+#map {
+  background url(/img/game77/map.jpeg)
+  background-size cover;
+}
+
+#map img {
+  width 60px
+  position absolute
+  top 30%
+  left 45%
+  transition transform 2s
+}
+
+#map img.move {
+  transform translate(-10px, 500%)
+}
+
+#res {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-size: contain;
+  background-color: rgb(255, 255, 255);
+}
+
+#res-container {
+  width 200%
+  height 100%
+  font-size 0
+  transition transform 1s
+}
+
+#res-container .mask {
+  position relative
+  display inline-block
+  height 100%;
+  width 50%;
+  vertical-align: top;
+}
+
+.kiss-outer {
+  width 100%
+  height 100%
+  background-image: url(/img/game77/flower.png);
+  background-repeat no-repeat
+  background-size cover
+}
+
+.kiss-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
 }
 
