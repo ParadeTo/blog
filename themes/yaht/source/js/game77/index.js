@@ -76,8 +76,30 @@
       XQ.className = 'move'
       setTimeout(function() {
         RES_CONTAINER.style.transform = 'translateX(-50%)'
+        genKiss()
       }, 2000)
     }, 1000)
+  }
+
+  function genKiss() {
+    var frag = document.createDocumentFragment()
+    for (var i = 0; i < 80; i++) {
+      var div = document.createElement('div')
+      var angle = Math.random() * 45
+      var x = Math.random() * 100 + '%'
+      var y = Math.random() * 100 + '%'
+      div.className = 'single-kiss-container'
+      div.style.transform = 'rotate('+angle+'deg)'
+      div.style.left = x
+      div.style.top = y
+      var img = document.createElement('img')
+      img.className = 'single-kiss'
+      img.src = "/img/game77/single_kiss.png"
+      img.style.animationDelay = Math.random() * 5 + 's'
+      div.appendChild(img)
+      frag.appendChild(div)
+    }
+    KISS.appendChild(frag)
   }
 
   function preLoadImgs (imgs) {

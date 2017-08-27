@@ -219,6 +219,7 @@ body {
   height 100%
   font-size 0
   transition transform 1s
+  position relative
 }
 
 #res-container .mask {
@@ -243,5 +244,28 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
+}
+
+@keyframes myscale {
+  50% {
+    transform scale(1.2)
+  }
+  to {
+    transform scale(1)
+  }
+}
+
+.single-kiss-container {
+  position absolute
+  display inline-block
+  width 40px;
+  height 40px;
+}
+
+.single-kiss {
+  width 100%;
+  animation-name myscale
+  animation-duration 1.2s
+  animation-iteration-count infinite
 }
 
