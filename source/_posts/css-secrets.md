@@ -1199,3 +1199,232 @@ input:not(:focus) + .callout {
 ```
 
 ## 逐帧动画
+
+## 闪烁效果
+
+`animation-direction`
+
+* 反转循环周期，同时反转调整函数
+* reverse 反转所有
+* alternate 反转偶数个
+* alternate-reverse 反转奇数个
+
+![](css-secrets/c8-44-1.png)
+
+```javascript
+@keyframes blink-smooth {
+    to {
+        color: transparent;
+    }
+}
+.highlight {
+    animation: 1s blink-smooth 3 alternate;
+}
+```
+
+如果不想要平滑的过渡，可以使用`steps`
+
+```javascript
+@keyframes blink-smooth {
+  50% {
+      color: transparent;
+  }
+}
+.highlight {
+  animation: 1s blink-smooth 3 steps(1);
+}
+```
+
+## 打字动画
+
+```javascript
+@keyframes typing {
+  from { width:0 }
+}
+@keyframes caret {
+  50% { border-color: currentColor; }
+}
+h1 {
+  /*必须为等宽字体*/
+  font-family: Monaco;
+  /*width: 15ch; !* 0 这个字符的宽度，如果是等宽字体比较有用*!*/
+  border-right: .05em solid transparent;
+  animation: typing 4s steps(1) infinite,
+              caret 1s steps(1) infinite;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+<h1>CSS is awesome!</h1>
+<script>
+  document.querySelectorAll('h1').forEach(function (h1) {
+    var len = h1.textContent.length, s = h1.style
+    s.width = len + 'ch'
+    s.animationTimingFunction = 'steps('+len+'),steps(1)'
+  })
+</script>
+```
+
+## 状态平滑的动画
+
+```javascript
+@keyframes panoramic {
+    to {
+        background-position: 100% 0;
+    }
+}
+div {
+    width: 150px;
+    height: 150px;
+    background: url("long_pic.png");
+    background-size: auto 100%;
+    animation: panoramic 1s linear infinite alternate;
+    animation-play-state: paused; /* 动画暂停 */
+}
+div:hover, div:focus {
+    animation-play-state: running; /* 动画运行 */
+}
+```
+
+## 沿环形路径平移的动画
+下列代码可以实现基本需求，但是头像也倒过来了，有什么办法可以解决呢
+
+```javascript
+@keyframes spin {
+    to {
+        transform: rotate(1turn);
+    }
+}
+
+.path {
+    box-sizing: border-box;
+    /*padding: 10px;*/
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background-color: orange;
+    text-align: center;
+}
+
+.avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    animation: spin 3s infinite linear;
+    transform-origin: 50% 150px;
+}
+
+<div class="path">
+    <img src="1.png" class="avatar" alt="">
+</div>
+```
+
+### 利用辅助元素
+1. 利用相反动画抵消
+
+```javascript
+@keyframes spin {
+    to {
+        transform: rotate(1turn);
+    }
+}
+@keyframes spin-reverse {
+    from {
+        transform: rotate(1turn);
+    }
+}
+
+.avatar {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    animation: spin 3s infinite linear;
+    transform-origin: 50% 150px;
+}
+.avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    animation: inherit;
+    animation-name: spin-reverse; /* 抵消外层动画 */
+}
+
+<div class="path">
+    <div class="avatar">
+        <img src="1.png">
+    </div>
+</div>
+```
+
+2. 利用`animation-direction`
+```javascript
+.avatar img {
+    ...
+    animation: inherit;
+    animation-direction: reverse; /* 抵消外层动画 */
+}
+```
+
+### 不添加元素
+```javascript
+@keyframes spin {
+  from {
+      transform:
+              /*等于以50%, 150px为transform-origin旋转*/
+              translate(50%, 150px)
+              rotate(0turn)
+              translate(-50%, -150px)
+              /*等于以50%,50%为transform-origin旋转*/
+              translate(50%,50%)
+              rotate(1turn)
+              translate(-50%,-50%)
+  }
+  to {
+      transform:
+              translate(50%, 150px)
+              rotate(1turn)
+              translate(-50%, -150px)
+
+              translate(50%, 50%)
+              rotate(0turn)
+              translate(-50%, -50%);
+  }
+}
+
+.avatar {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    animation: spin 3s infinite linear;
+}
+```
+
+进一步简化：
+
+表示不理解！！！
+
+```javascript
+@keyframes spin {
+    from {
+        transform:
+                translateY(150px)
+                translateY(-50%)
+                rotate(0turn)
+                translateY(-150px)
+                translateY(50%)
+                rotate(1turn);
+
+    }
+    to {
+        transform:
+                translateY(150px)
+                translateY(-50%)
+                rotate(1turn)
+                translateY(-150px)
+                translateY(50%)
+                rotate(0turn);
+    }
+}
+```
