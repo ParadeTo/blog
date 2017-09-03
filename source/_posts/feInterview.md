@@ -151,12 +151,12 @@ https://www.zhihu.com/question/24529373/answer/29135021
  }  
 ```
 
-# 水平居中
+## 水平居中
 1. 行内: text-align: center
 2. 块状: margin auto
 3. 不定宽块状: 父元素设置  position:relative  和  left:50%，子元素设置  position:relative  和  left:50%
 
-# 垂直居中的方法
+## 垂直居中的方法
 1. 父元素高度确定的单行文本： heigh line-height
 2. 多行文本： 父元素display: table, 本身display:table-cell + vertical-align: middle
 3. 多行文本：一个多余的元素，高度与父元素高度一致，然后vertical-align: middle
@@ -181,6 +181,42 @@ http://davidshariff.com/quiz/#
 # vue
 
 # js
+## 排序
+### 快速排序
+
+```javascript
+function quicksort(arr, p, r) {
+  if (p < r) {
+    var q = partition(arr, p, r)
+    quicksort(arr, p, q - 1)
+    quicksort(arr, q + 1, r)
+  }
+}
+
+function swap (arr, i, j) {
+  var tmp = arr[i]
+  arr[i] = arr[j]
+  arr[j] = tmp
+}
+
+function partition(arr, p, r) {
+  x = arr[r]
+  i = p - 1
+  for (var j = p; j < r; j++) {
+    if (arr[j] <= x) {
+      i = i + 1
+      swap(arr, i, j)
+    }
+  }
+  swap(arr, i + 1, r)
+  return i + 1
+}
+
+var arr = [2,3,5,1,4]
+quicksort(arr, 0, arr.length - 1)
+console.log(arr)
+```
+
 ## 伪数组
 * childNodes
 * arguments
@@ -309,7 +345,78 @@ outCome_exec
 ["web2.0", "web", "2", "0", index: 0, input: "web2.0 .net2.0"]
 ```
 
+## 对象遍历
+对象构造：
+```
+Object.prototype.userProp = 'userProp'
+Object.prototype.getUserProp = function () {
+  return Object.prototype.userProp
+}
 
+var obj = {
+  name: 'percy',
+  [Symbol('s')]: 'symbolProp',
+  unEnumerable: '不可枚举',
+  getName: function () {
+    return this.name
+  }
+}
+
+Object.defineProperty(obj, 'unEnumerable', {
+  enumerable: false
+})
+```
+
+
+* for...in: 自身+原型链+可枚举属性
+```javascript
+for (let key in obj) {
+  console.log(key)
+}
+//
+name
+getName
+userProp
+getUserProp
+```
+
+* Object.keys(): 自生+可枚举
+```javascript
+[ 'name', 'getName' ]
+```
+
+* Object.getOwnPropertyNames(): 自生+可枚举+不可枚举
+```javascript
+[ 'name', 'unEnumerable', 'getName' ]
+```
+
+* Reflect.ownKeys(obj): 自生+可枚举+不可枚举+Symbol
+```javascript
+[ 'name', 'unEnumerable', 'getName', Symbol(s) ]
+```
+
+* Object.getOwnPropertySymbols(): Symbol
+
+## 随机数组
+```javascript
+function shuffleSort(arr) {
+  for (var i = 0, len = arr.length; i < len; i++) {
+    var j = Math.floor(Math.random() * (len - i))  + i
+    var tmp = arr[i]
+    arr[i] = arr[j]
+    arr[j] = tmp
+  }
+  return arr
+}
+```
+
+## 实现require.js的基本功能
+
+## 7种类型
+Number, String, Boolean, Null, Undefined, Object, Symbol
+
+## typeof能得到哪些类型
+string, number, object, undefined, boolean, function, symbol
 
 ## react的setState
 
