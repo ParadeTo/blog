@@ -266,3 +266,46 @@ int main(int argc, char** argv) {
 3
 2
 1
+
+# 补充：js实现堆排序
+```javascript
+// 调整堆
+function rebuildHeap(arr, root, size) {
+  var child = root * 2
+  if (child < size) {
+    var rightChild = child + 1
+
+    // 找出左右子节点最大的那个
+    if (rightChild < size && arr[child] < arr[rightChild]) {
+      child = rightChild
+    }
+
+    // 如果根节点小于子节点中的最大者，交换他们
+    if (arr[root] < arr[child]) {
+      var temp = arr[child]
+      arr[child] = arr[root]
+      arr[root] = temp
+      // 继续调整子节点
+      rebuildHeap(arr, child, size)
+    }
+  }
+}
+
+function heapSort(arr) {
+  var size = arr.length
+
+  // 从下到上调整建堆
+  for (var i = size-1; i>=0; i--) {
+    rebuildHeap(arr, i, size)
+  }
+
+  // 每次循环取出堆顶元素放到当前未排序的尾部
+  for (var last = size - 1; last >= 0; ) {
+    var temp = arr[0]
+    arr[0] = arr[last]
+    arr[last] = temp
+    rebuildHeap(arr, 0, last--)
+  }
+  return arr
+}
+```

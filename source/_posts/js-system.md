@@ -259,3 +259,96 @@ function forEach(obj, fn) {
   }
 }
 ```
+
+
+# 事件
+## 通用事件绑定
+
+```javascript
+function addHandler(ele,type,handler){
+  if(ele.addEventListener){
+    ele.addEventListener(type,handler,false);
+  } else if (ele.attachEvent) {
+    ele.attachEvent('on'+type,handler);
+  } else {
+    ele['on'+type] = handler;
+  }
+}
+
+function removeHandler(ele,type,handler){
+ if(ele.removeEventListener){
+   ele.removeEventListener(type,handler,false);
+ } else if (ele.attachEvent) {
+   ele.detachEvent('on'+type,handler);
+ } else {
+   ele['on'+type] = null;
+ }
+}
+
+
+function bindEvent (elem, type, selector, fn) {
+  if (fn == null) {
+    fn = selector
+    selector = null
+  }
+
+  elem.addEventListener(type, function (e) {
+    var target
+    if (selector) {
+      target = e.target
+      if (target.matches(selector)) {
+        fn.call(target, e)
+      }
+    } else {
+      fn(e)
+    }
+  })
+}
+```
+
+## 事件冒泡
+
+## 代理
+
+```javascript
+ele.matches('.list')
+```
+
+## 题目
+
+* 编写一个通用的事件监听函数
+
+* 冒泡流程
+
+  1. DOM是树形结构
+
+## ajax
+
+### jsonp
+
+下面是我实现的一个jsonp的简单例子
+
+前端代码：
+
+```javascript
+  <script>
+    function myFunc( data ) {
+      console.log(data)
+    }
+  </script>
+  <script src="http://localhost:3000/api/jsonp/?func=myFunc"></script>
+```
+
+后端代码：
+
+```javascript
+
+  // 拿到前端的函数名
+  var func = req.query.func
+  data = '我是数据'
+  // 返回 myFunc("我是数据") 给前端
+  res.status(200).send(func + '("' + data + '")')
+
+```
+
+前端得到后端返回的数据后会开始解析执行，然后就得到了后端返回的数据了
