@@ -381,6 +381,25 @@ function forEach(obj, fn) {
 }
 ```
 
+# JS-WEB-API
+## DOM操作
+### 获取
+* getElementById
+* getElementsByTagName
+* getElementsByClassName
+* querySelector
+* querySelectorAll
+
+## 题目
+* DOM是哪种基本的数据结构
+
+* 常用API
+
+* attribute和property有何区别
+
+	* attribute 修改的是标签上的内容
+	* property 修改的是对象上的属性
+
 
 # 事件
 ## 通用事件绑定
@@ -509,3 +528,4 @@ xhr.send(null)
 ```
 
 前端得到后端返回的数据后会开始解析执行，然后就得到了后端返回的数据了
+
