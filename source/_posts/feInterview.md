@@ -1,7 +1,7 @@
 ---
 title: 前端面试题汇总-持续更新
 date: 2017-04-08 12:00:20
-tags: 
+tags:
 - 面试
 categories:
 - 前端理论
@@ -11,6 +11,10 @@ description: 各种面试题汇总
 
 
 # html
+## block 和 inline 的区别
+
+## css 为什么要放上面js为什么要放下面
+
 ## 什么是盒子模型
 在网页中，一个元素占有空间的大小由几个部分构成，其中包括元素的内容（content），元素的内边距（padding），元素的边框（border），元素的外边距（margin）四个部分。这四个部分占有的空间中，有的部分可以显示相应的内容，而有的部分只用来分隔相邻的区域或区域。4个部分一起构成了css中元素的盒模型。
 
@@ -232,7 +236,7 @@ var fib = (function() {
     '0': 0,
     '1': 1
   }
-  
+
   var shell = function (n) {
     if(!cache.hasOwnProperty(n)) {
       cache[n] = shell(n-1) + shell(n-2)
@@ -490,12 +494,12 @@ log1(1, '') // 1 'world'
 log2(1, '') // 1 ''
 ```
 ## let var区别
-	
+
 * let有块级作用域
 * let不存在变量提升
 * 不允许重复声明
 * 暂时性死区
-	
+
 ```javascript
 var tmp = 123;
 
@@ -504,7 +508,7 @@ if (true) {
   let tmp;
 }
 ```
-		
+
 ## class实现私有方法
 
 	```javascript
@@ -515,7 +519,7 @@ if (true) {
 	  foo(baz) {
 	    this[bar](baz)
 	  }
-	
+
 	  // 私有方法
 	  [bar](baz) {
 	    console.log(baz)
@@ -525,8 +529,8 @@ if (true) {
 
 ## const 定义的对象，能够添加属性吗？
 
-	可以，如果要实现不能添加属性，可以用``Object.freeze()`` 
-    
+	可以，如果要实现不能添加属性，可以用``Object.freeze()``
+
 ## 利用Set对数组去重
 
 	```javascript
@@ -535,7 +539,7 @@ if (true) {
 	Array.from(new Set(array))
 	```
 ## Javascript的对象有什么缺点？为什么需要Map?
-	
+
 	``{}``只能用字符串作为键。
 
 ## Js类型判断
@@ -552,7 +556,7 @@ F.prototype.constructor === F
 true
 ```
 
-	
+
 * Object.prototype.toString
 
 ```javascript
@@ -650,5 +654,3 @@ f. 浏览器对页面进行渲染呈现给用户
 ## 减少页面加载时间的方法
 * 减少http请求，合并文件
 * 图片标明宽高
-
-

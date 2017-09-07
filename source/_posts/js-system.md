@@ -118,6 +118,127 @@ console.log(Object.prototype.toString.call(a) === '[object Array]')
 
 zepto设计和源码分析
 
+1. Zepto流程
+```javascript
+
+var Zepto = (function() {
+
+  $ = function(selector, context) {
+    return zepto.init(selector, context)
+  }
+
+  function Z(dom, selector) {
+    var i, len = dom ? dom.length : 0
+    for (i = 0; i < len; i++) this[i] = dom[i]
+    this.length = len
+    this.selector = selector || ''
+  }
+
+  zepto.Z = function(dom, selector) {
+    return new Z(dom, selector)
+  }
+
+  zepto.init = function(selector, context) {
+    ...
+    return zepto.Z(dom, selector)
+  }
+
+
+  $.fn = {
+    constructor: zepto.Z,
+    ...
+  }
+
+  zepto.Z.prototype = Z.prototype = $.fn
+
+  // Export internal API functions in the `$.zepto` namespace
+  zepto.uniq = uniq
+  zepto.deserializeValue = deserializeValue
+  $.zepto = zepto
+
+  return $
+})()
+
+window.Zepto = Zepto
+window.$ === undefined && (window.$ = Zepto)
+```
+
+2. eq和get的区别
+
+`$('li')` 返回的是一个`Z`对象，这个对象是像这样子的：
+
+```
+{0: li, 1: li, length: 2, selector: 'li'}
+```
+
+`$('li').get(0)` 等价于 `$('li')[0]`, 返回的是dom对象
+
+```javascript
+get: function(idx){
+  return idx === undefined ? slice.call(this) : this[idx >= 0 ? idx : idx + this.length]
+},
+```
+
+`$('li').eq(0)`返回的是`Z`对象
+
+```javascript
+eq: function(idx){
+  return idx === -1 ? this.slice(idx) : this.slice(idx, + idx + 1)
+},
+
+slice: function(){
+  return $(slice.apply(this, arguments))
+},
+```
+
+3. css方法
+
+```javascript
+css: function(property, value){
+  // 取值
+  if (arguments.length < 2) {
+    // 只返回第一个元素的属性值
+    var element = this[0]
+    if (typeof property == 'string') {
+      if (!element) return
+      // 转为驼峰表示
+      // getComputedStyle(element, '') 得到元素的样式表对象，只读，第二个参数是伪类
+      // getPropertyValue(property) 得到属性-连接的形式
+      return element.style[camelize(property)] || getComputedStyle(element, '').getPropertyValue(property)
+    } else if (isArray(property)) {
+      // 得到多个属性，返回一个对象
+      if (!element) return
+      var props = {}
+      var computedStyle = getComputedStyle(element, '')
+      $.each(property, function(_, prop){
+        props[prop] = (element.style[camelize(prop)] || computedStyle.getPropertyValue(prop))
+      })
+      return props
+    }
+  }
+
+  // 赋值
+  var css = ''
+  if (type(property) == 'string') {
+    if (!value && value !== 0)
+      // 去掉原来的属性值
+      this.each(function(){ this.style.removeProperty(dasherize(property)) })
+    else
+      css = dasherize(property) + ":" + maybeAddPx(property, value)
+  } else {
+    for (key in property)
+      if (!property[key] && property[key] !== 0)
+        this.each(function(){ this.style.removeProperty(dasherize(key)) })
+      else
+        css += dasherize(key) + ':' + maybeAddPx(key, property[key]) + ';'
+  }
+  // 新的样式追加到cssText的后面
+  return this.each(function(){ this.style.cssText += ';' + css })
+},
+```
+
+
+
 
 # 作用域和闭包
 
@@ -322,10 +443,46 @@ ele.matches('.list')
 
   1. DOM是树形结构
 
-## ajax
+# ajax
+
+## XMLHttpRequest
+```javascript
+var xhr = new XMLHttpRequest()
+xhr.open("GET", "/api", true)
+xhr.onreadystatechange = function () {
+  if (xhr.readyState == 4) {
+    if (xhr.status == 200) {
+      alert(xhr.responseText)
+    }
+  }
+}
+xhr.send(null)
+```
+
+0 - 还没有调用send方法
+
+1 - 已调用send方法，正在发送请求
+
+2 - send方法执行完成，已经接收到全部响应内容
+
+3 - 正在解析响应内容
+
+4 - 响应内容解析完成，可以在客户端调用了
+
+
+
+
+## 跨域
+
+* 协议、域名、端口
+
+* 可跨域
+  * img
+  * link
+  * script
+
 
 ### jsonp
-
 下面是我实现的一个jsonp的简单例子
 
 前端代码：
