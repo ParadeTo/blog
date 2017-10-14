@@ -87,6 +87,7 @@ new Vue({
     return {
       date: moment().format('YYYY-MM-DD'),
       isMobile: isMobile(),
+      emitChangeOnStep0: false,
       showCalendar: true,
       showLunar: true,
       disableDaysBeforeToday: true,
@@ -95,7 +96,8 @@ new Vue({
       defaultDate: null,
       defaultRange: null,
       firstDayOfWeek: 0,
-      lang: 'zh'
+      lang: 'zh',
+      monthYearFormat: 'MM - YYYY'
     };
   },
   watch: {
