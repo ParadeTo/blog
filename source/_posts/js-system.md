@@ -491,7 +491,7 @@ xhr.send(null)
 
 
 
-## 跨域
+# 跨域
 
 * 协议、域名、端口
 
@@ -501,7 +501,7 @@ xhr.send(null)
   * script
 
 
-### jsonp
+## jsonp
 下面是我实现的一个jsonp的简单例子
 
 前端代码：
@@ -529,3 +529,95 @@ xhr.send(null)
 
 前端得到后端返回的数据后会开始解析执行，然后就得到了后端返回的数据了
 
+# 存储
+
+* cookie： 4kb ajax会携带
+* storage： 5mb
+
+# 开发环境
+
+## git
+
+## 模块化
+
+不使用时的问题：
+
+```javascript
+<script src="util.js"></script>
+<script src="a-util.js"></script>
+<script src="a.js"></script>
+```
+
+1. 全局变量污染
+2. a.js知道要引用a-utils.js，但是他不知道要依赖util.js
+
+
+### AMD
+
+### commonjs
+
+# 运行环境
+## 加载资源的形式
+* 输入url加载html
+* 加载静态资源
+
+## 加载资源的过程
+
+1. 浏览器根据DNS得到域名的ip地址
+2. 向这个ip的机器发送http请求
+3. 服务器收到、处理并返回http请求
+4. 浏览器得到返回内容
+
+## 渲染页面的过程
+
+1. 根据html结构生成DOM tree
+2. 根据CSS生成CSSOM
+3. 将DOM和cssom整合形成RenderTree
+4. 根据RenderTree开始渲染和展示
+5. 遇到script时，会执行并阻塞渲染
+
+## 题目
+
+* 输入url到html的详细过程
+
+* window.onload 和 DOMContentLoaded 的区别
+
+  onload: 所有的都加载完
+
+  DOMContentLoaded: dom渲染完，可能图片和视频还没有加载完
+
+
+# 性能优化
+
+* 加载页面和静态资源优化
+
+  * 静态资源的合并压缩
+  * 静态资源缓存
+  * 使用CDN让资源加载更快
+  *
+
+* 页面渲染优化
+
+  * css放前面，js放后面
+  * 懒加载
+  * 减少DOM查询，查询的结果做个缓存
+  * 减少dom操作，使用documentFragment
+  * 事件节流
+
+
+# 安全性
+
+* XSS
+
+
+* CSRF  
+
+# 面试技巧
+
+* 简历
+  突出项目经历和解决方案
+
+
+* 过程中......
+
+  缺点：目前正在学的东西
