@@ -610,6 +610,23 @@ function require(...) {
 ## 域名收敛是什么
 
 ## 前端优化策略列举
+### 加载优化
+1. 合并css，javascript
+2. 合并小图片，使用雪碧图
+3. 缓存
+```
+Cache-Control: must-revalidate
+Cache-Control: no-cache // 每次都向服务器询问是否
+Cache-Control: no-store // 完全不缓存
+Cache-Control: no-transform
+Cache-Control: public
+Cache-Control: private
+Cache-Control: proxy-revalidate
+Cache-Control: max-age=<seconds> 或者使用 Expires
+Cache-Control: s-maxage=<seconds>
+```
+
+
 ### JS性能
 * 作用域，函数中缓存全局变量
 * 避免不必要的属性查找，（对于过深的属性，进行缓存）
@@ -620,6 +637,12 @@ function require(...) {
 	* HTMLCollection
 
 ## 首屏、白屏时间如何计算
+### 首屏
+* 页面标记法，内联js来记录时间
+* 图像相似度比较
+* 首屏高度内图片加载法，寻找首屏区域内的所有图片
+	`getBoundingClientRect`
+
 
 ## h5和原生app的优缺点
 
