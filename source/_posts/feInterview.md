@@ -185,6 +185,36 @@ http://davidshariff.com/quiz/#
 # vue
 
 # js
+## requestAnimationFrame
+```apple js
+(function() {
+    var lastTime = 0;
+    var vendors = ['webkit', 'moz'];
+    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
+        window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame'] ||
+                                      window[vendors[x] + 'CancelRequestAnimationFrame'];
+    }
+
+    if (!window.requestAnimationFrame) {
+        window.requestAnimationFrame = function(callback, element) {
+            var currTime = new Date().getTime();
+            var timeToCall = Math.max(0, 16.7 - (currTime - lastTime));
+            var id = window.setTimeout(function() {
+                callback(currTime + timeToCall);
+            }, timeToCall);
+            lastTime = currTime + timeToCall;
+            return id;
+        };
+    }
+    if (!window.cancelAnimationFrame) {
+        window.cancelAnimationFrame = function(id) {
+            clearTimeout(id);
+        };
+    }
+}());
+```
+
 ## task, macrotask, microtask
 程序从上往下运行，遇到 task 分别将他们放到对应的队列中，然后执行 microTask 队列里的任务，然后执行 macroTask 中的任务
 
@@ -742,6 +772,8 @@ gzip_disable "MSIE [1-6]\.";
 ```
 
 6. 首屏加载
+* 不要外链css
+
 * css阻塞问题
 ```
 css加载不会阻塞DOM树的解析
@@ -780,6 +812,9 @@ Network\r\n
 0\r\n
 \r\n
 ```
+
+7. 按需加载
+* 图片懒加载
 
 ### JS优化
 * 作用域，函数中缓存全局变量
@@ -824,7 +859,7 @@ var addHandler = document.body.addEventListener ?
    ...
 ```
 
-
+### vuejs项目优化
 
 ## 首屏、白屏时间如何计算
 ### 首屏
@@ -987,3 +1022,4 @@ function memoFunc(func) {
   }
 }
 ```
+
