@@ -427,6 +427,11 @@ string, number, object, undefined, boolean, function, symbol
 ## 对react有什么了解（直接说了react中虚拟dom内部表示，mount过程源码和同步过程源码）
 
 ## amd和cmd区别，怎么了解到这些区别的，是否是去看了规范
+```javascript
+https://www.douban.com/note/283566440/
+```
+
+
 
 ## 事件委托
 
