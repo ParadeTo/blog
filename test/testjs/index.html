@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  <script>
+  function longStr (str) {
+    function isHw (str) {
+      return str.split('').reverse().join("") === str
+    }
+
+    var len = str.length
+    var longestStr = ''
+    var longestLen = 0
+    for (var i = 0; i < len; i++) {
+      for (var j = 0; j < len; j++) {
+        subStr = str.substring(i, j + 1)
+        if (isHw(subStr) && longestLen < j - i + 1) {
+          longestLen = j - i + 1
+          longStr = subStr
+        }
+      }
+    }
+    return longStr
+  }
+
+  console.log(longStr('abadddabc'))
+  </script>
+</body>
+</html>
