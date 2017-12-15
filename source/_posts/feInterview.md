@@ -185,7 +185,80 @@ http://davidshariff.com/quiz/#
 # vue
 
 # js
+## task, macrotask, microtask
+程序从上往下运行，遇到 task 分别将他们放到对应的队列中，然后执行 microTask 队列里的任务，然后执行 macroTask 中的任务
+
+
+* macrotasks: 
+
+setTimeout
+
+setInterval
+
+setImmediate
+
+requestAnimationFrame
+
+I/O
+
+UI rendering
+
+* microtasks
+
+process.nextTick
+
+Promises // 一个构造函数，传入一个函数，返回一个对象，可以给这个对象绑定，成功的回调和失败的回调，当函数执行的状态改变时执行对应的方法
+// http://www.jianshu.com/p/473cd754311f（实现！）
+
+Object.observe
+
+MutationObserver
+
+```javascript
+console.log('start')
+
+const interval = setInterval(() => {
+  console.log('setInterval')
+}, 0)
+
+setTimeout(() => {
+  console.log('setTimeout 1')
+  Promise.resolve()
+    .then(() => {
+      console.log('promise 3')
+    })
+    .then(() => {
+      console.log('promise 4')
+    })
+    .then(() => {
+      setTimeout(() => {
+        console.log('setTimeout 2')
+        Promise.resolve()
+          .then(() => {
+            console.log('promise 5')
+          })
+          .then(() => {
+            console.log('promise 6')
+          })
+          .then(() => {
+            clearInterval(interval)
+          })
+      }, 0)
+    })
+}, 0)
+
+Promise.resolve()
+  .then(() => {
+    console.log('promise 1')
+  })
+  .then(() => {
+    console.log('promise 2')
+  })
+```
+
 ## 排序
+### 归并排序
+
 ### 快速排序
 
 ```javascript
@@ -452,6 +525,16 @@ https://www.douban.com/note/283566440/
 ## prototype和__proto__的关系是什么
 
 ## 闭包
+闭包就是能够读取其他函数内部变量的函数。由于在javascript中，只有函数内部的子函数才能读取局部变量，所以闭包可以理解成“定义在一个函数内部的函数“。在本质上，闭包是将函数内部和函数外部连接起来的桥梁。
+* 用途
+1. 实现封装
+2. 实现函数的缓存
+3. 函数科利华
+  * 参数复用
+  * 延迟计算
+  
+* 坏处
+1. 有内存泄漏的风险
 
 ## ajax如何实现、readyState五中状态的含义
 
@@ -615,7 +698,90 @@ function require(...) {
 ## 域名收敛是什么
 
 ## 前端优化策略列举
-### JS性能
+### 加载优化
+1. 合并css，javascript
+2. 合并小图片，使用雪碧图
+3. 缓存
+```
+Cache-Control: must-revalidate
+
+// 每次都向服务器询问是否
+Last-modified/If-Modified-Since
+如果响应头中有 Last-modified 而没有 Expire 或 Cache-Control 时，浏览器会有自己的算法来推算出一个时间缓存该文件多久
+
+Etag/If-None-Match
+某些服务器不能精确得到资源的最后修改时间，这样就无法通过最后修改时间判断资源是否更新。
+Last-modified 只能精确到秒。
+一些资源的最后修改时间改变了，但是内容没改变，使用 Last-modified 看不出内容没有改变。
+Etag 的精度比 Last-modified 高，属于强验证，要求资源字节级别的一致，优先级高。如果服务器端有提供 ETag 的话，必须先对 ETag 进行 Conditional Request。
+
+Cache-Control: no-cache
+
+Cache-Control: no-store // 完全不缓存
+Cache-Control: no-transform
+Cache-Control: public
+Cache-Control: private
+Cache-Control: proxy-revalidate
+Cache-Control: max-age=<seconds> 或者使用 Expires
+Cache-Control: s-maxage=<seconds>
+```
+4. 压缩css, JavaScript
+5. 启用gzip
+
+nginx
+
+```
+gzip on;
+gzip_min_length 1k; //不压缩临界值，大于1K的才压缩，一般不用改
+gzip_buffers 4 16k;
+#gzip_http_version 1.0;
+gzip_comp_level 2; // 压缩级别，1-10，数字越大压缩的越好，时间也越长，看心情随便改吧
+gzip_types text/plain application/x-javascript text/css application/xml text/javascript application/x-httpd-php image/jpeg image/gif image/png;
+gzip_vary off;
+gzip_disable "MSIE [1-6]\.";
+```
+
+6. 首屏加载
+* css阻塞问题
+```
+css加载不会阻塞DOM树的解析
+css加载会阻塞DOM树的渲染
+css加载会阻塞后面js语句的执行
+```
+
+```
+// 页面先会出现内容，然后js阻塞了后面的css
+script(src='/big.js')
+link(rel='stylesheet', href='/big.css')
+link(rel='stylesheet', href='/big2.css')
+link(rel='stylesheet', href='/big3.css')
+
+// 浏览器会把前面两个css文件先加载，这会阻塞dom渲染，然后加载js，这会阻塞后面的css
+link(rel='stylesheet', href='/big.css')
+link(rel='stylesheet', href='/big2.css')
+script(src='/big.js')
+link(rel='stylesheet', href='/big3.css')
+```
+
+* bigpipe
+```
+Transfer-Encoding: chunked
+
+HTTP/1.1 200 OK
+Content-Type: text/plain
+Transfer-Encoding: chunked
+
+7\r\n
+Mozilla\r\n
+9\r\n
+Developer\r\n
+7\r\n
+Network\r\n
+0\r\n
+\r\n
+```
+
+### JS优化
 * 作用域，函数中缓存全局变量
 * 避免不必要的属性查找，（对于过深的属性，进行缓存）
 * 优化dom交互
@@ -623,8 +789,50 @@ function require(...) {
 	* innerHTML
 	* 事件代理
 	* HTMLCollection
+* 避免重复工作
+例子：
+```javascript
+function addHandler(target, eventType, handler) {
+  if (target.addEventListener) {
+    
+  } else {
+    
+  }
+}
+```
+
+**延迟加载**
+```javascript
+function addHandler(target, eventType, handler) {
+    if (target.addEventListener) {
+      addHandler = function (target, eventType, handler) {
+        
+      }
+    } else {
+      
+    }
+    addHandler(target, eventType, handler)
+}
+```
+
+**条件预加载**
+```javascript
+var addHandler = document.body.addEventListener ? 
+   function (target, eventType, handler) {
+  
+   } :
+   ...
+```
+
+
 
 ## 首屏、白屏时间如何计算
+### 首屏
+* 页面标记法，内联js来记录时间
+* 图像相似度比较
+* 首屏高度内图片加载法，寻找首屏区域内的所有图片
+	`getBoundingClientRect`
+
 
 ## h5和原生app的优缺点
 
@@ -659,3 +867,123 @@ f. 浏览器对页面进行渲染呈现给用户
 ## 减少页面加载时间的方法
 * 减少http请求，合并文件
 * 图片标明宽高
+
+
+# 算法
+## 深度clone
+```
+function deepClone(obj) {
+  var target
+
+  function is(obj, type) {
+    return Object.prototype.toString.call(obj) === '[object ' + type + ']'
+  }
+
+  if (!is(obj, 'Object') && !is(obj, 'Array')) {
+    throw new Error('请传入对象')
+  }
+
+  function _clone(obj) {
+    let _target
+    if (is(obj, 'Object') || is(obj, 'Array')) {
+      _target = deepClone(obj)
+    } else {
+      _target = obj
+    }
+    return _target
+  }
+
+  if (is(obj, 'Array')) {
+    target = []
+    for (var i = 0, len = obj.length; i < len; i++) {
+      target[i] = _clone(obj[i])
+    }
+  } else {
+    target = {}
+    for (var i in obj) {
+      target[i] = _clone(obj[i])
+    }
+  }
+
+  return target
+}
+```
+
+## 最长回文
+1. 暴力法
+
+```
+function longStr (str) {
+  function isHw (str) {
+    return str.split('').reverse().join("") === str
+  }
+
+  var len = str.length
+  var longestStr = ''
+  var longestLen = 0
+  for (var i = 0; i < len; i++) {
+    for (var j = 0; j < len; j++) {
+      subStr = str.substring(i, j + 1)
+      if (isHw(subStr) && longestLen < j - i + 1) {
+        longestLen = j - i + 1
+        longStr = subStr
+      }
+    }
+  }
+  return longStr
+}
+```
+
+2. 动态规划
+
+```javascript
+function longStr2 (str) {
+  var len = str.length
+  var longestStart = 0
+  var longestEnd = 0
+  var longestLen = 0
+  var p = []
+  // 初始化都不是回文
+  for (var i = 0; i < len; i++) {
+    p[i] = []
+    for (var j = 0; j < len; j++) {
+      p[i][j] = false
+    }
+  }
+
+  for (var i = 0; i < len; i++) {
+    var j = i
+    while (j >= 0) {
+      // 小于等于2的子串只需判断str[i] === str[j]
+      // 否则需判断p[j + 1][i - 1]
+      if (str[i] === str[j] && (i - j < 2 || p[j + 1][i - 1])) {
+        p[j][i] = true
+        if (longestLen < i - j + 1) {
+          longestStart = j
+          longestEnd = i
+          longestLen = i - j + 1
+        }
+      }
+      j--
+    }
+  }
+  return {
+    len: longestLen,
+    str: str.substring(longestStart, longestEnd + 1)
+  }
+}
+```
+
+3. 马拉车算法暂时不懂
+
+## 实现一个cache函数，输入一个函数返回新的函数，然后新函数只要入参一样在第二遍执行时可以最快的得到结果，也就是带有缓存效果
+```javascript
+function memoFunc(func) {
+  var cache = {}
+  return function() {
+    var argstr = JSON.stringify(arguments)
+    if (cache[argstr]) return cache[argstr]
+    cache[argstr] = func.apply(null, arguments)
+  }
+}
+```
