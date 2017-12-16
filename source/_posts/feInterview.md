@@ -12,14 +12,25 @@ description: 各种面试题汇总
 
 # html
 ## block 和 inline 的区别
+**block**
+ 
+独占一行，可以设置宽高，可以设置上下边距
+ 
+**inline**
+ 
 
 ## css 为什么要放上面js为什么要放下面
+css 放上面为了防止闪跳
+
+js 放下面为了防止阻塞
+
 
 ## 什么是盒子模型
-在网页中，一个元素占有空间的大小由几个部分构成，其中包括元素的内容（content），元素的内边距（padding），元素的边框（border），元素的外边距（margin）四个部分。这四个部分占有的空间中，有的部分可以显示相应的内容，而有的部分只用来分隔相邻的区域或区域。4个部分一起构成了css中元素的盒模型。
+在网页中，一个元素占有空间的大小由几个部分构成，其中包括元素的内容（content），元素的内边距（padding），元素的边框（border），元素的外边距（margin）四个部分。
+这四个部分占有的空间中，有的部分可以显示相应的内容，而有的部分只用来分隔相邻的区域或区域。4个部分一起构成了css中元素的盒模型。
 
 ## src与href的区别
-
+src用于替换当前元素，href用于在当前文档和引用资源之间确立联系。
 
 ## web标准和w3c的理解和认识
 * 标签闭合、小写
@@ -28,6 +39,11 @@ description: 各种面试题汇总
 * 不需要变动页面内容，便可提供打印版本而不需要复制内容，提高网站易用性
 
 ## 浏览器内核
+* IE: trident内核
+* Firefox：gecko内核
+* Safari:webkit内核
+* Opera:以前是presto内核，Opera现已改用Google Chrome的Blink内核
+* Chrome:Blink(基于webkit，Google与Opera Software共同开发)
 
 ## meta viewport原理
 [移动前端开发之viewport的深入理解](http://top.css88.com/archives/772)
@@ -44,21 +60,77 @@ description: 各种面试题汇总
 <meta name="viewport" content="width=2000px">
 ```
 
-
 # css
+## 布局
+### 单列布局
+#### 水平居中
+* `text—align + inline-block` 需要同时设置父元素和自己
+* `margin: 0 auto` 需要指定宽度
+* `display: table; margin: 0 auto` 
+* `绝对定位`
+* `flex`
+#### 垂直居中
+* `vertical-algin`
+* `绝对定位`
+* `flex`
+
+### 多列布局
+#### 左列定宽，右列自适应
+* `float + margin` 
+* `float + overflow` 块级格式化上下文不会重叠浮动元素
+* `flex`
+
+#### 左列不定宽，右列自适应
+* `float + overflow` 块级格式化上下文不会重叠浮动元素
+* `flex`
+
+#### 右列定宽，左列自适应
+* 右列向右浮动，左列向左浮动同时设置负的maring-right
+* `flex`
+
+#### 两列定宽，一列自适应
+* `float + margin` 
+* `float + overflow` 块级格式化上下文不会重叠浮动元素
+* `flex`
+
+#### 两侧定宽，中栏自适应
+* `float+margin`
+```
+.left{width：100px;float:left;} .center{float:left;width:100%;margin-right:-200px;} .right{width:100px;float:right;}
+```
+
+* `flex`
+
+#### 九宫格布局
+* `table` 
+```javascript
+.parent{display:table;table-layout:fixed;width:100%;}
+.row{display:table-row;} 
+.item{display:table-cell;width:33.3%;height:200px;}
+```
+* `flex`
+
+#### 多列等分
+* `float`
+```javascript
+.parent{margin-left:-20px}/*假设列之间的间距为20px*/ .column{float:left;width:25%;padding-left:20px;box-sizing:border-box;}
+```
+* `flex`
+
+#### 多列等高
+* `padding+margin负边距`
+
 ## float和display：inline-block的区别
 * 文档流：float元素会脱离文档流，并使得周围元素环绕这个元素。而inline-block元素仍在文档流内（不需要清楚浮动）。
 * 水平位置：inline-block元素可以通过设置父元素的text-align来影响其位置
 * 垂直对齐：inline-block元素沿着默认的基线对齐。浮动元素紧贴顶部。
-* 空白：inline-block包含html空白节点。如果你的html中一系列元素每个元素之间都换行了，当你对这些元素设置inline-block时，这些元素之间就会出现空白。而浮动元素会忽略空白节点。可设置font-size：0属性来消除
+* 空白：inline-block包含html空白节点。如果你的html代码中一系列元素每个元素之间都换行了，
+当你对这些元素设置inline-block时，这些元素之间就会出现空白。而浮动元素会忽略空白节点。可设置font-size：0属性来消除
 * 需要文字环绕容器，那浮动是不二选择。如果你需要居中对齐元素，inline-block是个好选择
 
 脱离文档流3d视图：
 
 https://www.zhihu.com/question/24529373/answer/29135021
-
-## display
-
 
 ## 清除浮动
 [张鑫旭](http://www.zhangxinxu.com/wordpress/2010/01/%E5%AF%B9overflow%E4%B8%8Ezoom%E6%B8%85%E9%99%A4%E6%B5%AE%E5%8A%A8%E7%9A%84%E4%B8%80%E4%BA%9B%E8%AE%A4%E8%AF%86/)
@@ -506,10 +578,40 @@ string, number, object, undefined, boolean, function, symbol
 ## 兼容ie的事件封装
 
 ## web端cookie的设置和获取方法
+* 设置
+```javascript
+function setCookie(c_name,value,expiredays)
+{
+  var exdate=new Date()
+  exdate.setDate(exdate.getDate()+expiredays)
+  document.cookie=c_name+ "=" +escape(value)+
+  ((expiredays==null) ? "" : ";expires="+exdate.toGMTString())
+}
+```
 
 ## 编写一个contextmunu的插件
 
 ## 编写一个元素拖拽的插件
+* 被拖动元素
+```javascript
+dragstart
+drag
+dragend
+```
+
+* 放置目标
+```javascript
+dragenter e.preventDefault() 后就可以放置了
+dragover
+drop/dragleave
+```
+
+* 传递数据
+```javascript
+e.dataTransfer.setData
+e.dataTransfer.getData
+```
+
 
 ## 事件模型解释
 
@@ -774,6 +876,42 @@ Developer\r\n
 Network\r\n
 0\r\n
 \r\n
+```
+
+7. 懒加载
+* 图片懒加载
+
+**屏幕可视窗口大小**
+```javascript
+window.innerHeight 标准浏览器及IE9+ || document.documentElement.clientHeight 标准浏览器及低版本IE标准模式 || document.body.clientHeight 低版本混杂模式
+$(window).height() 
+```
+
+**文档向上偏移距离**
+```javascript
+window.pagYoffset——IE9+及标准浏览器 || document.documentElement.scrollTop 兼容ie低版本的标准模式 ||　document.body.scrollTop 兼容混杂模式；
+$(document).scrollTop()
+```
+
+**元素距离文档顶部**
+offsetTop 元素相对第一个非static父元素的偏移距离
+
+```javascript
+function getElementTop(element) {
+  var actualTop = element.offsetTop
+  var current = element.offsetParent
+  whilte(current!==null) {
+    actualTop += current.offsetTop
+    current = current.offsetParent
+  }
+  return actualTop
+}
+```
+
+**getBoundingClientRect**
+
+```javascript
+1. 
 ```
 
 ### JS优化
