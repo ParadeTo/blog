@@ -13,11 +13,11 @@ description: 各种面试题汇总
 # html
 ## block 和 inline 的区别
 **block**
- 
+
 独占一行，可以设置宽高，可以设置上下边距
- 
+
 **inline**
- 
+
 
 ## css 为什么要放上面js为什么要放下面
 css 放上面为了防止闪跳
@@ -50,7 +50,43 @@ src用于替换当前元素，href用于在当前文档和引用资源之间确�
 
 [移动端高清、多屏适配方案](http://div.io/topic/1092)
 搬过来！！！！！！！
+```javascript
+<meta name="viewport" content="width=640,initial-scale=0.5,maximum-scale=0.5, minimum-scale=0.5,user-scalable=no">
+rem = document.documentElement.clientWidth * dpr / 10
 
+var dpr, rem, scale;
+var docEl = document.documentElement;
+var fontEl = document.createElement('style');
+var metaEl = document.querySelector('meta[name="viewport"]');
+
+dpr = window.devicePixelRatio || 1;
+rem = docEl.clientWidth * dpr / 10;
+scale = 1 / dpr;
+
+
+// 设置viewport，进行缩放，达到高清效果
+metaEl.setAttribute('content', 'width=' + dpr * docEl.clientWidth + ',initial-scale=' + scale + ',maximum-scale=' + scale + ', minimum-scale=' + scale + ',user-scalable=no');
+
+// 设置data-dpr属性，留作的css hack之用
+docEl.setAttribute('data-dpr', dpr);
+
+// 动态写入样式
+docEl.firstElementChild.appendChild(fontEl);
+fontEl.innerHTML = 'html{font-size:' + rem + 'px!important;}';
+
+// 给js调用的，某一dpr下rem和px之间的转换函数
+window.rem2px = function(v) {
+v = parseFloat(v);
+return v * rem;
+};
+window.px2rem = function(v) {
+    v = parseFloat(v);
+    return v / rem;
+};
+
+window.dpr = dpr;
+window.rem = rem;
+```
 
 
 * 一个虚拟的窗口
@@ -66,7 +102,7 @@ src用于替换当前元素，href用于在当前文档和引用资源之间确�
 #### 水平居中
 * `text—align + inline-block` 需要同时设置父元素和自己
 * `margin: 0 auto` 需要指定宽度
-* `display: table; margin: 0 auto` 
+* `display: table; margin: 0 auto`
 * `绝对定位`
 * `flex`
 #### 垂直居中
@@ -76,7 +112,7 @@ src用于替换当前元素，href用于在当前文档和引用资源之间确�
 
 ### 多列布局
 #### 左列定宽，右列自适应
-* `float + margin` 
+* `float + margin`
 * `float + overflow` 块级格式化上下文不会重叠浮动元素
 * `flex`
 
@@ -89,7 +125,7 @@ src用于替换当前元素，href用于在当前文档和引用资源之间确�
 * `flex`
 
 #### 两列定宽，一列自适应
-* `float + margin` 
+* `float + margin`
 * `float + overflow` 块级格式化上下文不会重叠浮动元素
 * `flex`
 
@@ -102,10 +138,10 @@ src用于替换当前元素，href用于在当前文档和引用资源之间确�
 * `flex`
 
 #### 九宫格布局
-* `table` 
+* `table`
 ```javascript
 .parent{display:table;table-layout:fixed;width:100%;}
-.row{display:table-row;} 
+.row{display:table-row;}
 .item{display:table-cell;width:33.3%;height:200px;}
 ```
 * `flex`
@@ -255,13 +291,65 @@ http://davidshariff.com/quiz/#
 
 
 # vue
+## vue响应式原理
+1. data中的每一个数据，利用了defineProperty，定义了setter和getter，在getter中通过Dep.depend()收集依赖
+在setter中通过Dep.notify()来触发watcher的更新
 
+2. 编译模板，对表达式求值，触发data的getter方法，把更新视图的回调函数作为watcher的update
+
+## vue-router原理
+1. install
+  * mixin beforeCreate
+  * $router $route
+  * component RouterView RouterLink
+
+2. 实例化
+  * this.matcher = createMatcher(options.routes || [], this)
+  * const { pathList, pathMap, nameMap } = createRouteMap(routes)
+    可以看出主要做的事情就是根据用户路由配置对象生成普通的根据 path 来对应的路由记录以及根据 name 来对应的路由记录的 map，方便后续匹配对应。
+  
+  * History
+
+3. 实例化vue
+```javascript
+调用 beforeCreate
+this._router.init(this)
+transitionTo
+listen
+```
+
+## vue对比其他框架
+**vs react**
+
+* 使用 virtual DOM
+* react 丰富的生态
+* react 通过 shouldComponentUpdate 来优化时不如 vue 好
+* jsx vs templates
+  * jsx 中可以使用JavaScript 功能来构建你的视图页面
+  * templates 可能更加友好、迁移容易、甚至可以用其他模板
+* 组件内的css，react 是 css in js的方案
+* 方便直接集成到现有的页面中
+
+**vs angularjs**
+* angularjs1 学习曲线陡峭
+
+## vuex 是用来做什么的
+专为 Vue.js 应用程序开发的状态管理模式，
+它采用集中式存储管理应用的所有组件的状态，
+并以相应的规则保证状态以一种可预测的方式发生变化
+
+**为什么需要**
+1. 可以解决兄弟组件间的状态传递
+2. 代码更加结构化和易维护
+3. ssr一般需要
+  
+  
 # js
 ## task, macrotask, microtask
 程序从上往下运行，遇到 task 分别将他们放到对应的队列中，然后执行 microTask 队列里的任务，然后执行 macroTask 中的任务
 
 
-* macrotasks: 
+* macrotasks:
 
 setTimeout
 
@@ -629,7 +717,7 @@ e.dataTransfer.getData
 3. 函数科利华
   * 参数复用
   * 延迟计算
-  
+
 * 坏处
 1. 有内存泄漏的风险
 
@@ -884,7 +972,7 @@ Network\r\n
 **屏幕可视窗口大小**
 ```javascript
 window.innerHeight 标准浏览器及IE9+ || document.documentElement.clientHeight 标准浏览器及低版本IE标准模式 || document.body.clientHeight 低版本混杂模式
-$(window).height() 
+$(window).height()
 ```
 
 **文档向上偏移距离**
@@ -911,7 +999,7 @@ function getElementTop(element) {
 **getBoundingClientRect**
 
 ```javascript
-1. 
+1.
 ```
 
 ### JS优化
@@ -927,9 +1015,9 @@ function getElementTop(element) {
 ```javascript
 function addHandler(target, eventType, handler) {
   if (target.addEventListener) {
-    
+
   } else {
-    
+
   }
 }
 ```
@@ -939,10 +1027,10 @@ function addHandler(target, eventType, handler) {
 function addHandler(target, eventType, handler) {
     if (target.addEventListener) {
       addHandler = function (target, eventType, handler) {
-        
+
       }
     } else {
-      
+
     }
     addHandler(target, eventType, handler)
 }
@@ -950,9 +1038,9 @@ function addHandler(target, eventType, handler) {
 
 **条件预加载**
 ```javascript
-var addHandler = document.body.addEventListener ? 
+var addHandler = document.body.addEventListener ?
    function (target, eventType, handler) {
-  
+
    } :
    ...
 ```
