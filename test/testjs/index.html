@@ -7,28 +7,8 @@
   <title>Document</title>
 </head>
 <body>
-  <script>
-  function longStr (str) {
-    function isHw (str) {
-      return str.split('').reverse().join("") === str
-    }
+  <script src="./testRequire.js">
 
-    var len = str.length
-    var longestStr = ''
-    var longestLen = 0
-    for (var i = 0; i < len; i++) {
-      for (var j = 0; j < len; j++) {
-        subStr = str.substring(i, j + 1)
-        if (isHw(subStr) && longestLen < j - i + 1) {
-          longestLen = j - i + 1
-          longStr = subStr
-        }
-      }
-    }
-    return longStr
-  }
-
-  console.log(longStr('abadddabc'))
   </script>
 </body>
 </html>

@@ -159,7 +159,8 @@ https://www.zhihu.com/question/24529373/answer/29135021
 * 块级格式化上下文会阻止外边距叠加
 * 块级格式化上下文不会重叠浮动元素
 * 块级格式化上下文通常可以包含浮动
-* BFC就是页面上的一个隔离的独立容器，容器里面的子元素不会影响到外面的元素。反之也如此。（所以BFC中有浮动时，为了不影响外部元素的布局，BFC计算高度时会包括浮动元素）
+* BFC就是页面上的一个隔离的独立容器，容器里面的子元素不会影响到外面的元素。
+反之也如此。（所以BFC中有浮动时，为了不影响外部元素的布局，BFC计算高度时会包括浮动元素）
 
 通俗地来说：创建了 BFC的元素就是一个独立的盒子，里面的子元素不会在布局上影响外面的元素，反之亦然，同时BFC任然属于文档中的普通流。
 
@@ -188,7 +189,6 @@ https://www.zhihu.com/question/24529373/answer/29135021
 ### 父元素设置overflow:hidden，浮动，table
 
 ### 使用伪元素:after
-
 
 ## 兼容ie6的水平垂直居中
 ```javascript
@@ -251,7 +251,7 @@ http://davidshariff.com/quiz/#
 
 区别3：link是XHTML标签，无兼容问题；@import是在CSS2.1提出的，低版本的浏览器不支持。
 
-区别4：ink支持使用Javascript控制DOM去改变样式；而@import不支持。
+区别4：link支持使用Javascript控制DOM去改变样式；而@import不支持。
 
 
 # vue
@@ -359,6 +359,18 @@ Promise.resolve()
 ```
 
 ## 排序
+![](feInterview/sort.png)
+
+说明：
+
+插入排序为什么不稳定
+```apple js
+2213
+->(第一个二换到后面去了)
+1223
+```
+
+
 ### 归并排序
 
 ### 快速排序
@@ -489,6 +501,12 @@ function sum(arr) {
 };
 ```
 
+```javascript
+function add (arr) {
+  return new Function('arr', 'return ' + arr.join("+"))(arr)
+}
+```
+
 ## 在数组 arr 末尾添加元素 item。不要直接修改数组 arr，结果返回新的数组
 * 循环push
 * slice浅拷贝+push
@@ -590,6 +608,32 @@ function shuffleSort(arr) {
 ```
 
 ## 实现require.js的基本功能
+```apple js
+function require1() {
+  var module = {
+    exports: {}
+  }
+  // console.log(module.exports)
+  var exports = module.exports
+  //
+  ;(function(module, exports) {
+    // a模块的代码
+    function a () {
+      console.log('a')
+    }
+    module.exports = a
+    exports.b = 1
+    //
+  })(module, exports)
+
+
+  return module.exports
+}
+
+var obj = require1()
+
+console.log(obj.b)
+```
 
 ## 7种类型
 Number, String, Boolean, Null, Undefined, Object, Symbol
@@ -605,8 +649,6 @@ string, number, object, undefined, boolean, function, symbol
 ```javascript
 https://www.douban.com/note/283566440/
 ```
-
-
 
 ## 事件委托
 
@@ -624,7 +666,7 @@ function setCookie(c_name,value,expiredays)
 }
 ```
 
-## 编写一个contextmunu的插件
+## 编写一个contextmenu的插件
 
 ## 编写一个元素拖拽的插件
 * 被拖动元素
@@ -655,6 +697,25 @@ e.dataTransfer.getData
 ## 跨域
 
 ## prototype和__proto__的关系是什么
+* postMessage
+```apple js
+otherWindow.postMessage(message, targetOrigin, [transfer]);
+
+window.addEventListener("message", receiveMessage, false);
+
+function receiveMessage(event)
+{
+  // For Chrome, the origin property is in the event.originalEvent
+  // object.
+  var origin = event.origin || event.originalEvent.origin; 
+  if (origin !== "http://example.org:8080")
+    return;
+    alert(event.data);    // 弹出"I was there!"
+    alert(event.source);  // 对a.com、index.html中window对象的引用
+                          // 但由于同源策略，这里event.source不可以访问window对象
+  // ...
+}
+```
 
 ## 闭包
 闭包就是能够读取其他函数内部变量的函数。由于在javascript中，只有函数内部的子函数才能读取局部变量，所以闭包可以理解成“定义在一个函数内部的函数“。在本质上，闭包是将函数内部和函数外部连接起来的桥梁。
@@ -751,6 +812,15 @@ if (true) {
 
 	可以，如果要实现不能添加属性，可以用``Object.freeze()``
 
+* Object.seal
+Object.seal() 方法可以让一个对象密封，并返回被密封后的对象。密封对象将会阻止向对象添加新的属性，
+并且会将所有已有属性的可配置性（configurable）置为不可配置（false），
+即不可修改属性的描述或删除属性。但是可写性描述（writable）为可写（true）的属性的值仍然可以被修改。
+
+* Object.freeze
+Object.freeze() 方法可以冻结一个对象，冻结指的是不能向这个对象添加新的属性，不能修改其已有属性的值，不能删除已有属性，
+以及不能修改该对象已有属性的可枚举性、可配置性、可写性。也就是说，这个对象永远是不可变的。该方法返回被冻结的对象。
+
 ## 利用Set对数组去重
 
 	```javascript
@@ -791,7 +861,7 @@ Object.prototype.toString.call([]) ; // [object Array]
 Object.prototype.toString.call(new RegExp()) ; // [object RegExp]
 Object.prototype.toString.call(new Error()) ; // [object Error]
 Object.prototype.toString.call(document) ; // [object HTMLDocument]
-Object.prototype.toString.call(window) ; //[object global] window是全局对象global
+Object.prototype.toString.call(window) ; //[object Window] window是全局对象global
 ```
 # nodejs
 ## 包管理
@@ -1158,4 +1228,125 @@ function memoFunc(func) {
   }
 }
 ```
+
+
+# 设计模式
+## 单例
+```javascript
+var Singleton = function (name) {
+  this.name = name
+  this.instance = null;
+}
+
+Singleton.prototype.getName = function () {
+  return this.name
+}
+
+Singleton.getInstance = function (name) {
+  if (!this.instance) {
+    this.instance = new Singleton(name)
+  }
+  return this.instance
+}
+```
+
+## 策略模式
+```apple js
+var S = function () {}
+S.prototype.calculate = function (salary) {
+  return salary * 5
+}
+
+var A = function () {}
+A.prototype.calculate = function (salary) {
+  return salary * 4
+}
+
+var B = function () {}
+B.prototype.calculate = function (salary) {
+  return salary * 3
+}
+
+var Bonus = function () {
+  this.salary = null
+  this.strategy = null
+}
+
+Bonus.prototype.setSalary = function (salary) {
+  this.salary = salary
+}
+
+Bonus.prototype.setStrategy = function (strategy) {
+  this.strategy = strategy
+}
+
+Bonus.prototype.getBonus = function () {
+  return this.strategy.calculate(this.salary)
+}
+```
+
+## 代理模式
+代理和本体实现了同样的接口，通过请求代理来请求本体
+```javascript
+var myImage = (function () {
+  var img = document.createElement('img')
+  document.body.appendChild(img)
+  return {
+    setSrc: function (src) {
+      img.src = src
+    }
+  }
+})()
+
+var proxyImage = (function () {
+  var img = new Image()
+  img.onload = function () {
+    myImage.setSrc(this.src)
+  }
+
+  return {
+    setSrc: function (src) {
+      myImage.setSrc('./loading.gif')
+      img.src = src
+    }
+  }
+})()
+```
+
+## 发布订阅模式
+```javascript
+
+```
+
+## 模板方法模式
+```javascript
+var PutInFridge = function () {
+
+}
+
+
+PutInFridge.prototype.open = function () {
+  console.log('打开门')
+}
+
+PutInFridge.prototype.putin = function () {
+  throw new Error('必须实现putin')
+}
+
+PutInFridge.prototype.close = function () {
+  throw new Error('关门')
+}
+
+PutInFridge.prototype.do = function () {
+  this.open()
+  this.putin()
+  if (this.beforeClose) {
+    this.beforeClose()
+  }
+  this.close()
+}
+```
+
+## 职责链
+
 
