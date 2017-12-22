@@ -29,3 +29,4 @@ function extended_bottom_up_cut_rod(p, c, n) {
 }
 
 console.log(extended_bottom_up_cut_rod(p, c, 10))
+

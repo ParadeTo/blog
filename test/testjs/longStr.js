@@ -54,4 +54,56 @@ function longStr2 (str) {
   }
 }
 
-console.log(longStr2('abadddabc'))
+
+function longStr3 (str) {
+  function _longStr3 (str, i, j, p) {
+    var len = j - i + 1
+    if (p[i][j] != null) {
+      return p[i][j]
+    }
+
+    if (len === 1 || (len === 2 && str[i] === str[j])) {
+      p[i][j] = true
+      return true
+    }
+
+    if (str[i] === str[j] && _longStr3(str, i+1, j-1, p)) {
+      p[i][j] = true
+      return true
+    }
+
+    p[i][j] = false
+    return false
+  }
+
+  var p = []
+  var len = str.length
+  var longestStart = 0
+  var longestEnd = 0
+  var longestLen = 0
+  // 初始化都不是回文
+  for (var i = 0; i < len; i++) {
+    p[i] = []
+    for (var j = 0; j < len; j++) {
+      p[i][j] = null
+    }
+  }
+  for (var i = len - 1; i > 0; i--) {
+    for (var j = 0; j <= i; j++) {
+      if (_longStr3(str, j, i, p) && longestLen < i - j +1) {
+        longestStart = j
+        longestEnd = i
+        longestLen = i - j + 1
+      }
+    }
+  }
+
+  return {
+    len: longestLen,
+    str: str.substring(longestStart, longestEnd + 1)
+  }
+}
+
+
+
+console.log(longStr3('acbadddabc'))

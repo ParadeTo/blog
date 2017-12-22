@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=640px">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+  .div {
+      position: relative;
+      margin-bottom: 20px;
+      border:none;
+      width: 100px;
+      height: 100px;
+
+      /* background-color: red; */
+  }
+  .one-px::after{
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      border-radius: 30px;
+      border: 1px solid #000;
+      box-sizing: border-box;
+      width: 200%;
+      height: 200%;
+      -webkit-transform: scale(0.5);
+      transform: scale(0.5);
+      -webkit-transform-origin: left top;
+      transform-origin: left top;
+  }
+  .no-hairlines {
+      border: 1px solid #000;
+      border-radius: 30px;
+  }
+  /* .div */
+  </style>
+</head>
+<body>
+  <div class="div hairlines"></div>
+  <div class="div no-hairlines"></div>
+  <script>
+    console.log(document.documentElement.clientWidth)
+  </script>
+</body>
+</html>

@@ -13,6 +13,3 @@ Handler.prototype.setNextSuccessor = function (nextSuccessor) {
 Handler.prototype.request = function () {
   throw new Error('需要实现')
 }
-
-
-func

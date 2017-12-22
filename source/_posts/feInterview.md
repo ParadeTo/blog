@@ -828,6 +828,7 @@ e.dataTransfer.getData
 ## 事件模型解释
 
 ## get和post的区别
+仅仅是协议上的区别
 
 ## 跨域/浏览器同源政策
 ### cookie 
@@ -843,7 +844,6 @@ e.dataTransfer.getData
 #### cors
 
 
-## prototype和__proto__的关系是什么
 * postMessage
 ```apple js
 otherWindow.postMessage(message, targetOrigin, [transfer]);
