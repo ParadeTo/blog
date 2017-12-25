@@ -7,83 +7,104 @@ var v = [6,3,5,4,6]
 var w = [2,2,6,5,4]
 var c = 10
 
-function big (v, w, c) {
-  function _big(v, w, c, f, s) {
+function bag (v, w, c) {
+  function _bag (v, w, c, f, s) {
+    // 子问题的规模
     var n = v.length
-    if (f[c][n] >= 0) {
-      return f[c][n]
+    // 子问题已经被求解
+    if (f[n][c] > 0) {
+      return f[n][c]
     }
-    f[c][n] = 0
-    for (var i = 0;i < n;i++) {
+    // 从剩下的物品中选择一件
+    for (var i = 0; i < n; i++) {
       var newW = w.slice()
       newW.splice(i, 1)
       var newV = v.slice()
       newV.splice(i, 1)
+      // 选出来的物品重量大于背包剩余容量，则该子问题的解为0
       if (w[i] > c) {
         return 0
       }
-      var maxValue = v[i] + _big(newV, newW, c - w[i], f, s)
-      if (f[c][n] < maxValue) {
-        f[c][n] = maxValue
-        s[c][n] = {v: v[i], w: w[i]}
+      // 否则递归求解，得到子问题的最大的解及当前选择的物品
+      var maxValue = v[i] + _bag(newV, newW, c - w[i], f, s)
+      if (f[n][c] < maxValue) {
+        f[n][c] = maxValue
+        s[n][c] = {v: v[i], w: w[i]}
       }
     }
-    return f[c][n]
+    // 返回子问题的最大解
+    return f[n][c]
   }
 
+  var n = v.length
+  // 记录最大的价值
   var f = []
+  // 记录所做的选择
   var s = []
-  for (var i = 0; i <= c; i++) {
+  for (var i = 0; i <= n; i++) {
     f[i] = []
     s[i] = []
+    for (var j = 0; j <= c; j++) {
+      f[i][j] = 0
+      s[i][j] = null
+    }
   }
-  _big(v, w, c, f, s)
+  _bag(v, w, c, f, s)
 
-  console.log(s)
-  var n = v.length
   // 从s中得到所选择的物品
   var selected = []
-  var i = c
-  var j = n
+  var i = n
+  var j = c
   var sum = 0
   do {
     var thing = s[i][j]
     if (thing) {
       selected.push(thing)
-      i -= thing.w
-      j--
+      j -= thing.w
+      i--
     }
   } while (thing)
 
   return {
-    maxV: f[c][n],
+    maxV: f[n][c],
     selected: selected
   }
 }
 
-function big2 (v, w, c) {
+function bag2 (v, w, c) {
   var f = []
+  var n = v.length
+
   for (var i = 0; i <= c; i++) {
     f[i] = []
+    for (var j = 0; j < n; j++) {
+      f[i][j] = 0
+    }
   }
 
-  var n = v.length
-  // 容量从 0 到 c
-  for (var i = 0; i < c; i++) {
-    // 物品从 0 到 n
-    for (var j = 0; j <= n; j++) {
-      if (i === 0 || j === 0) {
-        f[i][j] = 0
+  // 遍历物品
+  for (var j = 0; j < n; j++) {
+    // 遍历容量
+    for (var i = w[j]; i <= c; i++) {
+      // 第一件物品
+      if (j === 0) {
+        f[i][j] = v[j]
+      } else {
+        // 当前物品放入
+        if (v[j] + f[i-w[j]][j-1] > f[i][j-1]) {
+          f[i][j] = v[j] + f[i-w[j]][j-1]
+        }
+        // 当前物品不放入
+        else {
+          f[i][j] = f[i][j-1]
+        }
       }
-
-      var value = v[j]
     }
-    f[i][]
   }
 
   return f
 }
 
-var ret = big(v, w, c)
+var ret = bag(v, w, c)
 console.log(ret)
 
