@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+<div id="div">
+
+</div>
+<script>
+  // Firefox和Chrome早期版本中带有前缀
+  var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver
+
+  // 选择目标节点
+  var obj = document.querySelector('#div');
+
+  // 创建观察者对象
+  var observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      console.log(mutation.type);
+    });
+  });
+
+  // 配置观察选项:
+//  var config = { attributes: true, childList: true, characterData: true, subtree: true }
+  var config = { attributes: true, childList: true, characterData: true }
+
+  // 传入目标节点和观察选项
+  observer.observe(obj, config);
+
+  obj.innerHTML = '<p>dsadg</p>'
+</script>
+</body>
+</html>
