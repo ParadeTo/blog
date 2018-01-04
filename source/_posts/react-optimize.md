@@ -4,7 +4,7 @@ date: 2016-12-15 09:29:51
 tags:
 - react
 categories:
-- 前端框架
+- javascript
 description: 翻译react官网性能优化
 ---
 *原文请见：https://facebook.github.io/react/docs/optimizing-performance.html*

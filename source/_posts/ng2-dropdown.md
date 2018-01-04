@@ -4,7 +4,7 @@ date: 2016-09-13 11:06:06
 tags:
 - angularjs2
 categories:
-- 前端框架
+- javascript
 description: Angularjs2-下拉列表实现(父子组件通信)
 ---
 基于[http://valor-software.com/ng2-bootstrap/#/dropdowns](http://valor-software.com/ng2-bootstrap/#/dropdowns) 做的一个下拉列表控件，优化了如下功能：

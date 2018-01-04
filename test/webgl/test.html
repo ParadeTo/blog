@@ -1,0 +1,31 @@
+<html>
+<head>
+ <title>WebGL TEST</title>
+ <script src="script.js" type="text/javascript"></script>
+ <script src="minMatrix.js" type="text/javascript"></script>
+
+ <script id="vs" type="x-shader/x-vertex">
+attribute vec3 position;
+attribute vec4 color;
+uniform   mat4 mvpMatrix;
+varying   vec4 vColor;
+
+void main(void){
+    vColor = color;
+    gl_Position = mvpMatrix * vec4(position, 1.0);
+}
+        </script>
+
+ <!--使用从顶点着色器传来的varying类型的变量vColor，那么顶点的颜色属性就会对多边形产生影响-->
+ <script id="fs" type="x-shader/x-fragment">
+precision mediump float;
+varying vec4 vColor;
+void main(void){
+    gl_FragColor = vColor;
+}
+        </script>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+</body>
+</html>
