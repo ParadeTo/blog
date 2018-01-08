@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Demo</title>
+</head>
+<body>
+<div class="host">Hello World!</div>
+<script>
+  var host = document.querySelector('.host');
+  var root = host.createShadowRoot();
+
+  var node = document.createElement('h1');
+  node.textContent = 'Shadow DOM 介绍';
+
+  var para = document.createElement('p');
+  para.textContent = 'Shadow DOM 详细信息';
+
+  root.appendChild(node);
+  root.appendChild(para);
+</script>
+</body>
+</html>

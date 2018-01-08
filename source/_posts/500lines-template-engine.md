@@ -10,6 +10,8 @@ description: 用500行左右的代码实现一个模板引擎
 
 *原文请见：http://aosabook.org/en/500L/a-template-engine.html*
 
+*代码请见：https://github.com/aosabook/500lines/tree/master/template-engine*
+
 # 引言
 大多数程序包含大量的逻辑，以及少量文本数据。编程语言被设计成适合这种类型的编程。但是一些编程任务只涉及一点逻辑，以及大量的文本数据。
 对于这些任务，我们希望有一个更适合这些问题的工具。模板引擎就是这样一种工具。在本章中，我们将构建一个简单的模板引擎。
@@ -342,16 +344,16 @@ exec(python_source, global_namespace)
 将模板编译成 Python 函数的所有工作都发生在 Templite 构造函数中。首先，传入的上下文被保存:
 
 ```python
- def __init__(self, text, *contexts):
-        """Construct a Templite with the given `text`.
+def __init__(self, text, *contexts):
+    """Construct a Templite with the given `text`.
 
-        `contexts` are dictionaries of values to use for future renderings.
-        These are good for filters and global values.
+    `contexts` are dictionaries of values to use for future renderings.
+    These are good for filters and global values.
 
-        """
-        self.context = {}
-        for context in contexts:
-            self.context.update(context)
+    """
+    self.context = {}
+    for context in contexts:
+        self.context.update(context)
 ```
 
 这里，使用了 python 的可变参数，可以传入多个上下文，且后面传入的会覆盖前面传入的。
@@ -513,12 +515,200 @@ for token in tokens:
             self._syntax_error("Don't understand tag", words[0])
     else:
         # Literal content.  If it isn't empty, output it.
+        # 纯文本内容
         if token:
             buffered.append(repr(token))
 ```
 
+有几点需要注意：
+
+* 使用 `repr` 来给文本加上引号，否则生成的代码会像这样:
+
+```python
+extend_result([
+  <h1>Hello , to_str(c_upper(c_name)), !</h1>
+  ])
+```
+
+* 使用 `if token:` 来去掉空字符串，避免生成不必要的空行代码
 
 
+循环结束后，需要检查 `ops_stack` 是否为空，不为空说明控制语句格式有问题：
 
+```python
+if ops_stack:
+    self._syntax_error("Unmatched action tag", ops_stack[-1])
 
+flush_output()
+```
 
+前面我们通过 `vars_code = code.add_section()` 创建了一个 section，它的作用是将传入的上下文解构为渲染函数的局部变量。
+
+循环完后，我们收集到了所有的变量，现在可以添加这一部分的代码了，以下面的模板为例:
+
+```python
+<p>Welcome, {{user_name}}!</p>
+<p>Products:</p>
+<ul>
+{% for product in product_list %}
+    <li>{{ product.name }}:
+        {{ product.price|format_price }}</li>
+{% endfor %}
+</ul>
+```
+
+这里有三个变量 `user_name` `product_list` `product`。 `all_vars` 集合会包含它们，因为它们被用在表达式和控制语句之中。
+
+但是，最后只有 `user_name` `product_list` 会被解构成局部变量，因为 `product` 是循环体内的局部变量:
+
+```python
+for var_name in self.all_vars - self.loop_vars:
+    vars_code.add_line("c_%s = context[%r]" % (var_name, var_name))
+```
+
+到此，我们代码就都加入到 `result` 中了，最后将他们连接成字符串就大功告成了：
+
+```python
+code.add_line("return ''.join(result)")
+code.dedent()
+```
+
+通过 `get_globals`  我们可以得到所创建的渲染函数，并将它保存到 `_render_function` 上：
+
+```python
+self._render_function = code.get_globals()['render_function']
+```
+
+### 表达式
+现在让我们来仔细的分析下表达式的编译过程。
+
+我们的表达式可以简单到只有一个变量名:
+
+```python
+{{user_name}}
+```
+
+也可以很复杂：
+
+```python
+{{user.name.localized|upper|escape}}
+```
+
+这些情况， `_expr_code` 都会进行处理。同其他语言中的表达式一样，我们的表达式是递归构建的：大表达式由更小的表达式组成。一个完整的表达式是由管道分隔的，其中第一个部分是由逗号分开的，等等。所以我们的函数自然是递归的形式:
+
+```python
+def _expr_code(self, expr):
+    """Generate a Python expression for `expr`."""
+```
+
+第一种情形是表达式中有 `|`。
+这种情况会以 `|` 做为分隔符进行分隔，并将第一部分传给 `_expr_code` 继续求值。
+剩下的每一部分都是一个函数，我们可以迭代求值，即前面函数的结果作为后面函数的输入。同样，这里要收集函数变量名以便后面进行解构。
+
+```python
+if "|" in expr:
+    pipes = expr.split("|")
+    code = self._expr_code(pipes[0])
+    for func in pipes[1:]:
+        self._variable(func, self.all_vars)
+        code = "c_%s(%s)" % (func, code)
+```
+
+**我们的渲染函数中的变量都加了c_前缀，下同**
+
+第二种情况是表达式中没有 `|`，但是有 `.`。
+则以 `.` 作为分隔符分隔，第一部分传给 `_expr_code` 求值，所得结果作为 `do_dots` 的第一个参数。
+剩下的部分都作为 `do_dots` 的不定参数。
+
+```python
+elif "." in expr:
+    dots = expr.split(".")
+    code = self._expr_code(dots[0])
+    args = ", ".join(repr(d) for d in dots[1:])
+    code = "do_dots(%s, %s)" % (code, args)
+```
+
+比如, `x.y.z` 会被解析成函数调用 `do_dots(x, 'y', 'z')`
+
+最后一种情况是什么都不包含。这种比较简单，直接返回带前缀的变量：
+
+```python
+else:
+    self._variable(expr, self.all_vars)
+    code = "c_%s" % expr
+return code
+```
+
+### 工具函数
+
+* 错误处理
+
+```python
+def _syntax_error(self, msg, thing):
+    """Raise a syntax error using `msg`, and showing `thing`."""
+    raise TempliteSyntaxError("%s: %r" % (msg, thing))
+```
+
+* 变量收集
+
+```python
+def _variable(self, name, vars_set):
+    """Track that `name` is used as a variable.
+
+    Adds the name to `vars_set`, a set of variable names.
+
+    Raises an syntax error if `name` is not a valid name.
+
+    """
+    if not re.match(r"[_a-zA-Z][_a-zA-Z0-9]*$", name):
+        self._syntax_error("Not a valid name", name)
+    vars_set.add(name)
+```
+
+### 渲染
+前面我们已经将模板编译成了 python 代码，渲染过程就很简单了。我们要做的就是得到上下文，调用编译后的函数：
+
+```python
+def render(self, context=None):
+    """Render this template by applying it to `context`.
+
+    `context` is a dictionary of values to use in this rendering.
+
+    """
+    # Make the complete context we'll use.
+    render_context = dict(self.context)
+    if context:
+        render_context.update(context)
+    return self._render_function(render_context, self._do_dots)
+```
+
+`render` 函数首先将初始传入的数据和参数进行合并得到最后的上下文数据，最后通过调用 `_render_function` 来得到最后的结果。
+最后，再来分析一下 `_do_dots`：
+
+```python
+def _do_dots(self, value, *dots):
+    """Evaluate dotted expressions at runtime."""
+    for dot in dots:
+        try:
+            value = getattr(value, dot)
+        except AttributeError:
+            value = value[dot]
+        if callable(value):
+            value = value()
+    return value
+```
+
+前面说过，表达式 `x.y.z` 会被编译成 `do_dots(x, 'y', 'z')`。 下面以此为例：
+首先，将 y 作为对象 x 的一个属性尝试求值。如果失败，则将其作为一个键求值。最后，如果 y 是可调用的，则进行调用。
+然后，以得到的 value 作为对象继续进行后面的相同操作。
+
+# TODO
+为了保持代码的精简，我们还有很多功能没有实现：
+
+* 模板继承和包含
+* 自定义标签
+* 自动转义
+* 过滤器参数
+* 复杂的控制逻辑如 else 和 elif
+* 超过一个循环变量的循环体
+* 空格控制
