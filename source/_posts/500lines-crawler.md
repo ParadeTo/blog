@@ -8,6 +8,9 @@ categories:
 description: 用500行左右的代码实现一个爬虫
 ---
 
+*原文请见：http://aosabook.org/en/500L/a-web-crawler-with-asyncio-coroutines.html*
+*代码请见：https://github.com/aosabook/500lines/tree/master/crawler*
+
 # 引言
 经典的计算机科学强调的是高效的算法，能够尽可能快地完成计算。但是许多联网的程序并没有耗时在计算上面，而是打开许多慢的连接，或者是不常发生的事件。这些程序提出了一个不同的挑战：有效地等待大量的网络事件。针对这个问题的一种现代方法是异步 I/O 或 async。
 
@@ -204,8 +207,8 @@ while not stopped:
         callback(event_key, event_mask)
 ```
 
-# Coroutines
-可以通过一种称为“协同”的模式，将回调的效率与多线程编程的经典外观结合起来。使用 Python 3.4 的标准 asyncio 库和一个名为 aiohttp 的包，在 coroutine 中获取一个 url 是非常直接的：
+# 协程
+可以通过一种称为“协同”的模式，将回调的效率与多线程编程的方式结合起来。使用 Python 3.4 的标准 asyncio 库和一个名为 aiohttp 的包，在 coroutine 中获取一个 url 是非常直接的：
 
 ```python
 @asyncio.coroutine
@@ -214,3 +217,247 @@ def fetch(self, url):
     body = yield from response.read()
 ```
 
+它也是可扩展的。与每个线程的 50k 内存和操作系统对线程的硬限制相比，Python 的 coroutine 只占用 Jesse 系统的 3k 内存。Python 可以轻松地启动成千上万的coroutines。
+coroutine 的概念，可以追溯到计算机科学时代，很简单：它是一个可以暂停和恢复的子程序。coroutines 可以让多任务合作地处理：它们选择什么时候暂停，然后选择哪个 coroutine 运行。
+coroutines 的实现有很多；甚至在 Python 中也有几个。Python 3.4 中标准的“asyncio”库中的 coroutines 是建立在 generators、Future class 和 “yield from” 语句之上的。从 Python 3.5 开始，coroutines 是该语言的原生特性；然而，理解 coroutines 是在 Python 3.4 中首次实现的，使用早就存在的语言特性，是解决 Python 3.5 的原生协同程序的基础。
+为了解释 Python 3.4 的基于生成器的 coroutines，我们将阐述生成器，以及它们如何在 asyncio 中用作 coroutines，并且相信您会喜欢阅读它，就像我们喜欢编写它一样。一旦我们解释了基于生成器的协同程序，我们将在我们的 async 网络爬虫中使用它们。
+
+# Python 生成器是如何工作的
+在您掌握 Python 生成器之前，您必须了解 Python 函数的正常工作原理。通常，当 Python 函数调用子函数时，子函数将保持控制，直到它返回或抛出异常。然后控制返回给调用者:
+
+```python
+>>> def foo():
+...     bar()
+...
+>>> def bar():
+...     pass
+```
+
+标准的 Python 解释器是用 C 语言编写的，执行 Python 函数的 C 函数被称为 PyEval_EvalFrameEx。它接受一个 Python 堆栈帧对象，并在帧的上下文中对 Python 字节码进行求值。这是 foo 的字节码:
+
+```python
+>>> import dis
+>>> dis.dis(foo)
+  2           0 LOAD_GLOBAL              0 (bar)
+              3 CALL_FUNCTION            0 (0 positional, 0 keyword pair)
+              6 POP_TOP
+              7 LOAD_CONST               0 (None)
+             10 RETURN_VALUE
+```
+
+foo 函数将 bar 加载到它的堆栈上并调用它，然后从堆栈中弹出它的返回值，将 None 加载到堆栈上，然后返回 None。
+当 PyEval_EvalFrameEx 遇到 CALL_FUNCTION 字节码时，它会创建一个新的 Python 堆栈帧和递归：也就是说，它用新的帧递归调用 PyEval_EvalFrameEx，该帧用于执行 bar。
+理解 Python 堆栈帧在堆内存中分配至关重要! Python 解释器是一个普通的 C 程序，因此它的堆栈帧是正常的堆栈帧。但是它操纵的 Python 堆栈帧在堆上。这意味着 Python 堆栈帧可以比它的函数调用更有效。为了演示，请在 bar 中保存当前帧：
+
+```python
+>>> import inspect
+>>> frame = None
+>>> def foo():
+...     bar()
+...
+>>> def bar():
+...     global frame
+...     frame = inspect.currentframe()
+...
+>>> foo()
+>>> # The frame was executing the code for 'bar'.
+>>> frame.f_code.co_name
+'bar'
+>>> # Its back pointer refers to the frame for 'foo'.
+>>> caller_frame = frame.f_back
+>>> caller_frame.f_code.co_name
+'foo'
+```
+
+![](500lines-crawler/function-calls.png)
+
+现在轮到 Python 生成器出场了，它使用相同的构建块——代码对象和堆栈帧——来达到不可思议的效果。
+
+这是一个生成器：
+
+```python
+>>> def gen_fn():
+...     result = yield 1
+...     print('result of yield: {}'.format(result))
+...     result2 = yield 2
+...     print('result of 2nd yield: {}'.format(result2))
+...     return 'done'
+...     
+```
+
+当 Python 编译 gen_fn 到字节码时，它会看到 yield 语句，并且知道 gen_fn 是一个生成器函数，而不是普通的函数。它设置了一个标志来记住这个事实：
+
+```python
+>>> # The generator flag is bit position 5.
+>>> generator_bit = 1 << 5
+>>> bool(gen_fn.__code__.co_flags & generator_bit)
+True
+```
+
+当你调用生成器函数时，Python 会看到生成器标志，而它实际上并没有运行该函数。而是创建了一个生成器：
+
+```python
+>>> gen = gen_fn()
+>>> type(gen)
+<class 'generator'>
+```
+
+Python 生成器封装了一个堆栈帧，并引用了一些代码，gen_fn 的主体:
+
+```python
+>>> gen.gi_code.co_name
+'gen_fn'
+```
+
+所有调用 gen_fn 生成的生成器指向相同的代码。但是每个都有自己的堆栈帧。这个堆栈帧不在于任何实际的堆栈上，它位于堆内存中等待被使用：
+
+![](500lines-crawler/generator.png)
+
+堆栈帧有个 “last instruction” 指针，指向最近执行的那条指令。刚开始的时候 last instruction 指针是 -1，意味着生成器尚未开始：
+
+```python
+>>> gen.gi_frame.f_lasti
+-1
+```
+
+当我们调用 send 时，生成器达到第一个 yield 处然后暂停执行。send 的返回值是 1，这是因为 gen 把 1 传给了 yield 表达式：
+
+```python
+>>> gen.send(None)
+1
+```
+
+现在生成器的指令指针（instruction pointer）向前移动了 3 个字节码，这些是编译好的 56 字节的 Python 代码的一部分：
+
+```python
+>>> gen.gi_frame.f_lasti
+3
+>>> len(gen.gi_code.co_code)
+56
+```
+生成器可以在任何时候被任何函数恢复执行，因为它的堆栈帧实际上不在堆栈上——它在堆（内存）上。生成器在调用层次结构中的位置不是固定的，它不需要遵循常规函数执行时遵循的先进后出顺序。生成器是被解放了的，它像云一样浮动。
+
+我们可以将 “hello” 发送到这个生成器中，它会成为 yield 表达式的值，然后生成器会继续执行，直到产出 yield 出 2：
+
+```python
+>>> gen.send('hello')
+result of yield: hello
+2
+```
+
+现在这个生成器的堆栈帧包含局部变量 result：
+
+```python
+>>> gen.gi_frame.f_locals
+{'result': 'hello'}
+```
+
+从 gen_fn 创建的其他生成器将具有自己的堆栈帧和局部变量。
+
+当我们再次调用 send 时，生成器将从它第二个 yield 处继续执行，然后以产生特殊异常 StopIteration 结束：
+
+```python
+>>> gen.send('goodbye')
+result of 2nd yield: goodbye
+Traceback (most recent call last):
+    File "<input>", line 1, in <module>
+StopIteration: done
+```
+
+异常有一个值，它是那个生成器的返回值：字符串 “done”。
+
+# 使用生成器构建协程
+因此，生成器可以暂停，并且可以以一个值恢复，并且它具有一个返回值。这听起来是构建一个异步编程模型的原始版本，而不需要使用意大利面式的回调！我们想要构建一个 “coroutine”：一个与程序中其他 routines 协同调度的 routines。我们的 coroutines 将是 Python 标准的 “asyncio” 库的简化版本。在 asyncio 中，我们将使用 generators, futures, 和 "yield from"。
+首先，我们需要一种方法来表示一个协同程序等待的未来的结果。一个简化的实现如下：
+
+```python
+class Future:
+    def __init__(self):
+        self.result = None
+        self._callbacks = []
+
+    def add_done_callback(self, fn):
+        self._callbacks.append(fn)
+
+    def set_result(self, result):
+        self.result = result
+        for fn in self._callbacks:
+            fn(self)
+```
+
+一个 future 对象一开始是 “pending” 状态。它通过调用 set_result 来 “resolve”。
+让我们调整我们的 fetcher 使用 Future 和 coroutines：
+
+```python
+class Fetcher:
+    def fetch(self):
+        self.sock = socket.socket()
+        self.sock.setblocking(False)
+        try:
+            self.sock.connect(('xkcd.com', 80))
+        except BlockingIOError:
+            pass
+        selector.register(self.sock.fileno(),
+                          EVENT_WRITE,
+                          self.connected)
+
+    def connected(self, key, mask):
+        print('connected!')
+        # And so on....
+```
+
+fetch 方法开始连接一个套接字，然后注册回调 `connected`，在套接字就绪时执行。现在我们可以把这两个步骤合并成一个 coroutine：
+
+```python
+def fetch(self):
+    sock = socket.socket()
+    sock.setblocking(False)
+    try:
+        sock.connect(('xkcd.com', 80))
+    except BlockingIOError:
+        pass
+
+    f = Future()
+
+    def on_connected():
+        f.set_result(None)
+
+    selector.register(sock.fileno(),
+                      EVENT_WRITE,
+                      on_connected)
+    yield f
+    selector.unregister(sock.fileno())
+    print('connected!')
+```
+
+现在 fetch 是一个生成器函数，而不是普通的函数，因为它包含一个 yield 语句。我们创建一个挂起的 future 对象，然后让它在套接字准备好之前暂停取回。内部函数 `on_connected` 会 resolve。
+
+但当 future resolve 的时候，是什么恢复了生成器？我们需要一个 coroutine driver。让我们称之为 “task”：
+
+```python
+class Task:
+    def __init__(self, coro):
+        self.coro = coro
+        f = Future()
+        f.set_result(None)
+        self.step(f)
+
+    def step(self, future):
+        try:
+            next_future = self.coro.send(future.result)
+        except StopIteration:
+            return
+
+        next_future.add_done_callback(self.step) # 执行f.set_result(None)时会调用这里的self.step
+
+# Begin fetching http://xkcd.com/353/
+fetcher = Fetcher('/353/')
+Task(fetcher.fetch())
+
+loop()
+```
+
+task 启动 fetch 生成器，并将 None 传递给 send 方法，然后取回运行，直到它产生一个 next_future。当连接到套接字时，事件循环将运行回调 on_connected，调用 set_result，最终会调用 step。
+
+# 使用 yield from 重构 Coroutines
+![](500lines-crawler/yield-from.jpg)
