@@ -176,8 +176,12 @@ webkit2 是一组新的编程接口
 * npapi 插件进程
 * GPU 进程：最多一个，当且仅当gup硬件加速打开的时候才会被创建。Android 上面演变成一个线程
 * Pepper 插件进程
+# HTML 解释器和 DOM 模型
+## DOM 模型
+### DOM 标准
 
 #### browser 进程和 renderer 进程
+**DOM Level 1**
 
 ![](webkit-tech/3-3.png)
 
@@ -238,4 +242,62 @@ webkit2 是一组新的编程接口
 LRU (Least Recent Used) 算法
 
 缓存
+* 1998年
+* Core：一组底层的接口，可以表示任何结构化文档，同时也允许对接口进行拓展
+* HTML：在 Core 定义的接口之上，主要为了对 HTML 文档进行访问。把 HTML 中的内容定义为文档、节点、属性、元素、文本等。
+
+**DOM Level 2**
+
+* 2000年
+* Core：对 1 的拓展，getElementById
+* Views：描述跟踪一个文档的各种视图
+* Events：对 DOM 事件的处理，主要有 EventTarget、Mouse 事件等接口。不支持键盘事件
+* Style：一种新接口，可以修改 HTML 元素的样式属性
+* Tranversal and range：遍历树，对指定范围的文档修改、删除操作
+* HTML：允许动态访问和修改 HTML 文档
+
+**DOM Level 3**
+
+* 2004年
+* Core：新接口 adoptNode 和 textContent
+* Load and Save：允许动态加载 XML 文件并解释成 DOM 表示的文档结构
+* Validation：允许程序验证文档的有效性
+* Events：支持键盘事件
+* Style：一种新接口，可以修改 HTML 元素的样式属性
+* XPath
+
+### DOM 树
+#### 结构模型
+#### DOM 树
+
+## HTML 解释器
+### 解释过程
+![](webkit-tech/5-1.png)
+
+* 字节流通过解码成为字符流
+* 通过词法分析器被解释成词语
+* 通过语法分析器构建节点
+* 组建成 DOM 树
+
+![](webkit-tech/5-2.png)
+![](webkit-tech/5-3.png)
+### 词法分析
+**HTMLTokenizer**
+![](webkit-tech/5-4.png)
+
+### XSSAuditor 验证词语
+
+### 词语到节点
+HTMLTreeBuilder 中 constructTree 方法
+![](webkit-tech/5-5.png)
+
+### 节点到 DOM 树
+* 由 HTMLConstructionSite 类来完成
+* 使用栈结构来保存
+
+### 网页基础设施
+![](webkit-tech/5-6.png)
+
+
+### 使用影子 DOM
 
