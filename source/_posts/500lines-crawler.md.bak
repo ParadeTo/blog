@@ -207,6 +207,7 @@ while not stopped:
         callback(event_key, event_mask)
 ```
 
+
 # 协程
 可以通过一种称为“协同”的模式，将回调的效率与多线程编程的方式结合起来。使用 Python 3.4 的标准 asyncio 库和一个名为 aiohttp 的包，在 coroutine 中获取一个 url 是非常直接的：
 
@@ -460,4 +461,85 @@ loop()
 task 启动 fetch 生成器，并将 None 传递给 send 方法，然后取回运行，直到它产生一个 next_future。当连接到套接字时，事件循环将运行回调 on_connected，调用 set_result，最终会调用 step。
 
 # 使用 yield from 重构 Coroutines
+关于 yield from 可以参考《流畅的python》第 16 章或者下图
 ![](500lines-crawler/yield-from.jpg)
+
+一旦连接了套接字，我们就发送 HTTP GET 请求并读取服务器响应。这些步骤不再需要分散在回调中；我们把它们收集到同一个生成器中：
+
+```python
+def fetch(self):
+    # ... connection logic from above, then:
+    sock.send(request.encode('ascii'))
+
+    while True:
+        f = Future()
+
+        def on_readable():
+            f.set_result(sock.recv(4096))
+
+        selector.register(sock.fileno(),
+                          EVENT_READ,
+                          on_readable)
+        chunk = yield f
+        selector.unregister(sock.fileno())
+        if chunk:
+            self.response += chunk
+        else:
+            # Done reading.
+            break
+```
+这段代码从一个套接字中读取整个消息，似乎很有用。我们如何将它分解为一个 subroutine ？轮到 `yield from` 登场了。它让一个生成器委托给另一个生成器。
+为了清楚它是怎么工作的，让我们回到简单的生成器示例：
+
+```python
+>>> def gen_fn():
+...     result = yield 1
+...     print('result of yield: {}'.format(result))
+...     result2 = yield 2
+...     print('result of 2nd yield: {}'.format(result2))
+...     return 'done'
+```
+
+要从另一个生成器调用此生成器，使用 `yield from` 进行委托：
+
+```python
+>>> # Generator function:
+>>> def caller_fn():
+...     gen = gen_fn()
+...     rv = yield from gen
+...     print('return value of yield-from: {}'
+...           .format(rv))
+...
+>>> # Make a generator from the
+>>> # generator function.
+>>> caller = caller_fn()
+```
+
+调用方生成器的作用就好像它是 gen：
+
+```python
+>>> caller.send(None)
+1
+>>> caller.gi_frame.f_lasti
+15
+>>> caller.send('hello')
+result of yield: hello
+2
+>>> caller.gi_frame.f_lasti  # Hasn't advanced.
+15
+>>> caller.send('goodbye')
+result of 2nd yield: goodbye
+return value of yield-from: done
+Traceback (most recent call last):
+  File "<input>", line 1, in <module>
+StopIteration
+```
+`caller` yields from `gen`，但其指令指针（instruction pointer）不会向前移动，一直指在 15。即使内部生成器 gen 从一个 yield 语句前进到下一个。从 `caller` 的外部调用者的角度来看，我们无法判断它所产生的值是来自 `caller` 还是来自其委托的生成器。从 `gen` 内部，我们无法判断值是否从 `caller` 或外部传入。`yield from` 是一个无摩擦的通道，通过这个通道，在 `gen` 完成之前，值就会流入和流出。
+coroutine 可以通过 `yield from` 将工作委派给下属，并得到工作成果。请注意，在上面，`caller` 打印了 "return value of yield-from: done"。当 `gen` 完成后，它的返回值就变成了在 `caller` 中 `yield from` 语句的值：
+
+```python
+rv = yield from gen
+```
+
+
+

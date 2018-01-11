@@ -27,3 +27,8 @@ function produce(c) {
 
 c = consumer()
 produce(c)
+
+
+function * gen() {
+
+}
