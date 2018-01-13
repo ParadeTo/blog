@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <style>
+    #div {
+      width: 100px;
+      height: 100px;
+      background-color: red;
+    }
+  </style>
+</head>
+<body>
+  <div id="div">please transform me</div>
+  <script>
+    var div = document.getElementById('div')
+
+    document.addEventListener('click', function  () {
+      div.style.transform = "rotate(30deg)"
+    })
+  </script>
+</body>
+</html>

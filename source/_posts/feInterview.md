@@ -324,7 +324,7 @@ http://davidshariff.com/quiz/#
 ### 模板优化
 1. v-show v-if
 2. 少写表达式，封装到一个方法中
-3. key 
+3. key
 ### script
 1. 用好computed， 缓存
 
@@ -347,7 +347,7 @@ http://davidshariff.com/quiz/#
   * this.matcher = createMatcher(options.routes || [], this)
   * const { pathList, pathMap, nameMap } = createRouteMap(routes)
     可以看出主要做的事情就是根据用户路由配置对象生成普通的根据 path 来对应的路由记录以及根据 name 来对应的路由记录的 map，方便后续匹配对应。
-  
+
   * History
 
 3. 实例化vue
@@ -385,8 +385,8 @@ listen
 1. 可以解决兄弟组件间的状态传递
 2. 代码更加结构化和易维护
 3. ssr一般需要
-  
-  
+
+
 # js
 ## requestAnimationFrame
 ```apple js
@@ -831,7 +831,7 @@ e.dataTransfer.getData
 仅仅是协议上的区别
 
 ## 跨域/浏览器同源政策
-### cookie 
+### cookie
 **document.domain** 子域名共享cookie
 
 ### iframe
@@ -854,7 +854,7 @@ function receiveMessage(event)
 {
   // For Chrome, the origin property is in the event.originalEvent
   // object.
-  var origin = event.origin || event.originalEvent.origin; 
+  var origin = event.origin || event.originalEvent.origin;
   if (origin !== "http://example.org:8080")
     return;
     alert(event.data);    // 弹出"I was there!"
@@ -1048,6 +1048,11 @@ function require(...) {
 ## 域名收敛是什么
 
 ## 前端优化策略列举
+### 减少重绘重排
+[10-ways-minimize-reflows-improve-performance](https://www.sitepoint.com/10-ways-minimize-reflows-improve-performance/)
+
+[css trigger](https://csstriggers.com/)
+
 ### 加载优化
 1. 合并css，javascript
 2. 合并小图片，使用雪碧图
@@ -1496,6 +1501,3 @@ PutInFridge.prototype.do = function () {
 ```
 
 ## 职责链
-
-
-
