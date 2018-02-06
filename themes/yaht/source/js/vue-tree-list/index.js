@@ -61,9 +61,9 @@ function isMobile() {
       },
 
       getNewTree: function () {
-        const vm = this
+        var vm = this
         function _dfs (oldNode) {
-          let newNode = {}
+          var newNode = {}
 
           newNode.name = oldNode.name
           newNode.pid = oldNode.pid
@@ -72,7 +72,7 @@ function isMobile() {
 
           if (oldNode.children && oldNode.children.length > 0) {
             newNode.children = []
-            for (let i = 0, len = oldNode.children.length; i < len; i++) {
+            for (var i = 0, len = oldNode.children.length; i < len; i++) {
               newNode.children.push(_dfs(oldNode.children[i]))
             }
           }
