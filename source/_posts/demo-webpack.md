@@ -4,8 +4,8 @@ date: 2016-06-29 22:14:50
 tags:
 - webpack
 categories:
-- 前端工具
-description: 第一次用webpack
+- javascript
+description: 第一次用 webpack
 ---
 
 ## 一个例子

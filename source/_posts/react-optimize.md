@@ -4,7 +4,7 @@ date: 2016-12-15 09:29:51
 tags:
 - react
 categories:
-- javascript
+- 翻译
 description: 翻译react官网性能优化
 ---
 *原文请见：https://facebook.github.io/react/docs/optimizing-performance.html*

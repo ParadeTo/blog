@@ -4,7 +4,7 @@ date: 2018-01-24 23:45:01
 tags:
 - go
 categories:
-- go
+- 翻译
 description: 关于 Go 中接口的一篇好文章
 ---
 
