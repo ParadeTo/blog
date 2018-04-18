@@ -4,7 +4,7 @@ date: 2018-04-18 16:38:21
 tags:
 - react
 categories:
-- 翻译
+- javascript
 description: create-react-app 项目配置 nginx
 ---
 
