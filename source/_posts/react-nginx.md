@@ -49,3 +49,25 @@ http {
   }
 }
 ```
+
+由于使用了 `/produk-digital` 作为路由前缀，项目中也需要相应的进行配置。
+
+首先，需要配置 `publicUrl`，这个是静态文件的前缀。 从 `config/paths.js` 中可以看到该配置即可通过 `env.PUBLIC_URL` 传入，也可配置在 `package.json` 中，
+本文采用的是后一种的方法：
+
+```javascript
+  ...
+  "homepage": "/produk-digital"
+  ...
+```
+
+然后，`react-router` 需要配置 `basename` 作为路由的前缀:
+
+```javascript
+...
+<BrowserRouter basename='/produk-digital/m'>
+    <App />
+</BrowserRouter>
+...
+```
+
