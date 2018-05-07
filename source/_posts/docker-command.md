@@ -20,6 +20,8 @@ docker attach <containerId>
 # build
 构建一个镜像
 
+build 的时候其实是临时起了一个容器，然后在这个容器中进行修改，提交，最后删除掉这个容器
+
 ```
 docker build -t ayou/hello .
 ```
