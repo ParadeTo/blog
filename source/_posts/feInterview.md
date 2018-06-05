@@ -771,6 +771,32 @@ var obj = require1()
 console.log(obj.b)
 ```
 
+或者
+
+```javascript
+function simpleRequire (pathname) {
+ var module = {
+   exports: {}
+ }
+ // load module by pathname
+ var fs = require('fs')
+ var sourceCode = fs.readFileSync(pathname, 'utf8')
+ /*
+   function (module, exports) {
+     // here is sorceCode
+     ...
+
+     return module.exports
+   }
+ **/
+ var moduleExportsFunc = new Function('module', 'exports', `${sourceCode}; return module.exports;`)
+ return moduleExportsFunc(module, module.exports)
+}
+var utils = simpleRequire('./utils.js')
+console.log(utils.sum(1, 2))
+
+```
+
 ## 7种类型
 Number, String, Boolean, Null, Undefined, Object, Symbol
 
