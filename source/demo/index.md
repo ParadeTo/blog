@@ -6,14 +6,6 @@ layout: page
 一个个性化的2048游戏
 [玩一玩](/game2048)
 
-# 7夕大作战
-[玩一玩](/game77)
-
-# 生日祝福
-小秀一下
-
-[看一看](/birthday)
-
 # vue-date-range
 基于vue2.0的日期选择组件
 

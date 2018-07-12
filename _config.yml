@@ -36,7 +36,7 @@ titlecase: false # Transform title into titlecase
 external_link: true # Open external links in new tab
 filename_case: 0
 render_drafts: false
-post_asset_folder: true
+post_asset_folder: false
 relative_link: false
 future: true
 highlight:
@@ -65,7 +65,13 @@ pagination_dir: page
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
-theme: yaht
+theme: next
+
+search:
+  path: search.xml
+  field: post
+  format: html
+  limit: 10000
 
 # 自动生成sitemap
 sitemap:

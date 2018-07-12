@@ -1,0 +1,88 @@
+#vue-date-range-page {
+  background: linear-gradient(to bottom right, #00ebcb, #dafffa) !important;
+  background-color: transparent !important;
+  padding-bottom: 50px;
+  .container {
+    max-width: 1024px !important;
+    background-color: #fff;
+    padding: 0 0.5rem;
+    background-color: #fff;
+    margin-top: 1rem;
+    /*box-shadow: ;*/
+  }
+
+  a {
+    border-bottom: none;
+  }
+
+  img {
+    display: inline;
+  }
+
+  .date-container, .selected-container {
+    margin: 1rem auto;
+    padding: 0 !important;
+    min-width: 300px;
+    max-width: 400px !important;
+  }
+
+  .demo-page {
+    min-height: 100vh;
+    padding: 0 0.5rem;
+  }
+
+  .column {
+    padding-top: 0;
+    padding-bottom: 0.5rem;
+  }
+
+  @media screen and (min-width: 768px) {
+    .control:not(:last-child) {
+      margin-bottom: 0.2rem;
+    }
+
+    .is-full {
+      flex: 1;
+    }
+
+    .is-horizontal {
+      display: flex;
+      align-items: center;
+    }
+
+    .label {
+      margin-right: 1rem;
+    }
+  }
+
+  .date-picker {
+    position: relative;
+  }
+
+  .calendar-wrapper {
+    border: 1px solid #bbbbbb;
+    position: absolute;
+    min-width: 300px;
+    max-width: 400px;
+    z-index: 999;
+    .v-date-calendar {
+      height: 400px;
+    }
+  }
+  @media all and (max-width: 375px) {
+    .calendar-wrapper {
+      width: 120%;
+      max-width: 120%;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  }
+  .mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 998;
+  }
+}
