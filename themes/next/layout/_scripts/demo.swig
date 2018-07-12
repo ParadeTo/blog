@@ -15,4 +15,6 @@
 {% elif page.title==='vue-tree-list' %}
   <script src="/js/vue-tree-list/vue-tree-list.min.js"></script>
   <script src="/js/vue-tree-list/index.js"></script>
+{% elif page.title==='resume' %}
+  <script src="/js/resume/index.js"></script>
 {% endif %}

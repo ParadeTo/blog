@@ -6,4 +6,6 @@
   {% include './demo/vue-date-range.swig' %}
 {% elif page.title=='vue-tree-list' %}
   {% include './demo/vue-tree-list.swig' %}
+{% elif page.title=='resume' %}
+  {% include './demo/resume.swig' %}
 {% endif %}

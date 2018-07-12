@@ -98,6 +98,7 @@ menu:
   archives: /archives/ || archive
   tags: /tags/ || tags
   categories: /categories
+  resume: /resume
   #schedule: /schedule/ || calendar
   #sitemap: /sitemap.xml || sitemap
   #commonweal: /404/ || heartbeat
