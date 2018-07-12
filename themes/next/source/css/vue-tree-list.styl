@@ -1,0 +1,49 @@
+#vue-tree-list-page {
+  background: linear-gradient(to bottom right, #00ebcb, #dafffa) !important;
+  background-color: transparent !important;
+  padding-bottom: 100px;
+  .container {
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 3px rgba(10,10,10,.1), 0 0 0 1px rgba(10,10,10,.1);
+    padding: 1.25rem;
+    max-width: 1024px !important;
+    background-color: #fff;
+    margin: 1rem auto 0 auto;
+  }
+
+  .wrapper {
+      min-height: 100vh;
+      padding: 0 0.5rem;
+  }
+
+  @media screen and (min-width: 768px) {
+      .control:not(:last-child) {
+          margin-bottom: 0.2rem;
+      }
+
+      .is-full {
+          flex: 1;
+      }
+
+      .is-horizontal {
+          display: flex;
+          align-items: center;
+      }
+
+      .label {
+          margin-right: 1rem;
+      }
+  }
+
+
+
+  @media all and (max-width: 375px) {
+      .calendar-wrapper {
+          width: 120%;
+          max-width: 120%;
+          left: 50%;
+          transform: translateX(-50%);
+      }
+  }
+}

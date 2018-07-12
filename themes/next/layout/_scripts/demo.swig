@@ -12,4 +12,7 @@
   <script src="//cdn.bootcss.com/moment.js/2.17.1/moment.min.js"></script>
   <script src="/js/vue-date-range/vue-date-range.min.js"></script>
   <script src="/js/vue-date-range/index.js"></script>
+{% elif page.title==='vue-tree-list' %}
+  <script src="/js/vue-tree-list/vue-tree-list.min.js"></script>
+  <script src="/js/vue-tree-list/index.js"></script>
 {% endif %}

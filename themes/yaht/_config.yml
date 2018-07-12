@@ -4,6 +4,7 @@ menu:
   Archives: /archives
   Resume: /resume
   Demo: /demo
+  Categories: /categories
 ## you can create `tags` and `categories` folders in `../source`.
 ## And create a `index.md` file in each of them.
 ## set `front-matter`as

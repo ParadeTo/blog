@@ -4,4 +4,6 @@
   {% include './demo/game77.swig' %}
 {% elif page.title=='vue-date-range' %}
   {% include './demo/vue-date-range.swig' %}
+{% elif page.title=='vue-tree-list' %}
+  {% include './demo/vue-tree-list.swig' %}
 {% endif %}

@@ -94,9 +94,10 @@ index_with_subtitle: false
 menu:
   home: / || home
   #about: /about/ || user
-  Demo: /demo/ || th
+  demo: /demo/ || th
   archives: /archives/ || archive
   tags: /tags/ || tags
+  categories: /categories
   #schedule: /schedule/ || calendar
   #sitemap: /sitemap.xml || sitemap
   #commonweal: /404/ || heartbeat
@@ -395,7 +396,7 @@ valine:
 
 # Support for LiveRe comments system.
 # You can get your uid from https://livere.com/insight/myCode (General web site)
-livere_uid: MTAyMC8zNzk2NC8xNDQ5NA==
+livere_uid: MTAyMC8zODAwNS8xNDUzNQ==
 
 # Gitment
 # Introduction: https://imsun.net/posts/gitment-introduction/
