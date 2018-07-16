@@ -13,7 +13,7 @@ description: CSS SECRETS 很有名的css经典著作
 
 # 背景与边框
 ## 半透明边框
-![](css-secrets/c2-1.png)
+![](c2-1.png)
 ```css
 div {
     padding: 50px;
@@ -23,7 +23,7 @@ div {
 }
 ```
 ## 多重边框
-![](css-secrets/c2-2.png)
+![](c2-2.png)
 ### box-shadow
 ```javascript
 box-shadow: 0 0 0 10px #655, 0 0 0 20px red;
@@ -38,7 +38,7 @@ box-shadow: 0 0 0 10px #655, 0 0 0 20px red;
 * 没有圆角
 
 ## 灵活的背景定位
-![](css-secrets/c2-3.png)
+![](c2-3.png)
 ### background-position方案
 ```javascript
 background: url(***) no-repeat bottom right red; /* 回退方案 */
@@ -58,7 +58,7 @@ background-position: calc(100% - 20px) calc(100% - 10px);
 ```
 
 ## 边框内圆角
-![](css-secrets/c2-4.png)
+![](c2-4.png)
 ```javascript
 background: tan;
 border-radius: .8em;
@@ -68,7 +68,7 @@ outline: .6em solid #655;
 ```
 
 ## 条纹背景
-![](css-secrets/c2-5.png)
+![](c2-5.png)
 比较复杂，看书比较好理解
 
 另外，这个：
@@ -88,8 +88,8 @@ background-image: repeating-linear-gradient(30deg,
 ```
 
 ## 复杂的背景图案
-![](css-secrets/c2-6-1.png)
-![](css-secrets/c2-6-2.png)
+![](c2-6-1.png)
+![](c2-6-2.png)
 ```javascript
 /* 波点 */
 background-image:
@@ -98,7 +98,7 @@ background-image:
 background-size: 30px 30px;
 background-position: 0 0, 15px 15px;
 ```
-![](css-secrets/c2-6-3.png)
+![](c2-6-3.png)
 ```javascript
 /* 棋盘 */
 background-image:
@@ -122,7 +122,7 @@ background-position: 0 0, 15px 15px;
 “蝉原则”，质数的思想
 
 ## 连续的图像边框
-![](css-secrets/c2-8-1.png)
+![](c2-8-1.png)
 ```javascript
 /* 老式信封样式边框 */
 background: linear-gradient(white, white) padding-box,
@@ -188,7 +188,7 @@ button::before {
 ```
 
 ## 菱形图片
-![](css-secrets/c3-11.png)
+![](c3-11.png)
 ```javascript
 .picture {
   margin: 200px auto;
@@ -218,7 +218,7 @@ img {
 
 ## 切角效果
 四个角的切角效果
-![](css-secrets/c3-12-1.png)
+![](c3-12-1.png)
 ```javascript
 background: #58a;
 background:
@@ -231,7 +231,7 @@ background-repeat: no-repeat;
 ```
 
 内凹圆角
-![](css-secrets/c3-12-2.png)
+![](c3-12-2.png)
 ```javascript
 background:
 	radial-gradient(circle at top left, transparent 15px, #58a 0) top left,
@@ -265,7 +265,7 @@ clip-path: polygon(
 ```
 
 ## 梯形标签页
-![](css-secrets/c3-13.png)
+![](c3-13.png)
 ```javascript
 div::before {
   content: '';
@@ -467,7 +467,7 @@ filter: blur(20px);
 ```
 
 ## 折角效果
-![](css-secrets/c4-19.png)
+![](c4-19.png)
 
 ```javascript
 div {
@@ -485,8 +485,8 @@ div {
 
 30度的折角呢？
 
-![](css-secrets/c4-19-1.png)
-![](css-secrets/c4-19-2.png)
+![](c4-19-1.png)
+![](c4-19-2.png)
 
 ```javascript
 div {
@@ -514,11 +514,11 @@ div::before {
   box-shadow: -.2em .2em .3em -.1em rgba(0, 0, 0, .2);
 }
 ```
-![](css-secrets/c4-19-3.png)
+![](c4-19-3.png)
 
 # 字体排印
 ## 插入换行
-![](css-secrets/c5-21.png)
+![](c5-21.png)
 
 ```javascript
 dt, dd {
@@ -548,7 +548,7 @@ dd + dd::before {
 ```
 
 ## 文本行的斑马条纹
-![](css-secrets/c5-22.png)
+![](c5-22.png)
 ```javascript
 pre {
     padding: .5em;
@@ -575,7 +575,7 @@ tab-size: 2
 ```
 
 ## 华丽的&符号
-![](css-secrets/c5-25.png)
+![](c5-25.png)
 ```javascript
 @font-face {
     font-family: Ampersand;
@@ -591,7 +591,7 @@ h1 {
 ```
 
 ## 自定义下划线
-![](css-secrets/c5-26.png)
+![](c5-26.png)
 ```javascript
 a[href] {
     text-decoration: none;
@@ -664,7 +664,7 @@ div:hover {
 ```
 
 ### 文字凸起效果
-![](css-secrets/c5-27-1.png)
+![](c5-27-1.png)
 ```javascript
 button {
     outline: none;
@@ -707,7 +707,7 @@ button:active, button:focus {
 ```
 
 ### 环形文字
-![](css-secrets/c5-28.png)
+![](c5-28.png)
 ```javascript
 .circular {
     width: 400px;
@@ -803,7 +803,7 @@ ul {
 ## 交互式的图片对比控件
 1. resize方案
 
-![](css-secrets/c6-35-1.png)
+![](c6-35-1.png)
 
 ```javascript
 img {
@@ -928,7 +928,7 @@ border-spacing: 0; /* 单元格之间的间距 */
 ```
 
 ## 根据兄弟元素的数量来设置样式
-![](css-secrets/c7-38-1.png)
+![](c7-38-1.png)
 
 ```javascript
 li {
@@ -989,7 +989,7 @@ li {
 ```
 
 同理，可以利用这个技巧来实现列表项的总数大于等于4时选中所有列表:
-![](css-secrets/c7-38-2.png)
+![](c7-38-2.png)
 
 ```javascript
 li:first-child:nth-last-child(n+4),
@@ -1209,7 +1209,7 @@ input:not(:focus) + .callout {
 * alternate 反转偶数个
 * alternate-reverse 反转奇数个
 
-![](css-secrets/c8-44-1.png)
+![](c8-44-1.png)
 
 ```javascript
 @keyframes blink-smooth {

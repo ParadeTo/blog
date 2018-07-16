@@ -10,7 +10,7 @@ description: canvas画多边形
 ---
 
 # 效果
-![](canvas-polygon/1.jpg)
+![](1.jpg)
 
 * 右键完成闭合
 * esc回退到上一点

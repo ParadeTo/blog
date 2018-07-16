@@ -164,7 +164,7 @@ import Vue from 'core/index'
 
 依照此思路，最终我们寻找到Vue构造函数的位置应该是在``src/core/instance/index.js``文件中，其实我们猜也猜得到，上面介绍目录的时候说过：``instance``是存放Vue构造函数设计相关代码的目录。总结一下，我们寻找的过程是这样的：
 
-![](vue-code-analysis/1.jpg)
+![](1.jpg)
 
 我们回头看看``src/core/instance/index.js``文件，很简单：
 
@@ -1022,11 +1022,11 @@ export function parsePath (path: string): any {
 
 Vue 的求值代码是在 ``src/core/util/lang.js`` 文件中 ``parsePath`` 函数中实现的。总结一下Vue的依赖收集过程应该是这样的：
 
-![](vue-code-analysis/2.jpg)
+![](2.jpg)
 
 实际上，``Vue``并没有直接在 ``get`` 中调用 ``addSub``，而是调用的 ``dep.depend``，目的是将当前的 ``dep`` 对象收集到 ``watch`` 对象中，如果要完整的流程，应该是这样的：（大家注意数据的每一个字段都拥有自己的 ``dep`` 对象和 ``get`` 方法。）
 
-![](vue-code-analysis/3.png)
+![](3.png)
 
 这样 ``Vue`` 就建立了一套数据响应系统，之前我们说过，按照我们的例子那样写，初始化工作只包含两个主要内容即：``initData`` 和 ``initRender``。现在 ``initData`` 我们分析完了，接下来看一看 ``initRender``
 
@@ -1128,7 +1128,7 @@ Vue.prototype.$mount = function (
 5、将编译成的 ``render`` 函数挂载到 ``this.$options`` 属性下，并调用缓存下来的 ``web-runtime.js`` 文件中的 ``$mount`` 方法
 简单的用一张图表示 ``mount`` 方法的调用关系，从上至下调用：
 
-![](vue-code-analysis/4.jpg)
+![](4.jpg)
 
 不过不管怎样，我们发现这些步骤的最终目的是生成 ``render`` 函数，然后再调用 ``lifecycle.js`` 文件中的 ``_mount`` 方法，我们看看这个方法做了什么事情，查看 ``_mount`` 方法的代码，这是简化过得：
 
@@ -1276,7 +1276,7 @@ vnode = render.call(vm._renderProxy, vm.$createElement)
 
 打印的 ``render`` 函数如下：
 
-![](vue-code-analysis/5.jpg)
+![](5.jpg)
 
 我们修改模板为：
 
@@ -1288,7 +1288,7 @@ vnode = render.call(vm._renderProxy, vm.$createElement)
 
 打印出来的 ``render`` 函数如下：
 
-![](vue-code-analysis/6.jpg)
+![](6.jpg)
 
 其实了解Vue2.x版本的同学都知道，Vue提供了 ``render`` 选项，作为 ``template`` 的代替方案，同时为JavaScript提供了完全编程的能力，下面两种编写模板的方式实际是等价的：
 
@@ -1386,7 +1386,7 @@ Vue所做的事：
 
 用一张详细一点的图表示就是这样的：
 
-![](vue-code-analysis/7.png)
+![](7.png)
 
 到此，我们从大体流程，挑着重点的走了一遍``Vue``，但是还有很多细节我们没有提及，比如：
 1、将模板转为 ``render`` 函数的时候，实际是先生成的抽象语法树（``AST``），再将抽象语法树转成的 ``render`` 函数，而且这一整套的代码我们也没有提及，因为他在复杂了，其实这部分内容就是在完正则。

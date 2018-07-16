@@ -270,7 +270,7 @@ foo 函数将 bar 加载到它的堆栈上并调用它，然后从堆栈中弹�
 'foo'
 ```
 
-![](500lines-crawler/function-calls.png)
+![](function-calls.png)
 
 现在轮到 Python 生成器出场了，它使用相同的构建块——代码对象和堆栈帧——来达到不可思议的效果。
 
@@ -312,7 +312,7 @@ Python 生成器封装了一个堆栈帧，并引用了一些代码，gen_fn 的
 
 所有调用 gen_fn 生成的生成器指向相同的代码。但是每个都有自己的堆栈帧。这个堆栈帧不在于任何实际的堆栈上，它位于堆内存中等待被使用：
 
-![](500lines-crawler/generator.png)
+![](generator.png)
 
 堆栈帧有个 “last instruction” 指针，指向最近执行的那条指令。刚开始的时候 last instruction 指针是 -1，意味着生成器尚未开始：
 
@@ -462,7 +462,7 @@ task 启动 fetch 生成器，并将 None 传递给 send 方法，然后取回�
 
 # 使用 yield from 重构 Coroutines
 关于 yield from 可以参考《流畅的python》第 16 章或者下图
-![](500lines-crawler/yield-from.jpg)
+![](yield-from.jpg)
 
 一旦连接了套接字，我们就发送 HTTP GET 请求并读取服务器响应。这些步骤不再需要分散在回调中；我们把它们收集到同一个生成器中：
 

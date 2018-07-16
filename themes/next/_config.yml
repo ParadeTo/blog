@@ -813,3 +813,5 @@ images: images
 
 # Theme version
 version: 5.1.4
+
+post_asset_folder: true

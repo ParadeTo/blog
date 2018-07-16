@@ -37,7 +37,7 @@ React根据新的数据生成一个新的VDOM，因为VDOM本质上只是一个�
 7. diff新VDOM和旧VDOM，得到需要修改真实DOM的patches；
 8. 把patches一次性打到DOM上，只更新DOM上需要更改的地方。
 
-![](react-vdom/1.png)
+![](1.png)
 
 # 项目结构
 1. index.html
@@ -122,7 +122,7 @@ function render() {
 
 我们在render函数中打印出执行完 view() 的结果，再 `npm run compile` 后，用浏览器打开我们的 index.html，看控制台输出的结果。
 
-![](react-vdom/2.png)
+![](2.png)
 
 可以，很完美！这个对象就是我们的 VDOM 了！
 

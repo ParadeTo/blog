@@ -495,7 +495,7 @@ Promise.resolve()
 ```
 
 ## 排序
-![](feInterview/sort.png)
+![](sort.png)
 
 说明：
 

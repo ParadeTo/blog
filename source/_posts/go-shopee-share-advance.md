@@ -9,7 +9,7 @@ description: 组内分享
 ---
 
 # go 调度模型
-![](go-shopee-share-advance/1.png)
+![](1.png)
 
 * 抢占式调度
 ```go
@@ -92,9 +92,9 @@ func main() {
 无缓冲的通道保证进行发送和接收的 goroutine 会在同一时间进行数据交换;有缓冲的 通道没有这种保证
 
 
-![](go-shopee-share-advance/2.png)
+![](2.png)
 
-![](go-shopee-share-advance/3.png)
+![](3.png)
 
 可以理解为无缓存的通道是容量为 0 的缓冲通道。
 

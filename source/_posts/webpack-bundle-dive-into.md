@@ -322,7 +322,7 @@ exports.name = 'page1'
 
 整个过程可以用下图来表示：
 
-![](webpack-bundle-dive-into/1.jpeg)
+![](1.jpeg)
 
 
 # 提取公共代码
@@ -345,7 +345,7 @@ src
 
 为了解决这个问题，可以将公共代码提取出来，具体到上面的例子，我们可能希望最终打包的结果像这样：
 
-![](webpack-bundle-dive-into/2.png)
+![](2.png)
 
 为了实现上述要求，可以使用 CommonsChunkPlugin:
 

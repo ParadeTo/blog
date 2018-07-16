@@ -99,7 +99,7 @@ SELECT * FROM post WHERE post.id in (123,456,9098,8904);
 * 查询中使用同一个数据表
 
 # 查询执行的基础
-![](hpMysql6/1.png)
+![](1.png)
 
 上图描绘的是一个查询的流程：
 
@@ -215,7 +215,7 @@ while outer_row
 end
 ```
 
-![](hpMysql6/2.png)
+![](2.png)
 
 
 **执行计划**

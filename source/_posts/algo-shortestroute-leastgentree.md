@@ -13,7 +13,7 @@ description: 最短路径+最小生成树
 
 * 最小生成树是解决用最小的代价将图上的所有点连接起来的问题
 
-![](algo-shortestroute-leastgentree/1.jpg)
+![](1.jpg)
 
 # js实现
 
@@ -118,13 +118,13 @@ function prim(S, M) {
 2. 从小到大考察每一条边，如果这一条边是连接两棵树的边，则将两棵树相连，并
 组成新的树。重复这一步骤直到考察完所有的边。
   
-![](algo-shortestroute-leastgentree/2.png)
+![](2.png)
 
 * prim
 1. 任意选择一个顶点作为一个"切割"
 2. 考察剩余顶点与"切割"的连通情况，选择最小的轻量级边并连接作为新的"切割"。重复这一步骤直到所有的顶点都考察完
 
-![](algo-shortestroute-leastgentree/3.png)
+![](3.png)
 
 ## 单源最短路径
 * bellman-ford

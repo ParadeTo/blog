@@ -8,7 +8,7 @@ categories:
 description: 高性能MySQL(第3版)第一章-MySQL架构与历史
 ---
 # 逻辑架构
-![](hqMysql1/1.png)
+![](1.png)
 
 ## 连接管理与安全性
 * 客户端连接都会在服务器进程中拥有一个线程
