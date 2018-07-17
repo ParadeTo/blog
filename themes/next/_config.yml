@@ -94,11 +94,11 @@ index_with_subtitle: false
 menu:
   home: / || home
   #about: /about/ || user
-  demo: /demo/ || th
+  Demo: /demo/ || th
   archives: /archives/ || archive
   tags: /tags/ || tags
   categories: /categories
-  resume: /resume
+  About: /resume
   #schedule: /schedule/ || calendar
   #sitemap: /sitemap.xml || sitemap
   #commonweal: /404/ || heartbeat
