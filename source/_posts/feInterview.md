@@ -952,7 +952,7 @@ log2(1, '') // 1 ''
 ## let var区别
 
 * let有块级作用域
-* let不存在变量提升
+* let不存在变量提升(错！https://stackoverflow.com/questions/31219420/are-variables-declared-with-let-or-const-not-hoisted-in-es6)
 * 不允许重复声明
 * 暂时性死区
 
@@ -1148,6 +1148,7 @@ link(rel='stylesheet', href='/big3.css')
 ```
 
 * bigpipe
+https://github.com/lduoduo/bigpipe_demo
 ```
 Transfer-Encoding: chunked
 

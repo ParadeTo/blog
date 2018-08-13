@@ -257,9 +257,9 @@ function YouPromise (fn) {
 }
 ```
 
-1. `getUserId()` 生成了一个 promise，我们把它叫做 promiseUserId, `promiseUserId.then(getUserMobileById)` 返回了一个新的 promise，这个 promise 我们把它叫做 promiseBridge1，意思就是作为一个桥梁，连接两个 promise。后面那个 `.then(printUser)` 的调用者，自然就是 promiseBridge1 了，这里又会生成一个 promise，我们叫它 promiseBridge2。两个 `then` 执行完后，此时各 promise 的状态如下所示：
+1. `getUserId()` 生成了一个 promise，我们把它叫做 promiseGetUserId, `promiseGetUserId.then(getUserMobileById)` 返回了一个新的 promise，这个 promise 我们把它叫做 promiseBridge1，意思就是作为一个桥梁，连接两个 promise。后面那个 `.then(printUser)` 的调用者，自然就是 promiseBridge1 了，这里又会生成一个 promise，我们叫它 promiseBridge2。两个 `then` 执行完后，此时各 promise 的状态如下所示：
   ```javascript
-  promiseUserId: {
+  promiseGetUserId: {
     value: null,
     state: 'pending',
     deferreds: [{
@@ -277,9 +277,9 @@ function YouPromise (fn) {
     }]
   }
   ```
-2. 10 毫秒后 promiseUserId 执行 `resolve`，会依次将 `deferreds` 中的数据放到 `handle` 中执行，该函数中首先执行 `deferred.onFulfilled(value)` 方法，即 `getUserMobileById`，返回的 `ret` 为一个 promise，我们叫它 promiseUserMobile。
+2. 10 毫秒后 promiseGetUserId 执行 `resolve`，会依次将 `deferreds` 中的数据放到 `handle` 中执行，该函数中首先执行 `deferred.onFulfilled(value)` 方法，即 `getUserMobileById`，返回的 `ret` 为一个 promise，我们叫它 promiseGetUserMobileById。
 
-3. 然后执行 `deferred.resolve(ret)`。我们看 `resolve` 方法，此时 `newValue` 即为 promiseUserMobile，`if` 中的判断生效，我们调用 promiseUserMobile 的 `then` 方法，并将 `resolve` 作为回调函数传入，这里的 `resolve` 仍然是属于 promiseBridge1 的，同时直接返回。这样就必须等到 promiseUserMobile `resolve` 后才能再次执行 promiseBridge1 的 `resolve` 方法了。此时 promiseUserMobile 的状态如下：
+3. 然后执行 `deferred.resolve(ret)`。我们看 `resolve` 方法，此时 `newValue` 即为 promiseGetUserMobileById，`if` 中的判断生效，我们调用 promiseGetUserMobileById 的 `then` 方法，并将 `resolve` 作为回调函数传入，这里的 `resolve` 仍然是属于 promiseBridge1 的，同时直接返回。这样就必须等到 promiseGetUserMobileById `resolve` 后才能再次执行 promiseBridge1 的 `resolve` 方法了。此时 promiseGetUserMobileById 的状态如下：
   ```javacript
   promiseBridge1: {
     value: null,
@@ -292,6 +292,161 @@ function YouPromise (fn) {
   ```
 
 
-4. 20 毫秒后 promiseUserMobile 执行 `resolve` 方法，此时会依次将 `deferreds` 中的数据放到 `handle` 中执行，最终会执行到 promiseBridge1 的 `resolve`。
+4. 20 毫秒后 promiseGetUserMobileById 执行 `resolve` 方法，此时会依次将 `deferreds` 中的数据放到 `handle` 中执行，最终会执行到 promiseBridge1 的 `resolve`。
 
 5. 再次执行到 promiseBridge1 的 `resolve` 时，此时 `newValue` 是 `user` 对象，则会执行 `if` 后面的流程，最终会执行 `printUser`。
+
+# 失败处理
+还是直接贴上代码然后我们再分析一下：
+
+```javascript
+function YouPromise (fn) {
+  let value = null
+  let state = 'pending'
+  const deferreds = []
+
+  this.then = function (onFulfilled, onRejected) {
+    return new YouPromise(function (resolve, reject) {
+      handle({
+        onFulfilled: onFulfilled || null,
+        onRejected: onRejected || null,
+        resolve: resolve,
+        reject: reject
+      })
+    })
+  }
+
+  function handle (deferred) {
+    if (state === 'pending') {
+      deferreds.push(deferred)
+      return
+    }
+
+    let cb = state === 'fulfilled' ? deferred.onFulfilled : deferred.onRejected
+    let ret
+    if (cb === null) {
+      cb = state === 'fulfilled' ? deferred.resolve : deferred.reject
+      cb(value)
+      return
+    }
+    ret = cb(value)
+    deferred.resolve(ret)
+  }
+
+  function resolve (newValue) {
+    if (newValue && (typeof newValue === 'object' || typeof newValue === 'function')) {
+      const then = newValue.then
+      if (typeof then === 'function') {
+        then.call(newValue, resolve, reject)
+        return
+      }
+    }
+    state = 'fulfilled'
+    value = newValue
+    finale()
+  }
+
+  function reject (reason) {
+    state = 'rejected'
+    value = reason
+    finale()
+  }
+
+  function finale () {
+    setTimeout(function () {
+      deferreds.forEach(function (deferred) {
+        handle(deferred)
+      })
+    }, 0)
+  }
+
+  fn(resolve, reject)
+}
+```
+
+我们以下面这个例子为例进行分析：
+
+```javascript
+getUserId = () => {
+  return new YouPromise((resolve, reject) => {
+    setTimeout(() => {
+      user.id = 9876
+      reject('user id is null')
+    }, 10)
+  })
+}
+
+getUserId()
+  .then(getUserMobileById, err => {
+    expect(err).toBe('user id is null')
+  })
+```
+
+前面创建 promise，然后执行 `then` 的过程是一样的，我们来看看 `reject` 以后发生了什么：
+
+1. 将当前 promise 的状态置为 `rejected`，然后将失败原因复制为 `value`，最后调用了 `finale()`
+2. 该函数其实就是封装了前面的延迟执行 `deferreds` 的逻辑，执行 `handle()` 发现此时状态不为 `fulfilled`，且
+`deferred.onRejected` 不为空（其实就是 err => {...}），将函数赋值给 `cb`，然后执行。
+3. 最后执行 promiseBridge1 的 `resolve()` 方法
+
+
+这里，这段代码是为了处理没有传入错误处理函数的情况：
+
+```javascript
+    if (cb === null) {
+      cb = state === 'fulfilled' ? deferred.resolve : deferred.reject
+      cb(value)
+      return
+    }
+```
+
+当 `then()` 中没有传入错误处理函数时，会直接执行 promiseBridge1 的 `reject()` 方法，将错误往下传递:
+
+```javascript
+    getUserId()
+      .then(getUserMobileById)
+      .then(printUser, err => {
+        expect(err).toBe('user id is null')
+        cb()
+      })
+```
+
+
+# 异常处理
+如果在执行成功回调、失败回调时代码出错怎么办？对于这类异常，可以使用 `try-catch` 捕获错误，并将 bridgePromise 设为 `rejected` 状态。`handle()` 方法改造如下：
+
+```javascript
+function handle(deferred) {
+    if (state === 'pending') {
+        deferreds.push(deferred);
+        return;
+    }
+
+    var cb = state === 'fulfilled' ? deferred.onFulfilled : deferred.onRejected,
+        ret;
+    if (cb === null) {
+        cb = state === 'fulfilled' ? deferred.resolve : deferred.reject;
+        cb(value);
+        return;
+    }
+    try {
+        ret = cb(value);
+        deferred.resolve(ret);
+    } catch (e) {
+        deferred.reject(e);
+    }
+}
+```
+
+这样就可以处理这种情况了:
+
+```javascript
+getUserId()
+  .then(val => {
+    throw new Error('err')
+  })
+  .then(null, err => {
+    expect(err).toEqual(new Error('err'))
+    cb()
+  })
+```
