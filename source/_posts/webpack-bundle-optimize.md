@@ -8,7 +8,7 @@ categories:
 description: 对 creat-react-app 项目进行打包优化
 ---
 
-# 使用 DllPlugin 来优化打包结果
+# DllPlugin
 一个 creat-react-app 创建的项目中，像 `react`, `react-dom` 等这样的基础库应该是不会经常变动的，所以如果将它们和业务代码分开来打包的话，即使业务代码有变动也不会影响到这些基础代码，这样就可以有效的利用浏览器的缓存。说到这里，可能有人会想到 webpack 的 `CommonsChunkPlugin` 也可以实现这样的功能。不过两者不同的是 `DllPlugin` 是事前将基础代码打包，如果基础代码没有变化的话，以后就不用打包，直接使用，这个有点像 c++ 的动态链接库的概念，这也是它为什么要叫 `DllPlugin` 的原因了。而 `CommonsChunkPlugin` 每次打包的时候都会重新打包这些基础代码。显然，按照上面的说法，`DllPlugin` 还可以提高打包的速度。
 
 下面说一下使用 `DllPlugin` 的步骤。
@@ -176,3 +176,111 @@ new webpack.DllReferencePlugin({
 
 
 虽然优化后的总大小增加了约 20K 的大小（暂时不知道为啥），但是通过把这些公共且稳定的基础代码抽离出来以后，原来的各个文件都有了不同程度的瘦身，这么做还是有些价值的。
+
+# HappyPack
+happypack 是 webpack 的一个插件，目的是通过多进程模型，来加速代码构建，关于该插件的原理可以参考[这里](http://taobaofed.org/blog/2016/12/08/happypack-source-code-analysis/)。下面我们来看看我们的项目是怎么使用的：
+
+在 `webpack.config.base.js` 中针对 `eslint-loader` 使用 happypack 插件：
+
+```javascript
+{
+  test: /\.(js|jsx|mjs)$/,
+  enforce: 'pre',
+  use: 'happypack/loader?id=prejs',
+  // use: [
+  //   {
+  //     options: {
+  //       formatter: eslintFormatter,
+  //       eslintPath: require.resolve('eslint')
+  //     },
+  //     loader: require.resolve('eslint-loader')
+  //   }
+  // ],
+  include: paths.appSrc
+},
+...
+new HappyPack({
+  id: 'prejs',
+  threads: 4,
+  loaders: [{
+    options: {
+      formatter: eslintFormatter,
+      eslintPath: require.resolve('eslint')
+    },
+    loader: require.resolve('eslint-loader')
+  }]
+})
+```
+
+在 `webpack.config.prod.js` 中针对 `babel-loader` 使用 happypack 插件：
+
+```javascript
+{
+  test: /\.(js|jsx|mjs)$/,
+  include: paths.appSrc,
+  use: 'happypack/loader?id=js' // require.resolve('babel-loader'),
+  // options: {
+  //   compact: true
+  // }
+},
+...
+new HappyPack({
+  id: 'js',
+  threads: 4,
+  loaders: [{
+    options: {
+      compact: true
+    },
+    loader: require.resolve('babel-loader')
+  }]
+})
+```
+
+
+然后再构建一次，发现速度又有了提升：
+
+```
+✨  Done in 16.21s.
+```
+
+# 使用 BundleAnalyzerPlugin 分析打包后结果
+我们在 `package.json` 中增加一条命令 `build:analyze: ANALYZE=true node scripts/build.js`，然后在配置文件中添加这条语句：
+
+```javascript
+if (process.env.ANALYZE) {
+  config.plugins.push(new BundleAnalyzerPlugin())
+}
+
+module.exports = config
+```
+
+运行 `yarn run build` 后，得到如下结果：
+
+![](webpack-bundle-optimize/1.png)
+
+这里有两个地方可以进一步优化：
+
+1. 我们异步加载的路由文件中打包了很多重复的组件，如图中红框所示的 `Error` 和 `TopupItem` 等，这些组件都可以提取到一个公共的文件中。
+2. 有很多图片内联到了 js 代码中，可以提取出来
+
+针对第二个问题，我们将 `url-loader` 的 `limit` 参数调小一些即可。而针对第一个问题，则需要 `CommonsChunkPlugin` 登场了。
+
+# CommonsChunkPlugin
+这里一直没有搞成功，直到我看到了[这篇文章](https://zhuanlan.zhihu.com/p/26710831)，才知道可以用 `CommonsChunkPlugin` 的 `async` 这个属性：
+
+```javascript
+// async chunk common
+new webpack.optimize.CommonsChunkPlugin({
+  async: 'common',
+  minChunks: 2
+})
+```
+
+再次执行打包命令，得到结果:
+
+![](webpack-bundle-optimize/2.png)
+
+这样就把异步路由里面的公共组件都提取到了 `common-main.****` 中了。
+
+# 总结
+这次优化我们首先使用 `DllPlugin` 把一些稳定的基础库提取到了 `vendor.****.js` 中，如果基础库没有升级的话，这个文件可以长期存在于用户的缓存中。然后我们使用 `HappyPlugin` 并行处理一部分打包流程，提高了打包的速度。最后我们通过 `CommonsChunkPlugin` 将异步路由中的公共组件提取出来，虽然增加了一些初始加载的代码，但是减少了很多重复组件的代码，另外将图片抽离出来，使得最后打包出来的总体积减少到了 0.88M，效果还是不错的。
