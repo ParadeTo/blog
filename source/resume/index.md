@@ -98,12 +98,12 @@ resumeEn:
       degree:  bachelor
       detail: 'The classes about Computer Sensing: "Principles of Computer", "Data structure and algorithm design", "Principles of Database System", "C++ object-oriented program design" etc.'
   honors:
-    - 2013.7 Reported an article named "Remote sensing based detection of crop phenology for agricultural zones in China using a new threshold method" in "Remote Sensing" (SCI factor is 2.101)        
+    - 2013.7 Reported an article named "Remote sensing based detection of crop phenology for agricultural zones in China using a new threshold method" in "Remote Sensing" (SCI factor is 2.101)
     - 2013.6 Got the software copyright of "multi-source remote sensing image fusion system V1.0", "Farmland soil nutrient monitoring software system V1.0"
     - 2013.4 Attended the 35th International Symposium on Remote Sensing of Environment and gave a speech
     - 2014.6 Got prize of excellent graduates in 2014 of the Institute of Remote Sensing and Digital Earth, Chinese Academy of Sciences
     - 2008-2009、2009-2010 Got third-class scholarship of Wuhan University
-    - National Computer Rank Examination: 2-level c, 3-level database technology, 4-level database engineer
+    - National Computer Rank Examination (level-2 c, level-3 database technology, level-4 database engineer)
     - CET-4 498, CET-6 488
   projects:
     - name: Qiniu Official Website

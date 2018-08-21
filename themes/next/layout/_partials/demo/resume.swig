@@ -79,8 +79,8 @@ set resumeCh=page.resumeCh;
             <div class="clear"></div>
             <!-- 作品-->
             <h2 id="eye" class="sectionHead">作品</h2>
-            <li><a href='/demo'>我的博客</a></li>
-            <li><a href='https://github.com/ParadeTo'>我的github</a></li>
+            <li><a href='/demo'>开源项目</a></li>
+            <li><a href='https://github.com/ParadeTo'>github</a></li>
             <div class="clear"></div>
             <!-- 联系方式-->
             <h2 id="contact" class="sectionHead">联系方式</h2>
@@ -162,8 +162,8 @@ set resumeCh=page.resumeCh;
             <div class="clear"></div>
             <!-- 作品-->
             <h2 id="eye" class="sectionHead">Works</h2>
-            <li><a href='/demo'>My Blog</a></li>
-            <li><a href='https://github.com/ParadeTo'>My Github</a></li>
+            <li><a href='/demo'>Open Source Projects</a></li>
+            <li><a href='https://github.com/ParadeTo'>Github</a></li>
             <div class="clear"></div>
             <!-- 联系方式-->
             <h2 id="contact" class="sectionHead">Contact Me</h2>

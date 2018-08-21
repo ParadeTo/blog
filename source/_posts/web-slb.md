@@ -7,7 +7,7 @@ tags:
 - http
 - https
 categories:
-- 项目实战
+- WWW
 description: 利用阿里云SLB和node实现http自动跳转https
 ---
 公司产品为了安全考虑必须要用https协议，但是用户在浏览器地址栏中一般不会主动输入https。所以，如何自动从http跳转到https是一个必须要解决的问题。网上大部分的做法是SLB->(https/http)NGIX->(http)NODE。然后由NGIX来实现自动跳转的功能，我们公司没有部署NGIX。然后我们的运维说，你们前端自己去跳吧。
