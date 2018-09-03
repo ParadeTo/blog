@@ -191,3 +191,27 @@ const ServiceItem = ({ name, url, icon ...
 这样，我们就大功告成了，让我们看看最后的杰作：
 
 ![](webpack-bundle-optimize2/1.png)
+
+
+# 更新（2018-09-03）
+上面的问题不仅仅出现在首页，菜单页也有，这样程序中需要改动的地方就比较多了，而且把翻译的工作放到基础组件中去做显然不合适，那有没有更好的做法呢？答案是有的。既然我们需要保证页面中的资源必须要在翻译文件加载完后才能加载，那么继续使用 webpack 的 `import` 就行了呀。
+
+我们在 `src` 目录下新建一个 `app.js`，将 `index.js` 的内容拷贝到该文件中，然后将 `index.js` 改为：
+
+```javascript
+import { getLocale } from './helpers/utils'
+import { loadResource } from './i18n'
+
+loadResource(getLocale())
+  .then(() => {
+    import('./app.js')
+  })
+```
+
+这样，就实现了我们的功能。
+
+不过，**`index.js` 中引入的文件以及他们递归引入的其他文件 (`utils.js`, `env.js`) 中不能正常使用新加载的语言，因为他们在 `loadResource` 执行之前就已经导入了，这里需要格外注意**。
+
+再次打包看看效果：
+
+![](webpack-bundle-optimize2/2.png)
