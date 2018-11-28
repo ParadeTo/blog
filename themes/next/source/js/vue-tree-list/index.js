@@ -45,7 +45,7 @@ new Vue({
           name: 'Node 2',
           id: 3,
           pid: 0,
-          dragDisabled: true
+          disabled: true
         },
         {
           name: 'Node 3',
