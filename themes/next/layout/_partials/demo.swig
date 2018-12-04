@@ -8,4 +8,6 @@
   {% include './demo/vue-tree-list.swig' %}
 {% elif page.title=='resume' %}
   {% include './demo/resume.swig' %}
+{% elif page.title=='vue-tcp' %}
+  {% include './demo/vue-tcp.swig' %}
 {% endif %}

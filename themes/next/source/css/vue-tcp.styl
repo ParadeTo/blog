@@ -1,0 +1,177 @@
+#vue-tcp {
+  button {
+    padding: 0 5px;
+  }
+  #header {
+    height: 100px;
+    text-align: center;
+    padding: 30px 0;
+    display: flex;
+    button {
+      height: 30px;
+    }
+    .sec {
+      flex: 1;
+      text-align: center;
+    }
+    #timer {
+      width: 90%;
+      display: inline-block;
+      border: 1px solid gray;
+      height: 30px;
+      padding: 2px;
+      div{
+        background-color: #00d1b2;
+        height: 100%;
+      }
+    }
+  }
+  #main {
+    display: flex;
+    section {
+      flex: 1;
+      text-align: center;
+      min-height: 500px;
+    }
+    #client {
+      border-right: 4px solid gray;
+    }
+    #server {
+      border-left: 4px solid gray;
+    }
+    .btns {
+      padding: 5px 0;
+    }
+    .packs {
+      display: inline-block;
+      position: relative;
+      .pack {
+        color: #aaa;
+        &.sent {
+          color: black;
+        }
+      }
+      .server-pack {
+        color: #aaa;
+        &.received {
+          color: black;
+        }
+      }
+      .server-pack {
+      }
+      .window, .rcv-buffer {
+        display: inline-block;
+        width: 35px;
+        border: 1px solid red;
+        position: absolute;
+        left: 0;
+        transition: top linear 0.3s;
+      }
+      .rcv-buffer {
+        border: 1px solid blue;
+        width: 39px;
+        left: -2px;
+      }
+      .arrow {
+        width: 35px;
+        height: 2px;
+        position: absolute;
+        left: 102%;
+        text-align: right;
+        text-indent: 102%;
+        line-height: 2px;
+        font-size: 12px;
+        transition: top linear 0.3s;
+      }
+      #lastByteAcked, #lastByteRead {
+        background: blue;
+      }
+      #lastByteSent, #nextByteExpected {
+        background-color: green;
+      }
+      li {
+        width: 35px;
+        height: 35px;
+        line-height: 35px;
+        border: 1px solid #aaa;
+        border-bottom: none;
+        &:last-of-type {
+          border-bottom: 1px solid #aaa;
+        }
+      }
+    }
+    #path {
+      position: relative;
+      .sending-pack, .acking-pack {
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        line-height: 50px;
+        border: 1px solid #23d160;
+        .operation {
+          display: flex;
+          position: absolute;
+          width: 100%;
+          span {
+            flex:1;
+            height: 12.5px;
+            line-height: 8px;
+            text-align: center;
+            &::after {
+              content: '';
+              display: inline-block;
+              width: 6px;
+              height: 6px;
+            }
+            &:hover {
+              background-color: orange;
+            }
+          }
+          .down, .up {
+            &::after {
+              border-top: 1px solid black;
+              border-left: 1px solid black;
+              transform: rotate(-45deg);
+            }
+          }
+          .up {
+            &::after {
+              transform: rotate(135deg);
+            }
+          }
+          .pause {
+            &::after {
+              border-left: 1px solid black;
+              border-right: 1px solid black;
+              transform: scaleX(0.5);
+            }
+          }
+          .remove {
+            position: relative;
+            &::after {
+              position: absolute;
+              width: 1px;
+              height: 8px;
+              background-color: black;
+              transform: rotate(45deg);
+              top: 2px;
+            }
+            &::before {
+              position: absolute;
+              content: '';
+              display: inline-block;
+              width: 1px;
+              height: 8px;
+              background-color: black;
+              transform: rotate(-45deg);
+              top: 2px;
+            }
+          }
+        }
+      }
+      .acking-pack {
+        border: 1px solid #ff3860;
+      }
+    }
+  }
+}

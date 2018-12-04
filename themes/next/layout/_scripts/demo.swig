@@ -1,7 +1,3 @@
-{% if page.title.indexOf('vue') > -1 %}
-  <script src="//cdn.bootcss.com/vue/2.2.1/vue.min.js"></script>
-{% endif %}
-
 {% if page.title==='game2048' %}
   <script src="/js/game2048/support2048.js"></script>
   <script src="/js/game2048/showanimation2048.js"></script>
@@ -15,6 +11,8 @@
 {% elif page.title==='vue-tree-list' %}
   <script src="/js/vue-tree-list/vue-tree-list.min.js"></script>
   <script src="/js/vue-tree-list/index.js"></script>
+{% elif page.title==='vue-tcp' %}
+  <script src="/js/vue-tcp/index.js"></script>
 {% elif page.title==='resume' %}
   <script src="/js/resume/index.js"></script>
 {% endif %}
