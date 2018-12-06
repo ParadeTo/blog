@@ -8,7 +8,14 @@
     <div class="sec">
       <button @click="onAllPause" v-html="isPause ? 'Resume' : 'Pause'"></button>
     </div>
-    <div class="sec"></div>
+    <div class="sec">
+      <p>
+        缓存大小：<input type='range' min='1' max='15' v-model='server.maxRcvBuffer'/>
+      </p>
+      <p>
+        窗口大小：<input type='range' min='1' :max="server.maxRcvBuffer" v-model='maxWindow' />
+      </p>
+    </div>
   </header>
   <main id="main">
     <section id="client">
@@ -53,7 +60,7 @@
         <span class="window" :style="'height:' + 35 * window + 'px;' + 'top:' + (server.nextByteExpected - 1) * 35 + 'px'"></span>
         <span id="lastByteRead" class="arrow" :style="'top:' + 35 * server.lastByteRead + 'px'">lastByteRead</span>
         <span id="nextByteExpected" class="arrow" :style="'top:' + 35 * (server.nextByteExpected - 1) + 'px'">nextByteExpected</span>
-        <li v-for="p in client.packs" v-key="p.seq" v-html="p.seq" :class="{'server-pack': true, 'received': p.status.server === 1}"></li>
+        <li v-for="p in client.packs" v-key="p.seq" v-html="p.seq" :class="{'server-pack': true, 'received': p.status.server === 1, 'readed': p.status.server === 2}"></li>
       </ul>
     </section>
   </main>

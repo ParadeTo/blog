@@ -126,8 +126,11 @@ new Vue({
   mounted: function () {
     this.pathWidth = document.querySelector('#path').offsetWidth
   },
-  computed: {
-   
+  watch: {
+    maxWindow: function (val) {
+      this.window = val
+      console.log(val)
+    }
   },
   methods: {
     onUp: function (p) {
