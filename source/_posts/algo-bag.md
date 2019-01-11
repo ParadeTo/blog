@@ -20,9 +20,8 @@ description: 经典背包问题
 动态规划一个关键的步骤是得到状态转化方程，物体的价值用 `v(i)` 表示，
 重量用 `w(i)` 表示，`f[i, j]` 表示将前 `i` 个物体放入到容量为 `j` 的背包中的最大价值，则有:
 ```
-f[i, j] = max(f[i-1, j-w(i)] + v(i)) 
+f[i, j] = max(f[i-1, j], f[i-1, j-w(i)] + v(i))
 ```
-其中， j >= w(i), 0 < i <= n
 
 ## 求解方法
 动态规划有两种等价的实现方法：
@@ -171,9 +170,9 @@ function bag2 (v, w, c) {
   for (var i = 1; i <= n; i++) {
     var index = i - 1
     // 遍历容量
-    for (var j = 0; j <= c; j++) {
+    for (var j = w[index]; j <= c; j++) {
       // 当前物品放入的情况
-      if (w[index] <= j && v[index] + f[i - 1][j - w[index]] > f[i - 1][j]) {
+      if (v[index] + f[i - 1][j - w[index]] > f[i - 1][j]) {
         f[i][j] = v[index] + f[i - 1][j - w[index]]
         s[i][j] = 1
       }
