@@ -1,8 +1,9 @@
 ---
-title: 基于 Jest 给 React 写测试用例
+title: react 单元测试
 date: 2018-12-28 10:02:53
 tags:
 - react
+- jest
 categories:
 - javascript
 description: 一些奇技淫巧
