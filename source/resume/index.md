@@ -11,23 +11,24 @@ resumeCh:
   skills:
     - name: html, css, javascript
       score: 70
-    - name: vue
+    - name: reactjs, vue, nodejs
       score: 60
-    - name: nodejs, express
-      score: 55
-    - name: reactjs
-      score: 50
     - name: http
       score: 30
+    - name: golang
+      score: 20
   experience:
+    - corp: 深圳虾皮信息科技有限公司
+      vocation: 高级前端工程师
+      period: 2018/08 ~ now
     - corp: 深圳极视角科技有限公司
       vocation: 高级前端工程师
-      period: 2016/08 ~ 今
-      work: 前端技术选型，项目架构设计
+      period: 2016/08 ~ 2018/03
+      # work: 前端技术选型，项目架构设计
     - corp: 深圳齐牛互联网金融服务有限公司
       vocation: 前端工程师
       period: 2014/07 ~ 2016/08
-      work: 负责公司官网及企业宝前端及nodejs开发</br>负责公司市场推广活动移动端开发，微信网页开发
+      # work: 负责公司官网及企业宝前端及nodejs开发</br>负责公司市场推广活动移动端开发，微信网页开发
   education:
     - school: 中国科学院大学
       major: 中科院遥感与数字地球研究所
@@ -69,23 +70,24 @@ resumeEn:
   skills:
     - name: html, css, javascript
       score: 70
-    - name: vue
+    - name: reactjs, vue, nodejs
       score: 60
-    - name: nodejs, express
-      score: 55
-    - name: reactjs
-      score: 50
     - name: http
       score: 30
+    - name: golang
+      score: 20
   experience:
+    - corp: Shopee
+      vocation: Senior Web Front End Developer
+      period: 2018/08 ~ now
     - corp: Extreme Vision Technology Co., LTD
       vocation: Senior Web Front End Developer
-      period: 2016/08 ~ now
-      work: Research and construction of front-end project
+      period: 2016/08 ~ 2018/03
+      # work: Research and construction of front-end project
     - corp: Shenzhen Qiniu Internet Financial Service Co., LTD
       vocation: Web Front End Developer
       period: 2014/07 ~ 2016/08
-      work:  Participated in developping web page of our company's backstage management system, and the development of official website, qiyebao website.</br>Involved in mobile web page, wechat h5 page development for marketing activities.
+      # work:  Participated in developping web page of our company's backstage management system, and the development of official website, qiyebao website.</br>Involved in mobile web page, wechat h5 page development for marketing activities.
   education:
     - school: University of Chinese Academy of Sciences
       major:  The Institute of Remote Sensing and Digital Earth, Chinese Academy of Sciences
