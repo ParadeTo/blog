@@ -3,8 +3,8 @@ title: 前端面试题汇总-持续更新
 date: 2017-04-08 12:00:20
 tags:
 - 面试
-categories:
-- 前端理论
+# categories:
+# - 前端理论
 description: 各种面试题汇总
 ---
 
