@@ -93,6 +93,7 @@ description: 根据极客时间前端课程整理
     var o = { name: 12 }
     console.log(o * 2) // 24
     ```
+  * defineProperty
 #### 实例
 
 ### 执行过程（算法）
