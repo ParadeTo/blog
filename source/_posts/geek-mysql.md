@@ -5,7 +5,7 @@ tags:
 - mysql
 categories:
 - 读书笔记
-description: 一条SQL查询语句是如何执行的
+description: 极客时间mysql笔记
 ---
 
 # 基础架构：一条 SQL 查询语句是如何执行的？
@@ -318,10 +318,78 @@ select * from t limit 1;|-|-|-
 
 ![](geek-mysql/11.png)
 
-手动将 sessionA 提交后，后面的 session 都可以进行了。
+手动将 sessionA 提交后，后面的 session 都可以进行了。所以我们在修改表结构的时候要先解决掉正在进行中的事务。
 
 一种比较好的方法是：
 ```
 ALTER TABLE tbl_name WAIT N add column ...
 ```
 这里的 N 单位是秒。
+
+## 课后题目（不懂）
+备份一般都会在备库上执行，你在用 –-single-transaction 方法做逻辑备份的过程中，如果主库上的一个小表做了一个 DDL，比如给一个表上加了一列。这时候，从备库上会看到什么现象呢？
+
+备份过程中几个关键的语句：
+
+```
+Q1:SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+Q2:START TRANSACTION  WITH CONSISTENT SNAPSHOT；
+/* other tables */
+Q3:SAVEPOINT sp;
+/* 时刻 1 */
+Q4:show create table `t1`;
+/* 时刻 2 */
+Q5:SELECT * FROM `t1`;
+/* 时刻 3 */
+Q6:ROLLBACK TO SAVEPOINT sp;
+/* 时刻 4 */
+/* other tables */
+```
+
+1. 如果在 Q4 语句执行之前到达，现象：没有影响，备份拿到的是 DDL 后的表结构；
+2. 如果在“时刻 2”到达，则表结构被改过，Q5 执行的时候，报 Table definition has changed, please retry transaction，现象：mysqldump 终止；
+3. 如果在“时刻 2”和“时刻 3”之间到达，mysqldump 占着 t1 的 MDL 读锁，binlog 被阻塞，现象：主从延迟，直到 Q6 执行完成；
+4. 从“时刻 4”开始，mysqldump 释放了 MDL 读锁，现象：没有影响，备份拿到的是 DDL 前的表结构。
+
+# 行锁功过：怎么减少行锁对性能的影响
+## 两阶段锁
+**在 InnoDB 事务中，行锁是在需要的时候才加上的，但并不是不需要了就立刻释放，而是要等到事务结束时才释放。这个就是两阶段锁协议。**
+
+**如果你的事务中需要锁多个行，要把最可能造成锁冲突、最可能影响并发度的锁尽量往后放。即要减少锁的时间**
+
+## 死锁和死锁检测
+如下图所示，事务A在等待事务B释放 id=2 的行锁，而事务B在等待事务A释放 id=1 的行锁，出现了互相等待，即死锁。
+
+事务A|事务B
+:----:|:----:
+begin;update t set k=k+1 where id=1;|begin;
+_|update t set k=k+1 where id=2;
+update t set k=k+1 where id=2;|_
+-|update t set k=k+1 where id=1;
+
+有两种策略解决死锁：
+1. 一种策略是，直接进入等待，直到超时。这个超时时间可以通过参数 innodb_lock_wait_timeout 来设置。
+2. 另一种策略是，发起死锁检测，发现死锁后，主动回滚死锁链条中的某一个事务，让其他事务得以继续执行。将参数 innodb_deadlock_detect 设置为 on，表示开启这个逻辑。每个线程锁住之后都要判断死锁，所以这个时间复杂度是 O(n)，整个系统的时间复杂度就是 O(n^2) 了。因此你会看到 CPU 利用率很高，但是执行不了几个事务。
+
+**怎么解决由这种热点行更新导致的性能问题呢？**
+1. 关掉死锁检测，前提是能确保不会出现死锁，显然这种方法不合适
+2. 控制并发度。基本思路就是，对于相同行的更新，在进入引擎之前排队。这样在 InnoDB 内部就不会有大量的死锁检测工作了。
+3. 你可以考虑通过将一行改成逻辑上的多行来减少锁冲突。还是以影院账户为例，可以考虑放在多条记录上，比如 10 个记录，影院的账户总额等于这 10 个记录的值的总和。这样每次要给影院账户加金额的时候，随机选其中一条记录来加。这样每次冲突概率变成原来的 1/10，可以减少锁等待个数，也就减少了死锁检测的 CPU 消耗。当然余额变成 0 了再要减的时候也要特殊处理。
+
+# 事务到底是隔离的还是不隔离的
+## 例子
+事务A|事务B|事务C
+:---:|:---:|:---:
+start transaction with consistent snapshot;|-|-
+-|start transaction with consistent snapshot;|-
+-|-|update k set k=k+1 where id=1;
+-|update t set k=k+1 where id=1;select k from t where id=1;|_
+select k from t where id=1;commit|-|-
+-|commit;|-
+
+1. 如果落在绿色部分，表示这个版本是已提交的事务或者是当前事务自己生成的，这个数据是可见的；
+2. 如果落在红色部分，表示这个版本是由将来启动的事务生成的，是肯定不可见的；
+3. 如果落在黄色部分，那就包括两种情况
+  * 若 row trx_id 在数组中，表示这个版本是由还没提交的事务生成的，不可见；
+  * 若 row trx_id 不在数组中，表示这个版本是已经提交了的事务生成的，可见。
+
