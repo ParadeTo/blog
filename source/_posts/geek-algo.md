@@ -227,6 +227,7 @@ func reverseList(head *ListNode) *ListNode {
 
 
 # 栈
+使用 go 实现一个栈跟别的语言有点不一样：
 ```go
 type Stack []interface{}
 
@@ -257,5 +258,70 @@ func main() {
 	s.Push("a")
 	fmt.Println(s.Pop())
 	fmt.Println(s.Pop())
+}
+```
+
+接下来，利用两个栈来实现简单的四则运算:
+
+```go
+var m map[string]int = map[string]int{
+	"(": 0,
+	")": 0,
+	"+": 1,
+	"-": 1,
+	"*": 2,
+	"/": 2,
+}
+
+func getResult(n1, n2 float32, symbol string) float32 {
+	switch symbol {
+	case "+":
+		return n1 + n2
+	case "-":
+		return n1 - n2
+	case "*":
+		return n1 * n2
+	case "/":
+		return n1 / n2
+	default:
+		return n1
+	}
+}
+
+func compute (arr []string) float32 {
+	stack1 := make(Stack, 0, 10)
+	stack2 := make(Stack, 0, 10)
+	for _, s := range arr {
+		// 运算符号放到 stack2
+		if w, ok := m[s]; ok {
+			// 当前栈顶运算符优先级不小于待处理符号则先进行运算
+			for top, ok := stack2.Top().(string); ok && m[top] >= w; {
+				if top == "(" && s == ")" {
+					stack2.Pop()
+					break
+				}
+				top, _ = stack2.Pop().(string)
+				n1, _ := stack1.Pop().(float32)
+				n2, _ := stack1.Pop().(float32)
+				r := getResult(n2, n1, top)
+				stack1.Push(r)
+				top, ok = stack2.Top().(string)
+			}
+			if s != ")" {
+				stack2.Push(s)
+			}
+		} else { // 数字放到 stack1
+			n, _ := strconv.Atoi(s)
+			stack1.Push(float32(n))
+		}
+	}
+	for top, ok := stack2.Pop().(string); ok; {
+		n1, _ := stack1.Pop().(float32)
+		n2, _ := stack1.Pop().(float32)
+		r := getResult(n2, n1, top)
+		stack1.Push(r)
+		top, ok = stack2.Pop().(string)
+	}
+	return stack1.Top().(float32)
 }
 ```
