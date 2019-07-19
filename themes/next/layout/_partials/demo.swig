@@ -10,4 +10,6 @@
   {% include './demo/resume.swig' %}
 {% elif page.title=='vue-tcp' %}
   {% include './demo/vue-tcp.swig' %}
+{% elif page.title=='vue-float' %}
+  {% include './demo/vue-float.swig' %}
 {% endif %}

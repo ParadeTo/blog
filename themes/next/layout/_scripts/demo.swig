@@ -13,6 +13,8 @@
   <script src="/js/vue-tree-list/index.js"></script>
 {% elif page.title==='vue-tcp' %}
   <script src="/js/vue-tcp/index.js"></script>
+{% elif page.title==='vue-float' %}
+  <script src="/js/vue-float/index.js"></script>
 {% elif page.title==='resume' %}
   <script src="/js/resume/index.js"></script>
 {% endif %}
