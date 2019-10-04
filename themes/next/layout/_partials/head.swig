@@ -71,7 +71,9 @@
 {% endif %}
 <link href="{{ font_awesome_uri }}" rel="stylesheet" type="text/css" />
 
+{% if not page.nomaincss %}
 <link href="{{ url_for(theme.css) }}/main.css?v={{ theme.version }}" rel="stylesheet" type="text/css" />
+{% endif %}
 
 {% if page.layout && page.layout.indexOf('vue') > -1 %}
   <link href="https://cdn.bootcss.com/bulma/0.4.2/css/bulma.min.css" rel="stylesheet">
