@@ -76,4 +76,35 @@ alpha-beta 剪枝算法中我们定义：
 
 ![](algo-chinese-chess-2/8.png)
 
+结合[代码](https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning)看可以更好的理解：
 
+```python
+function alphabeta(node, depth, α, β, maximizingPlayer) is
+    if depth = 0 or node is a terminal node then
+        return the heuristic value of node
+    if maximizingPlayer then
+        value := −∞
+        for each child of node do
+            value := max(value, alphabeta(child, depth − 1, α, β, FALSE))
+            α := max(α, value)
+            if α ≥ β then
+                break (* β cut-off *)
+        return value
+    else
+        value := +∞
+        for each child of node do
+            value := min(value, alphabeta(child, depth − 1, α, β, TRUE))
+            β := min(β, value)
+            if α ≥ β then
+                break (* α cut-off *)
+        return value
+```
+
+# 并行搜索
+另外一个优化的思路是并行计算，把每次产生的走法平均分成多个任务并行处理，每个并行的任务分别产生局部的最优解，最后汇总得到全局的最优解即可。每一个走法对应一个子任务是最快的，不过如果每一层都这样的话，最后的子任务数量也会非常巨大，不管是多进程还是多线程实现都是很不现实的，所以需要限制并行处理的深度。即便仅在第一层开启并行计算，理论上也可以使得计算速度快 30 倍（假设每一层平均产生 30 种走法）。
+
+# 总结
+利用最大最小值和 alpha-beta 算法就可以实现简单的[象棋 AI 程序](http://www.paradeto.com/chinese-chess)，不过该 AI 的棋力仅够应付入门级的玩家。一个原因是尽管采取了前面所说的优化方法后，实践发现当搜索深度达到 5 以后，算法的计算时间就慢得不能接受了，无法继续提高搜索的深度；另外一个原因是局势判断的方法略显简单。后面有机会再优化一下。
+
+# 参考
+1. [Alpha–beta pruning](https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning)
