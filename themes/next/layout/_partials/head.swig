@@ -157,7 +157,7 @@
 </script>
 
 {% if page.title.indexOf('vue') > -1 %}
-  <script src="//cdn.bootcss.com/vue/2.2.1/vue.min.js"></script>
+  <script src="//cdn.bootcss.com/vue/2.6.10/vue.min.js"></script>
   <script>
     window.Vue.config.delimiters = ['{[', ']}']
   </script>

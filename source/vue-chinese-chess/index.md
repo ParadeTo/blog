@@ -1,6 +1,6 @@
 ---
-title: chinese-chess
-layout: chinese-chess
+title: vue-chinese-chess
+layout: vue-chinese-chess
 module: demo
 nomaincss: true
 nocanvasnest: true
