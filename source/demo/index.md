@@ -11,7 +11,7 @@ layout: page
 
 [github](https://github.com/ParadeTo/chinese-chess)
 
-[玩一玩](/chinese-chess)
+[玩一玩](/vue-chinese-chess)
 
 # 浮点数表示
 演示浮点数的表示方法

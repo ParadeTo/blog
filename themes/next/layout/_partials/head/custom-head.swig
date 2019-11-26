@@ -1,6 +1,6 @@
 {#
 Custom head.
 #}
-{% if page.title==='chinese-chess' %}
-  <link href="/css/chinese-chess/index.css" rel="stylesheet" type="text/css">
+{% if page.title==='vue-chinese-chess' %}
+  <link href="/css/vue-chinese-chess/index.css" rel="stylesheet" type="text/css">
 {% endif %}

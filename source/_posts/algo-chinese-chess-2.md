@@ -10,7 +10,7 @@ description: 教你写一个简单的象棋 AI 程序
 
 
 > 本文代码：https://github.com/ParadeTo/chinese-chess
-> Demo地址：http://www.paradeto.com/chinese-chess
+> Demo地址：http://www.paradeto.com/vue-chinese-chess
 
 在[上一篇](/2019/11/09/algo-chinese-chess-1/)文章结尾提到了最大最小值算法有进一步优化的空间，接下来继续。
 
