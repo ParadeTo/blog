@@ -20,7 +20,7 @@ resumeCh:
   experience:
     - corp: 深圳虾皮信息科技有限公司
       vocation: 高级前端工程师
-      period: 2018/08 ~ now
+      period: 2018/03 ~ now
     - corp: 深圳极视角科技有限公司
       vocation: 高级前端工程师
       period: 2016/08 ~ 2018/03
@@ -79,7 +79,7 @@ resumeEn:
   experience:
     - corp: Shopee
       vocation: Senior Web Front End Developer
-      period: 2018/08 ~ now
+      period: 2018/03 ~ now
     - corp: Extreme Vision Technology Co., LTD
       vocation: Senior Web Front End Developer
       period: 2016/08 ~ 2018/03
