@@ -39,10 +39,12 @@ new Vue({
     },
     decimalsSteps: function() {
       let len = this.factorComputed.f;
+      // 如果整数部分为0，则找到小数部分从左到右第一个1的位置
       const first1Idx = this.decimalsStepsRedundantStr.indexOf("1");
       if (this.integerStr.length === 0) {
         len = first1Idx + len + 1;
       }
+      // TODO 整数部分不为 0 时
       // 多看一位来决定需不需要 0 舍 1 入
       const decimalsSteps = this.decimalsStepsRedundant.slice(0, len);
       const decimalsStepsNextNum = this.decimalsStepsRedundant.slice(
@@ -50,6 +52,7 @@ new Vue({
         len + 1
       );
       // 进行0舍1入
+      // TODO 不应该在这里就进行0舍1入
       let increment = 0;
       if (decimalsStepsNextNum[0] && decimalsStepsNextNum[0].bit === 1)
         increment = 1;
@@ -181,9 +184,13 @@ new Vue({
           const product = decimals * 2;
           let bit = 0;
           let remainder = product;
-          if (product >= 1) {
+          if (product > 1) {
             bit = 1;
             remainder = parseFloat("." + String(product).split(".")[1]);
+          }
+          if (product === 1) {
+            bit = 1;
+            remainder = 0;
           }
           decimalsSteps.push({
             bit,
@@ -191,7 +198,8 @@ new Vue({
             remainder
           });
           decimals = remainder;
-        } while (decimals > 0 && ++i < this.factorComputed.f * 2);
+          // TODO 特殊处理没有循环的情况，现在都是算一个足够长的长度
+        } while (/*decimals > 0 &&*/ ++i < this.factorComputed.f * 2);
       }
       return decimalsSteps;
     },
