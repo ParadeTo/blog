@@ -10,6 +10,8 @@ description: 手写一个简单的 vue
 
 # 需求分析
 
+话不多说，直接上代码：
+
 ```javascript
 <div id="app">
   <p k-text="counter"></p>
@@ -48,7 +50,8 @@ description: 手写一个简单的 vue
 
 1. 首次渲染
 2. 响应式系统
-3.
+3. 事件绑定
+4. 双向绑定
 
 # 首次渲染
 
@@ -194,7 +197,7 @@ class Compiler {
     })
   }
 
-  // 解析绑定表达式{{}}
+  // 解析绑定表达式
   compileText(node) {
     // 获取正则匹配表达式，从vm里面拿出它的值
     // node.textContent = this.$vm[RegExp.$1]
@@ -240,7 +243,7 @@ class Compiler {
     node.innerHTML = val
   }
 
-  // 文本节点且形如{{xx}}
+  // 文本节点
   isText(node) {
     return node.nodeType === 3 && /\{\{(.*)\}\}/.test(node.textContent)
   }
@@ -251,7 +254,7 @@ class Compiler {
 
 遇到元素类型就解析上面的指定，如果命中了就执行相关的指定方法（这里暂时只时间了 `test` 和 `html` 指令），同时解析出指定的表达式，通过 `getVal` 得到值，根据不同的指令进行相关的渲染。
 
-文本类型则需要解析出 `{{}}` 中的表达式，最后调用 `text` 指令的方法。
+文本类型则需要解析出双大括号中的表达式，最后调用 `text` 指令的方法。
 
 # 响应式数据系统
 
@@ -439,3 +442,139 @@ update(node, exp, dir) {
 ```
 
 这样，我们的响应式系统的雏形就写好了。
+
+不过，我们现在的响应式系统是无法处理新增属性这样的需求的，需要我们进行一些优化。
+
+我们先来分析一下目前的问题：一个 `dep` 是服务于某一个 `key` 的，所以当 `key` 对应的值中新增了属性时是无法触发 `key` 的 `set` 方法的。所以新增 `key` 就不能用 js 原生的写法了，只能通过调用 `$set` 来进行，这样，我们才有可能在 `$set` 函数里面手动的去通知 `watcher` 进行更新。
+
+```javascript
+class AVue {
+  ...
+  $set(target, propertyName, value) {
+    target[propertyName] = value
+    const ob = target.__ob__
+    // 对新的 key 定义响应式操作
+    defineReactive(ob.value, propertyName, value)
+    // 每初始化一个 Observer 对象，也要相应的给它分配一个 Dep 对象
+    // 且该 Dep 对象管理的 watcher 是跟该 Observer 对象对应的 key 的 Dep 对象所管理的一样
+    // 通知 watcher 更新
+    ob.dep.notify()
+    return value
+  }
+  ...
+}
+
+class Observer {
+  constructor(value) {
+    this.dep = new Dep()
+    ...
+  }
+  ...
+}
+```
+
+然后，在收集依赖的地方，依赖某个 key 的 watcher 也必须同时依赖 key 所对应的值：
+
+```javascript
+function defineReactive(obj, key, val) {
+  const dep = new Dep()
+  // key 对应的值经过观察后返回的 Observer 对象
+  const childOb = observe(val)
+  // 这里形成了一个闭包
+  // val这个内部变量会被外部访问到
+  Object.defineProperty(obj, key, {
+    get() {
+      if (Dep.target) {
+        dep.addDep(Dep.target)
+        // 收集跟 key 相同的依赖
+        if (childOb) {
+          childOb.dep.addDep(Dep.target)
+        }
+      }
+      return val
+    },
+    ...
+}
+```
+
+# 事件绑定
+
+这里暂时只实现了 `@click` 事件，我们需要再编译器中增加对事件的解析：
+
+```javascript
+  ...
+  if (attrName.indexOf('a-') === 0) {
+    // 截取指令名称
+    const dir = attrName.substring(2)
+    // 看看是否存在对应方法，有则执行
+    this[dir] && this[dir](node, exp)
+  } else if (attrName.indexOf('@') === 0) {
+    const dir = attrName.substring(1)
+    this[dir] && this[dir](node, exp)
+  }
+  ...
+
+  click(node, exp) {
+    node.addEventListener('click', this.$vm[exp].bind(this.$vm))
+  }
+```
+
+同时，需要对 `$methods` 也进行代理：
+
+```javascript
+function proxy(vm) {
+  ...
+  Object.keys(vm.$methods).forEach((key) => {
+    Object.defineProperty(vm, key, {
+      get() {
+        return vm.$methods[key]
+      },
+    })
+  })
+}
+```
+
+# 双向绑定
+
+我们要实现类似 `v-model` 的双向绑定效果，这里我们叫做 `a-model`。首先我们需要添加指令对应的函数：
+
+```javascript
+  // k-model
+  model(node, exp) {
+    this.update(node, exp, 'model')
+  }
+
+  modelUpdater(node, val) {
+    node.value = val
+  }
+```
+
+这样双向绑定的 `value` 这一向就完成了，接下来要添加 `@input` 那一向：
+
+```javascript
+class AVue {
+  setVal(exp, val) {
+    exp.split('.').reduce((data, current, index, arr) => {
+      if (index === arr.length - 1) {
+        return (data[current] = val)
+      }
+      return data[current]
+    }, this.$data)
+  }
+}
+...
+  // k-model
+  model(node, exp) {
+    this.update(node, exp, 'model')
+    node.addEventListener('input', (e) => {
+      this.$vm.setVal(exp, e.target.value)
+    })
+  }
+...
+```
+
+这一向其实也比较简单，就是监听 `input` 事件，将事件返回的值赋值给 `$data` 对应的 key。
+
+# 总结
+
+通过任务拆解以后，发现实现一个简单的 `Vue` 并不是那么的难，还是得多动手。
