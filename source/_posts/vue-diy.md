@@ -8,23 +8,21 @@ categories:
 description: 手写一个简单的 vue
 ---
 
-# 需求分析
-
 话不多说，直接上代码：
 
 ```javascript
 <div id="app">
-  <p k-text="counter"></p>
+  <p v-text="counter"></p>
   <p>{{obj.age}}</p>
-  <p k-html="desc"></p>
-  <input type="text" k-model="desc" />
+  <p v-html="desc"></p>
+  <input type="text" v-model="desc" />
   <button @click="resetDesc">重置 desc</button>
   <button @click="addProperty">新增属性</button>
 </div>
-<script src="avue.js"></script>
+<script src="./vue.js"></script>
 <script>
   const desc = '你好吗'
-  const app = new AVue({
+  const app = new Vue({
     el: '#app',
     data: {
       obj: {},
@@ -57,10 +55,10 @@ description: 手写一个简单的 vue
 
 我们先来实现一下首次渲染，首次渲染我们需要做的事情比较简单：解析模板，获取数据，渲染。
 
-## AVue
+## Vue
 
 ```javascript
-class AVue {
+class Vue {
   constructor(options) {
     // 保存选项
     this.$options = options
@@ -83,7 +81,7 @@ class AVue {
 }
 ```
 
-`AVue` 类的构造函数中会将外部传进来的参数进行保存，然后初始化一个编译器对模板进行编译。
+`Vue` 类的构造函数中会将外部传进来的参数进行保存，然后初始化一个编译器对模板进行编译。
 
 这里还实现了方法 `getVal` 用来从 `obj.age.a.b` 这样的表达式中“递归地”进行取值。
 
@@ -206,12 +204,12 @@ class Compiler {
 
   // 编译元素
   compileElement(node) {
-    // 处理元素上面的属性，典型的是a-，@开头的
+    // 处理元素上面的属性，典型的是v-，@开头的
     const attrs = node.attributes
     Array.from(attrs).forEach((attr) => {
       const attrName = attr.name
       const exp = attr.value
-      if (attrName.indexOf('a-') === 0) {
+      if (attrName.indexOf('v-') === 0) {
         // 截取指令名称
         const dir = attrName.substring(2)
         // 看看是否存在对应方法，有则执行
@@ -220,12 +218,12 @@ class Compiler {
     })
   }
 
-  // k-text
+  // v-text
   text(node, exp) {
     this.update(node, exp, 'text')
   }
 
-  // k-html
+  // v-html
   html(node, exp) {
     this.update(node, exp, 'html')
   }
@@ -252,7 +250,7 @@ class Compiler {
 
 `Compiler` 构造函数中会调用 `compile` 方法来编译我们的模板。这里分元素类型和文本类型。
 
-遇到元素类型就解析上面的指定，如果命中了就执行相关的指定方法（这里暂时只时间了 `test` 和 `html` 指令），同时解析出指定的表达式，通过 `getVal` 得到值，根据不同的指令进行相关的渲染。
+遇到元素类型就解析上面的指定，如果命中了就执行相关的指定方法（这里暂时只实现了 `test` 和 `html` 指令），同时解析出指定的表达式，通过 `getVal` 得到值，根据不同的指令进行相关的渲染。
 
 文本类型则需要解析出双大括号中的表达式，最后调用 `text` 指令的方法。
 
@@ -269,7 +267,7 @@ class Compiler {
 流程图出来了，我们来实现一下：
 
 ```javascript
-class AVue {
+class Vue {
   constructor(options) {
     // 保存选项
     this.$options = options
@@ -350,8 +348,8 @@ class Observer {
 
 `Observer` 中做了几件事：
 
-1. 定义了 `__ob__` 属性，该属性通过 `Object.defineProperty` 来定义，且无法被遍历。
-2. 将要观察的值挂载在 `value` 属性上。
+1. 定义了 `__ob__` 属性，该属性通过 `Object.defineProperty` 来定义，主要是为了让其无法被遍历。
+2. 将所观察的值挂载在 `value` 属性上。
 3. 因为 `value` 是一个对象，所以遍历 `value` 的 key 来 `defineReactive`。
 
 在看 `defineReactive` 前，我们先快速的看一下 `Dep` 和 `Watcher`：
@@ -448,15 +446,13 @@ update(node, exp, dir) {
 我们先来分析一下目前的问题：一个 `dep` 是服务于某一个 `key` 的，所以当 `key` 对应的值中新增了属性时是无法触发 `key` 的 `set` 方法的。所以新增 `key` 就不能用 js 原生的写法了，只能通过调用 `$set` 来进行，这样，我们才有可能在 `$set` 函数里面手动的去通知 `watcher` 进行更新。
 
 ```javascript
-class AVue {
+class Vue {
   ...
   $set(target, propertyName, value) {
     target[propertyName] = value
     const ob = target.__ob__
     // 对新的 key 定义响应式操作
     defineReactive(ob.value, propertyName, value)
-    // 每初始化一个 Observer 对象，也要相应的给它分配一个 Dep 对象
-    // 且该 Dep 对象管理的 watcher 是跟该 Observer 对象对应的 key 的 Dep 对象所管理的一样
     // 通知 watcher 更新
     ob.dep.notify()
     return value
@@ -466,6 +462,8 @@ class AVue {
 
 class Observer {
   constructor(value) {
+    // 每初始化一个 Observer 对象，也要相应的给它分配一个 Dep 对象
+    // 且该 Dep 对象管理的 watcher 是跟该 Observer 对象对应的 key 的 Dep 对象所管理的 watcher 是一样的
     this.dep = new Dep()
     ...
   }
@@ -503,7 +501,7 @@ function defineReactive(obj, key, val) {
 
 ```javascript
   ...
-  if (attrName.indexOf('a-') === 0) {
+  if (attrName.indexOf('v-') === 0) {
     // 截取指令名称
     const dir = attrName.substring(2)
     // 看看是否存在对应方法，有则执行
@@ -536,10 +534,10 @@ function proxy(vm) {
 
 # 双向绑定
 
-我们要实现类似 `v-model` 的双向绑定效果，这里我们叫做 `a-model`。首先我们需要添加指令对应的函数：
+我们要实现类似 `v-model` 的双向绑定效果，首先我们需要添加指令对应的函数：
 
 ```javascript
-  // k-model
+  // v-model
   model(node, exp) {
     this.update(node, exp, 'model')
   }
@@ -552,7 +550,7 @@ function proxy(vm) {
 这样双向绑定的 `value` 这一向就完成了，接下来要添加 `@input` 那一向：
 
 ```javascript
-class AVue {
+class Vue {
   setVal(exp, val) {
     exp.split('.').reduce((data, current, index, arr) => {
       if (index === arr.length - 1) {
@@ -563,7 +561,7 @@ class AVue {
   }
 }
 ...
-  // k-model
+  // v-model
   model(node, exp) {
     this.update(node, exp, 'model')
     node.addEventListener('input', (e) => {
@@ -575,6 +573,4 @@ class AVue {
 
 这一向其实也比较简单，就是监听 `input` 事件，将事件返回的值赋值给 `$data` 对应的 key。
 
-# 总结
-
-通过任务拆解以后，发现实现一个简单的 `Vue` 并不是那么的难，还是得多动手。
+至此，一个简单的 `vue` 就实现了。
