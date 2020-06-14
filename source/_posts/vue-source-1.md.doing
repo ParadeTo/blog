@@ -1,0 +1,13 @@
+---
+title: Vue 源码解读一之首次渲染
+date: 2020-06-10 15:31:05
+tags:
+  - vue
+categories:
+  - javascript
+description: 源码解读的第一篇文章，介绍首次渲染的流程
+---
+
+# 入口
+
+观察项目的 `package.json` 文件

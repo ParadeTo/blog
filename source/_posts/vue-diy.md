@@ -1,5 +1,5 @@
 ---
-title: 手写一个简单的 VUE
+title: 手写一个简单的 vue
 date: 2020-06-07 15:35:25
 tags:
   - vue
