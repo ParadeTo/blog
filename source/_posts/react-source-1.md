@@ -59,7 +59,7 @@ function legacyRenderSubtreeIntoContainer(
       forceHydrate
     )
     fiberRoot = root._internalRoot
-    if (typeof callback === 'function') {
+    if (typeof callback === "function") {
       const originalCallback = callback
       callback = function () {
         const instance = getPublicRootInstance(fiberRoot)
@@ -73,7 +73,7 @@ function legacyRenderSubtreeIntoContainer(
   } else {
     // 更新
     fiberRoot = root._internalRoot
-    if (typeof callback === 'function') {
+    if (typeof callback === "function") {
       const originalCallback = callback
       callback = function () {
         const instance = getPublicRootInstance(fiberRoot)
@@ -88,38 +88,73 @@ function legacyRenderSubtreeIntoContainer(
 
 首次渲染时，经过下面这一系列的操作，会初始化一些东西：
 
-```
+```javascript
 ReactDOMLegacy.js
-legacyCreateRootFromDOMContainer:
+function legacyCreateRootFromDOMContainer(
+  container: Container,
+  forceHydrate: boolean
+): RootType {
+  ...
   return createLegacyRoot(
     container,
     shouldHydrate
       ? {
           hydrate: true,
         }
-      : undefined,
-  );
+      : undefined
+  )
+}
 
 ReactDOMRoot.js
-createLegacyRoot:
+function createLegacyRoot(
+  container: Container,
+  options?: RootOptions,
+): RootType {
   return new ReactDOMBlockingRoot(container, LegacyRoot, options);
-ReactDOMBlockingRoot:
+}
+function ReactDOMBlockingRoot(
+  container: Container,
+  tag: RootTag,
+  options: void | RootOptions,
+) {
   this._internalRoot = createRootImpl(container, tag, options);
-createRootImpl:
-  const root = createContainer(container, tag, hydrate, hydrationCallbacks);
+}
+function createRootImpl(
+  container: Container,
+  tag: RootTag,
+  options: void | RootOptions,
+) {
+  ...
+  const root = createContainer(container, tag, hydrate, hydrationCallbacks)
+  ...
+}
+
 
 ReactFiberReconciler.old.js
-createContainer:
+function createContainer(
+  containerInfo: Container,
+  tag: RootTag,
+  hydrate: boolean,
+  hydrationCallbacks: null | SuspenseHydrationCallbacks,
+): OpaqueRoot {
   return createFiberRoot(containerInfo, tag, hydrate, hydrationCallbacks);
+}
 
 ReactFiberRoot.old.js
-createFiberRoot:
-  const root: FiberRoot = (new FiberRootNode(containerInfo, tag, hydrate): any);
-  const uninitializedFiber = createHostRootFiber(tag);
-  root.current = uninitializedFiber;
-  uninitializedFiber.stateNode = root;
-  initializeUpdateQueue(uninitializedFiber);
-  return root;
+function createFiberRoot(
+  containerInfo: any,
+  tag: RootTag,
+  hydrate: boolean,
+  hydrationCallbacks: null | SuspenseHydrationCallbacks,
+): FiberRoot {
+  ...
+  const root: FiberRoot = (new FiberRootNode(containerInfo, tag, hydrate): any)
+  const uninitializedFiber = createHostRootFiber(tag)
+  root.current = uninitializedFiber
+  uninitializedFiber.stateNode = root
+  initializeUpdateQueue(uninitializedFiber)
+  return root
+}
 ```
 
 经过这一系列的操作以后，会形成如下的数据结构：
@@ -184,7 +219,7 @@ export function updateContainer(
   const update = createUpdate(expirationTime, suspenseConfig)
   // Caution: React DevTools currently depends on this property
   // being called "element".
-  update.payload = {element}
+  update.payload = { element }
 
   callback = callback === undefined ? null : callback
   if (callback !== null) {
@@ -200,7 +235,7 @@ export function updateContainer(
 
 这里，会创建一个 `update`，然后入队，我们的数据结构会变成这样：
 
-![](./react-source-1/2.png)
+![](react-source-1/2.png)
 
 接下来就到了 `scheduleUpdateOnFiber`:
 
@@ -245,7 +280,7 @@ export function scheduleUpdateOnFiber(
 }
 ```
 
-最后走到了 `performSyncWorkOnRoot`，即同步执行的：
+最后走到了 `performSyncWorkOnRoot`：
 
 ```javascript
 function performSyncWorkOnRoot(root) {
@@ -324,8 +359,8 @@ function renderRootSync(root, expirationTime) {
     // This is a sync render, so we should have finished the whole tree.
     invariant(
       false,
-      'Cannot commit an incomplete root. This error is likely caused by a ' +
-        'bug in React. Please file an issue.'
+      "Cannot commit an incomplete root. This error is likely caused by a " +
+        "bug in React. Please file an issue."
     )
   }
 
@@ -338,7 +373,7 @@ function renderRootSync(root, expirationTime) {
 
 这里首先调用 `prepareFreshStack(root, expirationTime)`，这一句主要是通过 `root.current` 来创建 `workInProgress`。调用后，数据结构成了这样：
 
-![](./react-source-1/3.png)
+![](react-source-1/3.png)
 
 跳过中间的一些语句，我们来到 `workLoopSync`：
 
@@ -486,11 +521,11 @@ function updateHostRoot(current, workInProgress, renderExpirationTime) {
 
 经过 `updateHostRoot` 后，会返回 `workInProgress.child` 作为下一个 `workInProgress`，最后的数据结构如下（这里先忽略 `reconcileChildren` 这个比较复杂的函数）：
 
-![](./react-source-1/4.png)
+![](react-source-1/4.png)
 
 接着会继续进行 `beginWork`，这次会来到 `mountIndeterminateComponent` （暂时忽略）。总之，经过不断的 `beginWork` 后，我们会得到如下的一个结构：
 
-![](./react-source-1/5.png)
+![](react-source-1/5.png)
 
 此时 `next` 为空，我们会走到：
 
@@ -671,7 +706,7 @@ case HostComponent:
 
 执行完后，我们的结构如下所示：
 
-![](./react-source-1/6.png)
+![](react-source-1/6.png)
 
 此时 `next` 将会是 `null`，我们需要往上找到下一个 `completedWork`，即 `Name`，因为 `Name` 是一个 `FunctionComponent`，所以在 `completeWork` 中直接返回了 `null`。又因为它有 `sibling`，所以会将它的 `sibling` 赋值给 `workInProgress`，并返回对其进行 `beginWork`。
 
@@ -703,7 +738,7 @@ function performUnitOfWork(unitOfWork: Fiber): void {
 
 这样 `beginWork` 和 `completeWork` 不断交替的执行，当我们执行到 `div` 的时候，我们的结构如下所示：
 
-![](./react-source-1/7.png)
+![](react-source-1/7.png)
 
 之所以要额外的分析 `div` 的 `complete` 过程，是因为这个例子方便我们分析 `appendAllChildren`：
 
@@ -746,4 +781,245 @@ appendAllChildren = function (
 }
 ```
 
+由于 `workInProgress` 指向 `div` 这个 `fiber`，他的 `child` 是 `Name`，会进入 `else if (node.child !== null)` 这个条件分支。然后继续下一个循环，此时 `node` 为 `span` 这个 `fiber`，会进入第一个分支，将 `span` 对应的 `dom` 元素插入到 `parent` 之中，此时我们的数据结构为：
+
+![](react-source-1/8.png)
+
+这样不停的循环，最后会执行到 `if (node === workInProgress)` 退出，此时所有的子元素都 append 到了 `parent` 之中：
+![](react-source-1/9.png)
+
+然后继续 `beginWork` 和 `completeWork`，最后会来到 `rootFiber`。不同的是，该节点的 `alternate` 并不为空，且该节点 `tag` 为 `HootRoot`，所以 `completeWork` 时会来到这里：
+
+```javascript
+case HostRoot: {
+  ...
+  updateHostContainer(workInProgress);
+  return null;
+}
+```
+
+```javascript
+updateHostContainer = function (workInProgress: Fiber) {
+  // Noop
+}
+```
+
+看来几乎没有做什么事情，到这我们的 `render` 阶段就结束了，最后的结构如下所示：
+![](react-source-1/10.png)
+
 ## commit
+
+`commit` 大致可分为以下过程：
+
+- 准备阶段
+- before mutation 阶段（执行 DOM 操作前）
+- mutation 阶段（执行 DOM 操作）
+- layout 阶段（执行 DOM 操作后）
+- 收尾阶段
+
+### 准备阶段
+
+```js
+do {
+  // 触发useEffect回调与其他同步任务。由于这些任务可能触发新的渲染，所以这里要一直遍历执行直到没有任务
+  flushPassiveEffects()
+  // 暂时没有复现出 rootWithPendingPassiveEffects !== null 的情景
+  // 首次渲染 rootWithPendingPassiveEffects 为 null
+} while (rootWithPendingPassiveEffects !== null)
+// finishedWork 就是正在工作的 rootFiber
+const finishedWork = root.
+// 优先级相关暂时不看
+const expirationTime = root.finishedExpirationTime
+if (finishedWork === null) {
+  return null
+}
+root.finishedWork = null
+root.finishedExpirationTime = NoWork
+
+root.callbackNode = null
+root.callbackExpirationTime = NoWork
+root.callbackPriority_old = NoPriority
+
+const remainingExpirationTimeBeforeCommit = getRemainingExpirationTime(
+  finishedWork
+)
+markRootFinishedAtTime(
+  root,
+  expirationTime,
+  remainingExpirationTimeBeforeCommit
+)
+
+if (rootsWithPendingDiscreteUpdates !== null) {
+  const lastDiscreteTime = rootsWithPendingDiscreteUpdates.get(root)
+  if (
+    lastDiscreteTime !== undefined &&
+    remainingExpirationTimeBeforeCommit < lastDiscreteTime
+  ) {
+    rootsWithPendingDiscreteUpdates.delete(root)
+  }
+}
+
+if (root === workInProgressRoot) {
+  workInProgressRoot = null
+  workInProgress = null
+  renderExpirationTime = NoWork
+} else {
+}
+
+// 将effectList赋值给firstEffect
+// 由于每个fiber的effectList只包含他的子孙节点
+// 所以根节点如果有effectTag则不会被包含进来
+// 所以这里将有effectTag的根节点插入到effectList尾部
+// 这样才能保证有effect的fiber都在effectList中
+let firstEffect
+if (finishedWork.effectTag > PerformedWork) {
+  if (finishedWork.lastEffect !== null) {
+    finishedWork.lastEffect.nextEffect = finishedWork
+    firstEffect = finishedWork.firstEffect
+  } else {
+    firstEffect = finishedWork
+  }
+} else {
+  firstEffect = finishedWork.firstEffect
+}
+```
+
+首次渲染时，准备阶段其他步骤我们先不管，我们主要关注这一段：
+
+```javascript
+let firstEffect
+if (finishedWork.effectTag > PerformedWork) {
+  if (finishedWork.lastEffect !== null) {
+    finishedWork.lastEffect.nextEffect = finishedWork
+    firstEffect = finishedWork.firstEffect
+  } else {
+    firstEffect = finishedWork
+  }
+} else {
+  firstEffect = finishedWork.firstEffect
+}
+```
+
+这里 `finishedWork` 就是 `rootFiber`，`finishedWork.lastEffect` 和 `finishedWork.firstEffect` 都是 `App` 这个 `fiber`，首次渲染时会走这个分支：
+
+```javascript
+if (finishedWork.lastEffect !== null) {
+  finishedWork.lastEffect.nextEffect = finishedWork
+  firstEffect = finishedWork.firstEffect
+}
+```
+
+所以 `firstEffect` 就是 `App` 这个 `fiber` 了。
+
+### before mutation 阶段
+
+```javascript
+const prevExecutionContext = executionContext
+executionContext |= CommitContext
+const prevInteractions = pushInteractions(root)
+
+// Reset this to null before calling lifecycles
+ReactCurrentOwner.current = null
+
+// The commit phase is broken into several sub-phases. We do a separate pass
+// of the effect list for each phase: all mutation effects come before all
+// layout effects, and so on.
+
+// The first phase a "before mutation" phase. We use this phase to read the
+// state of the host tree right before we mutate it. This is where
+// getSnapshotBeforeUpdate is called.
+focusedInstanceHandle = prepareForCommit(root.containerInfo)
+shouldFireAfterActiveInstanceBlur = false
+
+nextEffect = firstEffect
+do {
+  if (__DEV__) {
+    invokeGuardedCallback(null, commitBeforeMutationEffects, null)
+    if (hasCaughtError()) {
+      invariant(nextEffect !== null, "Should be working on an effect.")
+      const error = clearCaughtError()
+      captureCommitPhaseError(nextEffect, error)
+      nextEffect = nextEffect.nextEffect
+    }
+  } else {
+    try {
+      commitBeforeMutationEffects()
+    } catch (error) {
+      invariant(nextEffect !== null, "Should be working on an effect.")
+      captureCommitPhaseError(nextEffect, error)
+      nextEffect = nextEffect.nextEffect
+    }
+  }
+} while (nextEffect !== null)
+
+// We no longer need to track the active instance fiber
+focusedInstanceHandle = null
+
+if (enableProfilerTimer) {
+  // Mark the current commit time to be shared by all Profilers in this
+  // batch. This enables them to be grouped later.
+  recordCommitTime()
+}
+```
+
+before mutation 阶段主要是调用了 `commitBeforeMutationEffects` 方法：
+
+```javascript
+function commitBeforeMutationEffects() {
+  while (nextEffect !== null) {
+    if (
+      !shouldFireAfterActiveInstanceBlur &&
+      focusedInstanceHandle !== null &&
+      isFiberHiddenOrDeletedAndContains(nextEffect, focusedInstanceHandle)
+    ) {
+      shouldFireAfterActiveInstanceBlur = true
+      beforeActiveInstanceBlur()
+    }
+    const effectTag = nextEffect.effectTag
+    if ((effectTag & Snapshot) !== NoEffect) {
+      setCurrentDebugFiberInDEV(nextEffect)
+
+      const current = nextEffect.alternate
+      commitBeforeMutationEffectOnFiber(current, nextEffect)
+
+      resetCurrentDebugFiberInDEV()
+    }
+    if ((effectTag & Passive) !== NoEffect) {
+      // If there are passive effects, schedule a callback to flush at
+      // the earliest opportunity.
+      if (!rootDoesHavePassiveEffects) {
+        rootDoesHavePassiveEffects = true
+        scheduleCallback(NormalPriority, () => {
+          flushPassiveEffects()
+          return null
+        })
+      }
+    }
+    nextEffect = nextEffect.nextEffect
+  }
+}
+```
+
+`render` 流程结束后，我们来到 `commit` 流程：
+
+```javascript
+function commitRoot(root) {
+  const renderPriorityLevel = getCurrentPriorityLevel()
+  runWithPriority(
+    ImmediateSchedulerPriority,
+    commitRootImpl.bind(null, root, renderPriorityLevel)
+  )
+  return null
+}
+```
+
+```javascript
+function placeSingleChild(newFiber: Fiber): Fiber {
+  // This is simpler for the single child case. We only need to do a
+  // placement for inserting new children.
+  if (shouldTrackSideEffects && newFiber.alternate === null) {
+    newFiber.effectTag = Placement
+  }
+  return newFiber
+}
+```
