@@ -59,7 +59,7 @@ function legacyRenderSubtreeIntoContainer(
       forceHydrate
     )
     fiberRoot = root._internalRoot
-    if (typeof callback === "function") {
+    if (typeof callback === 'function') {
       const originalCallback = callback
       callback = function () {
         const instance = getPublicRootInstance(fiberRoot)
@@ -73,7 +73,7 @@ function legacyRenderSubtreeIntoContainer(
   } else {
     // 更新
     fiberRoot = root._internalRoot
-    if (typeof callback === "function") {
+    if (typeof callback === 'function') {
       const originalCallback = callback
       callback = function () {
         const instance = getPublicRootInstance(fiberRoot)
@@ -219,7 +219,7 @@ export function updateContainer(
   const update = createUpdate(expirationTime, suspenseConfig)
   // Caution: React DevTools currently depends on this property
   // being called "element".
-  update.payload = { element }
+  update.payload = {element}
 
   callback = callback === undefined ? null : callback
   if (callback !== null) {
@@ -359,8 +359,8 @@ function renderRootSync(root, expirationTime) {
     // This is a sync render, so we should have finished the whole tree.
     invariant(
       false,
-      "Cannot commit an incomplete root. This error is likely caused by a " +
-        "bug in React. Please file an issue."
+      'Cannot commit an incomplete root. This error is likely caused by a ' +
+        'bug in React. Please file an issue.'
     )
   }
 
@@ -704,7 +704,7 @@ case HostComponent:
   workInProgress.stateNode = instance;
 ```
 
-执行完后，我们的结构如下所示：
+执行完后，我们的结构如下所示（我们用绿色的圆来表示真实 dom）：
 
 ![](react-source-1/6.png)
 
@@ -806,6 +806,32 @@ updateHostContainer = function (workInProgress: Fiber) {
 
 看来几乎没有做什么事情，到这我们的 `render` 阶段就结束了，最后的结构如下所示：
 ![](react-source-1/10.png)
+
+这里有点要说明的是在处理 `App` 这个 `fiber` 的时候，因为 `App` 的 `effectTag` （Placement 2 & Update 4 & Passive 512）大于 `PerformedWork` （值为 1），所以代码会走到这里：
+
+```javascript
+// If this fiber had side-effects, we append it AFTER the children's
+// side-effects. We can perform certain side-effects earlier if needed,
+// by doing multiple passes over the effect list. We don't want to
+// schedule our own side-effect on our own list because if end up
+// reusing children we'll schedule this effect onto itself since we're
+// at the end.
+const effectTag = completedWork.effectTag
+
+// Skip both NoWork and PerformedWork tags when creating the effect
+// list. PerformedWork effect is read by React DevTools but shouldn't be
+// committed.
+if (effectTag > PerformedWork) {
+  if (returnFiber.lastEffect !== null) {
+    returnFiber.lastEffect.nextEffect = completedWork
+  } else {
+    returnFiber.firstEffect = completedWork
+  }
+  returnFiber.lastEffect = completedWork
+}
+```
+
+所以，`rootFiber` 的 `firstEffect` 和 `lastEffect` 都会指向 `App`。后面分析更新过程的时候会再详细讨论这里。
 
 ## commit
 
@@ -934,18 +960,12 @@ shouldFireAfterActiveInstanceBlur = false
 nextEffect = firstEffect
 do {
   if (__DEV__) {
-    invokeGuardedCallback(null, commitBeforeMutationEffects, null)
-    if (hasCaughtError()) {
-      invariant(nextEffect !== null, "Should be working on an effect.")
-      const error = clearCaughtError()
-      captureCommitPhaseError(nextEffect, error)
-      nextEffect = nextEffect.nextEffect
-    }
+    ...
   } else {
     try {
       commitBeforeMutationEffects()
     } catch (error) {
-      invariant(nextEffect !== null, "Should be working on an effect.")
+      invariant(nextEffect !== null, 'Should be working on an effect.')
       captureCommitPhaseError(nextEffect, error)
       nextEffect = nextEffect.nextEffect
     }
@@ -962,7 +982,7 @@ if (enableProfilerTimer) {
 }
 ```
 
-before mutation 阶段主要是调用了 `commitBeforeMutationEffects` 方法：
+`before mutation` 阶段主要是调用了 `commitBeforeMutationEffects` 方法：
 
 ```javascript
 function commitBeforeMutationEffects() {
@@ -980,6 +1000,7 @@ function commitBeforeMutationEffects() {
       setCurrentDebugFiberInDEV(nextEffect)
 
       const current = nextEffect.alternate
+      // 调用getSnapshotBeforeUpdate
       commitBeforeMutationEffectOnFiber(current, nextEffect)
 
       resetCurrentDebugFiberInDEV()
@@ -1000,26 +1021,73 @@ function commitBeforeMutationEffects() {
 }
 ```
 
-`render` 流程结束后，我们来到 `commit` 流程：
+因为 `App` 中 `effectTag` 为 `1000000111`，包括了 `Passive`，所以这里会执行：
 
 ```javascript
-function commitRoot(root) {
-  const renderPriorityLevel = getCurrentPriorityLevel()
-  runWithPriority(
-    ImmediateSchedulerPriority,
-    commitRootImpl.bind(null, root, renderPriorityLevel)
-  )
+scheduleCallback(NormalPriority, () => {
+  flushPassiveEffects()
   return null
+})
+```
+
+这里主要是对 `useEffect` 进行[异步调用](https://react.iamkasong.com/renderer/beforeMutation.html#%E8%B0%83%E5%BA%A6useeffect)。
+
+### mutation 阶段
+
+`mutation` 阶段主要是执行了 `commitMutationEffects` 这个方法：
+
+```javascript
+function commitMutationEffects(root: FiberRoot, renderPriorityLevel) {
+  // TODO: Should probably move the bulk of this function to commitWork.
+  while (nextEffect !== null) {
+    setCurrentDebugFiberInDEV(nextEffect)
+
+    const effectTag = nextEffect.effectTag
+
+    ...
+
+    // The following switch statement is only concerned about placement,
+    // updates, and deletions. To avoid needing to add a case for every possible
+    // bitmap value, we remove the secondary effects from the effect tag and
+    // switch on that value.
+    const primaryEffectTag =
+      effectTag & (Placement | Update | Deletion | Hydrating)
+    switch (primaryEffectTag) {
+      ...
+      case PlacementAndUpdate: {
+        // Placement
+        commitPlacement(nextEffect)
+        // Clear the "placement" from effect tag so that we know that this is
+        // inserted, before any life-cycles like componentDidMount gets called.
+        nextEffect.effectTag &= ~Placement
+
+        // Update
+        const current = nextEffect.alternate
+        commitWork(current, nextEffect)
+        break
+      }
+      ...
+    }
+  }
 }
 ```
 
+执行完 `commitPlacement(nextEffect)` 后，整棵 dom 树就被插入到了 `<div id='root'></div>` 之中。
+
+接下来执行 `commitWork(current, nextEffect)`，这里会执行 `useLayoutEffect` 上一次的销毁函数，详见[React 技术揭秘](https://react.iamkasong.com/renderer/mutation.html#placement-effect)。
+
+`mutation 阶段完成后`，会执行：
+
 ```javascript
-function placeSingleChild(newFiber: Fiber): Fiber {
-  // This is simpler for the single child case. We only need to do a
-  // placement for inserting new children.
-  if (shouldTrackSideEffects && newFiber.alternate === null) {
-    newFiber.effectTag = Placement
-  }
-  return newFiber
-}
+root.current = finishedWork
 ```
+
+完成 `fiberRootNode` 指向的 `current Fiber` 树。
+
+### layout 阶段 / 首尾阶段
+
+首次渲染这里没有什么值得特别说明的地方，参考 [React 技术揭秘第四章](https://react.iamkasong.com/renderer/prepare.html) 即可。
+
+# 总结
+
+本文大部分内容都参考自 [React 技术揭秘](https://react.iamkasong.com/)，只是通过举例走读了一遍首次渲染流程，加深了下自己的理解。
