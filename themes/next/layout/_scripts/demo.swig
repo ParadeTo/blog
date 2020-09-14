@@ -19,4 +19,6 @@
   <script src="/js/vue-float/index.js"></script>
 {% elif page.title==='resume' %}
   <script src="/js/resume/index.js"></script>
+{% elif page.title==='react-render' %}
+  <script src="/js/react-render/index.js"></script>
 {% endif %}
