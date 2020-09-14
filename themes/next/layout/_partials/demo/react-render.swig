@@ -15,8 +15,10 @@
 
     <!-- text content for search engines: -->
 
-    <div style="display: none" aria-hidden="true">
-      <div>back</div>
-      <div>beginWork</div>
-      <div>completeWork</div>
-    </div>
+	<div style="display:none" aria-hidden=true>
+
+		<div>beginWork</div>
+		<div>back</div>
+		<div>completeWork</div>
+		<div>completeWork</div>
+	</div>
