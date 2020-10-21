@@ -1365,10 +1365,10 @@ function Name({name}) {
 
 // 点击后，下面事件发生的顺序
 // 1. 页面显示 xingzhi
-// 2. console.log('useLayoutEffect ayou')
-// 3. console.log('useLayoutEffect xingzhi')
-// 4. console.log('useEffect ayou')
-// 5. console.log('useEffect xingzhi')
+// 2. console.log('useLayoutEffect destroy ayou')
+// 3. console.log(`useLayoutEffect xingzhi`)
+// 4. console.log('useEffect destroy ayou')
+// 5. console.log(`useEffect xingzhi`)
 export default function App() {
   const [name, setName] = useState('ayou')
   const onClick = React.useCallback(() => setName('xingzhi'), [])
