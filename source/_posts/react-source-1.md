@@ -1383,11 +1383,14 @@ export default function App() {
 
 解析：
 
-1. 无论是 `useEffect` 还是 `useLayoutEffect`，都在 `commitMutations` 之后，所以页面先显示 `xingzhi`
+1. span 这个 Fiber 位于 effect 链表的首部，在 commitMutations 中会先处理，所以页面先显示 xingzhi。
 
-2. `useLayoutEffec`t` 中的任务在 `commitMutations` 之后同步执行，且先执行上一次的 `destroy`，再执行这一次的 `create`，所以 2 在 3 前面
+2. Name 这个 Fiber 位于 span 之后，所以 useLayoutEffect 中上一次的 destroy 紧接着其执行。打印 useLayoutEffect ayou。
 
-3. `useEffect` 在下一个宏任务中执行，先执行上一次的 `destroy`，再执行这一次的 `create`，所以 4 在 5 前。
+3. commitLayoutEffects 中执行 useLayoutEffect 这一次的 create。打印 useLayoutEffect xingzhi。
+
+4. useEffect 在下一个宏任务中执行，先执行上一次的 destroy，再执行这一次的 create。所以先打印 useEffect ayou，再打印 useEffect xingzhi。
+
 
 
 # 总结
