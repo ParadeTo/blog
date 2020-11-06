@@ -75,7 +75,7 @@ export default class App extends React.Component {
 
   render() {
     return (
-      <div id='outer' onClickCapture={this.outerClick}>
+      <div id='outer' onClick={this.outerClick}>
         <button id='inner' onClick={this.innerClick}>
           BUTTON
         </button>
