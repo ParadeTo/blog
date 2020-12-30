@@ -1,5 +1,5 @@
 ---
-title: React 源码解读之一首次渲染流程
+title: React 源码解读之首次渲染流程
 date: 2020-07-26 09:39:30
 tags:
   - react

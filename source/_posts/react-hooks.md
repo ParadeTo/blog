@@ -5,7 +5,7 @@ tags:
   - react
 categories:
   - javascript
-description: React 源码解读的第一篇文章，介绍首次渲染的流程
+description: React 源码解读之 Hooks
 ---
 
 > 说明：本文结论均基于 React 16.13.1 得出，若有出入请参考对应版本源码
