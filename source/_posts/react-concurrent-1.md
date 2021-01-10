@@ -66,17 +66,17 @@ const App = () => {
 
 | Legacy | Concurrent |
 | :-: | :-: |
-| ![](./react-scheduler/legacy.gif) | ![](./react-scheduler/concurrent.gif) |
+| ![](./react-concurrent-1/legacy-min.gif) | ![](./react-concurrent-1/concurrent-min.gif) |
 
 可以看到，Legacy 模式下，正方形出现后就不动了，一直要等到渲染过程完全结束后动画才开始进行，而 Concurrent 模式下则没有出现这种情况。
 
 通过浏览器的 performance 面板，我们发现 Legacy 模式下 `Render` 阶段（详见[React 源码解读之首次渲染流程](/2020/07/26/react-first-render/)）都在一个 Task 中完成，导致该 Task 执行时间过长，阻塞了浏览器的其他工作：
 
-![](./react-scheduler/legacy-performance.png)
+![](./react-concurrent-1/legacy-performance.png)
 
 而 Concurrent 模式下， `Render` 阶段被分成了一个个的小任务：
 
-![](./react-scheduler/concurrent-performance.png)
+![](./react-concurrent-1/concurrent-performance.png)
 
 实现时间切片这个功能，少不了 React 新加入的 `Scheduler`（调度器），这个就是本文所要研究的内容。
 
@@ -93,11 +93,11 @@ This is a package for cooperative scheduling in a browser environment. It is cur
 ```javascript
 import Scheduler from 'react/packages/scheduler'
 
-Scheduler.unstable_scheduleCallback(2, function func1() {
+const task1 = Scheduler.unstable_scheduleCallback(2, function func1() {
   console.log('1')
 })
 
-const task = Scheduler.unstable_scheduleCallback(1, function func2(didTimeout){
+const task2 = Scheduler.unstable_scheduleCallback(1, function func2(didTimeout) {
   console.log('2')
 })
 ```
@@ -124,11 +124,11 @@ const task = Scheduler.unstable_scheduleCallback(1, function func2(didTimeout){
 ```javascript
 import Scheduler from 'react/packages/scheduler'
 
-Scheduler.unstable_scheduleCallback(2, function func1() {
+const task1 = Scheduler.unstable_scheduleCallback(2, function func1() {
   console.log('1')
 })
 
-Scheduler.unstable_scheduleCallback(1, function func2(){
+const task2 = Scheduler.unstable_scheduleCallback(1, function func2() {
   console.log('2')
 }, {delay: 100})
 ```
@@ -140,11 +140,11 @@ Scheduler.unstable_scheduleCallback(1, function func2(){
 ```javascript
 import Scheduler from 'react/packages/scheduler'
 
-Scheduler.unstable_scheduleCallback(2, function func1 () {
+const task1 = Scheduler.unstable_scheduleCallback(2, function func1 () {
   console.log('1')
 })
 
-const task = Scheduler.unstable_scheduleCallback(1, function func2(){
+const task2 = Scheduler.unstable_scheduleCallback(1, function func2(){
   console.log('2')
 })
 
@@ -167,7 +167,7 @@ function func1() {
   return func2
 }
 
-Scheduler.unstable_scheduleCallback(1, func1)
+const task = Scheduler.unstable_scheduleCallback(1, func1)
 
 ```
 
@@ -184,7 +184,7 @@ function work() {
   console.log('yield to host')
 }
 
-Scheduler.unstable_scheduleCallback(1, function func2(){
+const task = Scheduler.unstable_scheduleCallback(1, function func2(){
   work()
 })
 ```
@@ -333,7 +333,7 @@ function unstable_scheduleCallback(priorityLevel, callback, options) {
 
 该方法首先会确定 `currentTime`、`startTime`、`expirationTime`，然后会新建一个 `newTask`，并将要调度的方法作为该对象的 `callback` 属性。
 
-接着，根据该任务是否已经开始来确定走不同的分支，如果该任务还未开始，则将其放入 `timerQueue` 中，如果开始了则放入 `taskQueue`。其中 `timerQueue` 和 `taskQueue` 都是通过最小堆实现的优先级队列，`timerQueue` 中的元素通过 `startTime` 来排序，`taskQueue` 中的元素通过 `expirationTime` 排序。
+接着，根据该任务是否已经开始来确定走不同的分支，如果该任务还未就绪，则将其放入 `timerQueue` 中，如果开始了则放入 `taskQueue`。其中 `timerQueue` 和 `taskQueue` 都是通过最小堆实现的优先级队列，`timerQueue` 中的元素通过 `startTime` 来排序，`taskQueue` 中的元素通过 `expirationTime` 排序。
 
 我们的时间切片例子中没有指定 `delay`，所以我们这里会走到 `else` 中，将 `newTask` 放入到 `taskQueue` 中后，会执行 `requestHostCallback(flushWork)`。这一步会开启一个宏任务，在该任务中执行 `flushWork`。
 
@@ -520,7 +520,7 @@ function handleTimeout(currentTime) {
 这里调用了 `requestHostCallback(flushWork)`，剩下的流程就跟之前的一样了。也许你会好奇这里为什么存在 `peek(taskQueue)` 为空这种情况，因为有可能从 `requestHostTimeout` 到 `handleTimeout` 这一段时间内，用户取消掉了最早开始的那个任务。
 
 至此，时间切片的大致运行流程就分析完了，可用下图表示：
-![](./react-scheduler/time-slice.png)
+![](./react-concurrent-1/time-slice.png)
 
 # 总结
 本文首先通过一个列子引出了 React 的 Concurrent 模式，然后介绍了 `Scheduler` 的基本使用方法并模拟了 React 在 Concurrent 模式下是如何使用时间切片来进行 `Render` 的，最后分析了时间切片的实现原理。
