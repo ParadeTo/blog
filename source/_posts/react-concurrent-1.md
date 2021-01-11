@@ -5,7 +5,7 @@ tags:
   - react
 categories:
   - javascript
-description: React 源码解读之 Concurrent
+description: 介绍时间切片的实现原理
 ---
 
 # 引言
