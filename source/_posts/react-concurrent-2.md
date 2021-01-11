@@ -20,12 +20,16 @@ const Item = ({i, children}) => {
   return <span key={i}>{children}</span>
 }
 
+function updateFn(count) {
+  return count + 2
+}
+
 export default () => {
   const buttonRef = useRef(null);
   const [count, updateCount] = useState(0);
 
   const onClick = () => {
-    updateCount((count) => count + 2);
+    updateCount(updateFn);
   };
 
   useEffect(() => {
@@ -62,8 +66,79 @@ export default () => {
 为什么两者会有这样的区别呢？下面就让我们来分析一下吧。
 
 # 更新流程
-我们知道执行 `updateCount(1)` 时，最终会通过 `MessageChannel` 开启一个宏任务来进行更新，且这个宏任务是在第二个定时器之前执行。又因为 Legacy 模式下更新过程是同步的，所以会一直等到第一次更新完成后，浏览器才有空闲去执行第二个定时器中的方法，即第一次定时器触发后，实际上超过了 40 毫秒才触发了第二个定时器。
+## Legacy 模式
+我们知道执行 `updateCount(1)` 时，最终会通过 `MessageChannel` 开启一个宏任务来进行更新，且这个宏任务是在第二个定时器之前执行。又因为 Legacy 模式下更新过程（`Render` 阶段和 `Commit` 阶段）是同步的，所以会一直等到第一次更新完成后，浏览器才有空闲去执行第二个定时器中的方法，即第一次定时器触发后，实际上超过了 40 毫秒才触发了第二个定时器。所以 Legacy 模式下先渲染 1，再渲染 2，最后渲染为 3 这个结果还是比较好理解的。
 
-Concurrent 模式下，前面步骤是一样的，执行 `updateCount(1)` 时，最终也会通过 `MessageChannel` 开启一个宏任务来进行更新，但是更新过程的 `Render` 阶段是放在一个个时间切片中去完成的，某个时间切片结束后，浏览器会调用第二个定时器中的方法，最终执行 `updateCount((count) => count + 2)`，此时：
+## Concurrent 模式
+Concurrent 模式下，前面步骤是一样的，执行 `updateCount(1)` 时，最终也会通过 `MessageChannel` 开启一个宏任务来进行更新，但是更新过程的 `Render` 阶段是放在一个个时间切片中去完成的，某个时间切片结束后，浏览器会调用第二个定时器中的方法 `button.click()`，最终执行 `updateCount((count) => count + 2)`。由于用户事件产生的更新优先级要更高，所以 `React` 会打断上一次的任务：
 
+```javascript
+  if (existingCallbackNode !== null) {
+    const existingCallbackPriority = root.callbackPriority;
+    if (existingCallbackPriority === newCallbackPriority) {
+      // The priority hasn't changed. We can reuse the existing task. Exit.
+      return;
+    }
+    cancelCallback(existingCallbackNode);
+  }
+```
+![](./react-concurrent-2/break-update.png)
+
+
+
+然后开启一个新的任务：
+
+```javascript
+    const schedulerPriorityLevel = lanePriorityToSchedulerPriority(
+      newCallbackPriority,
+    );
+    newCallbackNode = scheduleCallback(
+      schedulerPriorityLevel,
+      performConcurrentWorkOnRoot.bind(null, root),
+    );
+```
+
+此时，React 会丢弃当前已经构建了一部分的 Fiber Tree，从头开始构建：
+
+```javascript
+  ...
+  // If the root or lanes have changed, throw out the existing stack
+  // and prepare a fresh one. Otherwise we'll continue where we left off.
+  if (workInProgressRoot !== root || workInProgressRootRenderLanes !== lanes) {
+    ...
+    prepareFreshStack(root, lanes);
+    ...
+  }
+  ...
+```
+
+当我们在 `Render` 阶段执行 `App` 这个函数组件中的 `useState` 时，最终会进入 `updateReducer`，由于当前这个 `Hook` 的 `baseQueue` 还保留着上一次更新的数据，所以我们会进入 `if (baseQueue !== null)` 这个分支：
+
+```javascript
+  let baseQueue = current.baseQueue;
+  // The last pending update that hasn't been processed yet.
+  const pendingQueue = queue.pending;
+  if (pendingQueue !== null) {
+    // We have new updates that haven't been processed yet.
+    // We'll add them to the base queue.
+    if (baseQueue !== null) {
+      // Merge the pending queue and the base queue.
+      const baseFirst = baseQueue.next;
+      const pendingFirst = pendingQueue.next;
+      baseQueue.next = pendingFirst;
+      pendingQueue.next = baseFirst;
+    }
+    current.baseQueue = baseQueue = pendingQueue;
+    queue.pending = null;
+  }
+```
+
+这里其实就是将 `baseQueue` 和 `pendingQueue` 两个链表进行合并：
+
+
+![](./react-concurrent-2/merge-queue.png)
+
+
+
+具体到我们的例子：
 
