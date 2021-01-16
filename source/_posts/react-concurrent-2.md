@@ -1,15 +1,15 @@
 ---
-title: React 源码解读之 Concurrent 模式（二）
+title: React 源码解读之 Concurrent 模式之更新插队
 date: 2021-01-10 11:52:49
 tags:
   - react
 categories:
   - javascript
-description: 介绍 React Concurrent 模式下高优先级更新打断低优先级更新的实现原理
+description: 介绍 React Concurrent 模式下更新插队的实现原理
 ---
 
 # 引言
-[上篇](/2020/12/30/react-concurrent-1/)讲述了 Concurrent 模式中关于时间切片的实现方式，本文来讲讲 Concurrent 模式中另外一个特性：高优先级更新打断低优先级更新。我们先来看一个例子：
+[上篇](/2020/12/30/react-concurrent-1/)讲述了 Concurrent 模式中关于时间切片的实现方式，本文来讲讲 Concurrent 模式中另外一个特性：更新插队。我们先来看一个例子：
 
 ```javascript
 import React from 'react'

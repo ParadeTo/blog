@@ -1,5 +1,5 @@
 ---
-title: React 源码解读之 Concurrent 模式（一）
+title: React 源码解读之 Concurrent 模式之时间切片
 date: 2020-12-30 18:38:52
 tags:
   - react
