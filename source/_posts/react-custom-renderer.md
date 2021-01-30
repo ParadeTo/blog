@@ -51,11 +51,64 @@ stage.render()
 ![](./react-custom-renderer/canvas-renderer-raw.png)
 
 
-## Custom Renderer 实现方式
+## Canvas Renderer 实现方式
+我们通过引言中第一个 Demo 来分析 `Canvas` `Renderer` 的实现方式：
+
 ```javascript
+// Demo1.jsx
+import {useEffect, useState} from 'react'
 
+const R = 20
+const W = 100
+const H = 100
+
+function Demo1() {
+  const [x, setX] = useState(R)
+  const [y, setY] = useState(R)
+  useEffect(() => {
+    setTimeout(() => {
+      if (y === R && x < W - R) {
+        setX(x + 1)
+      } else if (x === W - R && y < H - R) {
+        setY(y + 1)
+      } else if (y === H - R && x > R) {
+        setX(x - 1)
+      } else {
+        setY(y - 1)
+      }
+    }, 10)
+  }, [x, y])
+  return (
+    <>
+      <text x={10} y={20} content='DEMO1' font='18px serif' fillStyle='black' />
+      <rect x={50} y={50} width={W} height={H} color='blue'>
+        <circle x={x} y={y} radius={R} color='red'>
+          <rect x={-10} y={-10} width={20} height={20} color='green' />
+        </circle>
+      </rect>
+    </>
+  )
+}
+
+export default Demo1
+
+// index.js
+import CanvasRenderer from './CanvasRenderer'
+import Demo1 from './Demo1'
+
+CanvasRenderer.render(<Demo1 />, document.getElementById('demo1'), {
+  width: 400,
+  height: 200,
+  style: {
+    backgroundColor: 'white',
+    border: '1px solid gray',
+  },
+})
+```
+Demo1 是一个函数组件，返回了 `text`、`rect`、 `circle` 这些标签，这些标签需要我们 `Canvas` `Renderer` 来进行渲染，接下来看看 `render` 函数做了啥：
+
+```javascript
 const reconcilerInstance = Reconciler(HostConfig)
-
 const CanvasRenderer = {
   render(element, renderDom, {width, height, style}, callback) {
     const stage = new Stage({renderDom, width, height, style})
@@ -71,14 +124,15 @@ const CanvasRenderer = {
     ) // Start reconcilation and render the result
   },
 }
-
 ```
+
+该函数主要是创建了一个 `Stage` 对象作为 `Reconciler` 对象 `reconcilerInstance` 的 `container`，最后调用 `reconcilerInstance.updateContainer()` 将 Demo1 组件通过 `Canvas` `Renderer` 进行渲染。我们知道 `Reconciler` 在 React 渲染流程中充当着非常重要的作用，它会计算出哪些组件需要更新，并会将需要更新的信息提交给 `Renderer` 来处理，而将 `Reconciler` 和 `Renderer` 连接起来的秘诀就在 `HostConfig` 之中：
 
 ```javascript
 const HostConfig = {
   supportsMutation: true,
   // 通过 FiberNode 创建 instance，会保存在 FiberNode 的 stateNode 属性上
-  createInstance: function (
+  createInstance(
     type,
     newProps,
     rootContainerInstance,
@@ -109,7 +163,7 @@ const HostConfig = {
   appendChildToContainer(parent, child) {
     parent.appendChild(child)
   },
-  appendChild: function (parent, child) {
+  appendChild(parent, child) {
     parent.appendChild(child)
   },
   insertBefore(parent, child, beforeChild) {
@@ -120,7 +174,7 @@ const HostConfig = {
   },
 
   /* 组件属性发生变化时会调用该方法 */
-  commitUpdate: function (
+  commitUpdate(
     instance,
     updatePayload,
     type,
@@ -140,11 +194,11 @@ const HostConfig = {
     const rootContext = {}
     return rootContext
   },
-  getChildHostContext: function (parentContext, fiberType, rootInstance) {
+  getChildHostContext(parentContext, fiberType, rootInstance) {
     const context = {}
     return context
   },
-  prepareForCommit: function (rootContainerInstance) {
+  prepareForCommit(rootContainerInstance) {
     return null
   },
   prepareUpdate(
@@ -158,61 +212,124 @@ const HostConfig = {
     return {}
   },
   // 暂时不需要实现的接口
-  finalizeInitialChildren: function () {},
+  finalizeInitialChildren() {},
   appendAllChildren(...args) {},
-  commitTextUpdate: function (textInstance, oldText, newText) {},
+  commitTextUpdate(textInstance, oldText, newText) {},
   removeChildFromContainer(container, child) {},
-  commitMount: (domElement, type, newProps, fiberNode) => {},
+  commitMount(domElement, type, newProps, fiberNode){},
   clearContainer(...args) {},
-  createTextInstance: function (
+  createTextInstance(
     newText,
     rootContainerInstance,
     currentHostContext,
     workInProgress
   ) {},
-  shouldSetTextContent: function (...args) {},
+  shouldSetTextContent(...args) {},
 }
-
 ```
 
+`HostConfig` 中是我们的 `Canvas` `Renderer` 需要实现的一些接口，这里来说明一下：
 
-如图，我们使用 React 绘制了一个简单的动画，代码如下：
+*supportsMutation*
+
+当前渲染器是否支持修改节点，毫无疑问这里必须是 `true`。
+
+*createInstance*
+
+该函数会在通过 `FiberNode` 创建宿主相关的元素时进行调用，返回的元素会保存在 `FiberNode` 的 `stateNode` 属性上，参考[React的渲染流程](/2020/07/26/react-first-render/)。对于 `Canvas` `Renderer` 来说，这里会根据 `type` 值创建出不同的组件。
+
+*appendInitialChild*、*appendChild*、*appendChildToContainer*、*insertBefore*
+
+这几个接口都涉及到元素的插入操作，前三个是把元素插到最后面，其中 `appendInitialChild` 在首次渲染时调用，`appendChild` 在更新的时候调用，而 `appendChildToContainer` 则在把元素插入到 `container` 时使用，对于 `Canvas` `Renderer` 来说，这些接口中均调用 `parent.appendChild(child)` 即可：
 
 ```javascript
-import React from 'react'
-import {useEffect, useState} from 'react'
-
-const R = 20
-const W = 100
-const H = 100
-
-function App() {
-  const [x, setX] = useState(R)
-  const [y, setY] = useState(R)
-  useEffect(() => {
-    setTimeout(() => {
-      if (y === R && x < W - R) {
-        setX(x + 1)
-      } else if (x === W - R && y < H - R) {
-        setY(y + 1)
-      } else if (y === H - R && x > R) {
-        setX(x - 1)
-      } else {
-        setY(y - 1)
-      }
-    }, 10)
-  }, [x, y])
-  return (
-    <rect x={50} y={50} width={W} height={H} color='blue'>
-      <circle x={x} y={y} radius={R} color='red'>
-        <rect x={-10} y={-10} width={20} height={20} color='green' />
-      </circle>
-    </rect>
-  )
-}
-
-export default App
+  appendChild(child) {
+    this.__children.push(child)
+    child.parent = this
+  }
 ```
 
-其中， `App` 组件中返回的 `rect` 和 `circle` 分别表示矩形和圆，`x`、`y`、`width`、`height`、`radius`、`color` 是这些图形的参数。`x`、`y` 是相对于父组件的坐标，矩形以左上角作为基准，圆形以圆心作为基准。比如，`cirlce` 里面 `rect` 的 `x` 和 `y` 都为 -10，表示 `rect` 的左上角位于圆心往左和往上各 10 个像素。
+而 `insertBefore` 则是把元素插入到某个元素前面，同样，`Canvas` `Renderer` 也有对应的实现：
+
+```javascript
+  insertBefore(child, beforeChild) {
+    for (let i = 0; i < this.__children.length; i++) {
+      if (this.__children[i] === beforeChild) {
+        this.__children.splice(i, 0, child)
+        child.parent = this
+        break
+      }
+    }
+  }
+```
+
+*commitUpdate*
+
+当组件属性发生变化的时候会调用该函数，`Canvas` `Renderer` 对应的实现方法也比较简单，即更新 `instance` 的属性即可：
+
+```javascript
+  update(props) {
+    Object.keys(props).forEach((k) => {
+      this[k] = props[k]
+    })
+  }
+```
+
+*resetAfterCommit*
+
+在[React 源码解读之一首次渲染流程](/2020/07/26/react-first-render/)这篇文章中，我们知道 React 的每次更新过程包括 `Render` 和 `Commit` 两大阶段，其中 `Render` 会计算出 `Effect` 链表供 `Commit` 阶段处理，而 `resetAfterCommit` 这个函数就是在 `Commit` 阶段执行完 `commitMutationEffects` 函数后进行调用，此时所有对元素的更新操作已处理完毕，所以这里是一个适合 `Canvas` `Renderer` 调用 `container.render()` 进行重新渲染的地方。该函数中首先清空了整个画布，然后依次调用子组件的 `render` 方法：
+
+```javascript
+// Stage.js
+  render() {
+    this.context.clearRect(0, 0, this.width, this.height)
+    this.renderChildren()
+  }
+// Layer.js
+  renderChildren() {
+    for (let child of this.__children) {
+      child.render()
+    }
+  }
+// Rect.js
+  render() {
+    const {x, y, stage} = this.resolvePosAndStage()
+    if (!stage) return
+    stage.context.beginPath()
+    stage.context.rect(x, y, this.width, this.height)
+    stage.context.strokeStyle = this.color
+    stage.context.stroke()
+    this.renderChildren()
+  }
+// Circle.js
+  render() {
+    const {x, y, stage} = this.resolvePosAndStage()
+    if (!stage) return
+    stage.context.beginPath()
+    stage.context.arc(x, y, this.radius, 0, 2 * Math.PI, true)
+    if (this.fill) {
+      stage.context.fillStyle = this.color
+      stage.context.fill()
+    } else {
+      stage.context.strokeStyle = this.color
+      stage.context.stroke()
+    }
+    this.renderChildren()
+  }
+// Text.js
+  render() {
+    const {x, y, stage} = this.resolvePosAndStage()
+    if (!stage) return
+    stage.context.font = this.font
+    stage.context.fillStyle = this.fillStyle
+    stage.context.fillText(this.content, x, y)
+  }
+```
+
+值得一提的是，[Remax](https://remaxjs.org/) 也是在这里触发了小程序的更新。
+
+# 总结
+本文分析了 `Canvas` `Renderer` 的实现方式，详细代码见 https://github.com/ParadeTo/react-canvas-renderer
+
+
 
