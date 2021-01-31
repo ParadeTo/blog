@@ -328,7 +328,7 @@ const HostConfig = {
 
 值得一提的是，[Remax](https://remaxjs.org/) 也是在这里触发了小程序的更新。
 
-至此，我们的 `Canvas` `Renderer` 的核心实现原理就分析完了，更多内容详见[源码](https://github.com/ParadeTo/react-canvas-renderer)
+至此，我们的 `Canvas` `Renderer` 的核心实现原理就分析完了，更多内容及 Demo 详见[源码](https://github.com/ParadeTo/react-canvas-renderer)。
 
 
 
