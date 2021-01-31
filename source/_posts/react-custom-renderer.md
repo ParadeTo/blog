@@ -14,7 +14,7 @@ description: 介绍如何实现一个简单的 Custom React Renderer
 ![](react-custom-renderer/1.gif)
 ![](react-custom-renderer/2.gif)
 
-下面我们以第一个 Demo 为例，来分析我们 `Canvas` `Renderer` 的实现方式。
+下面就来剖析下 `Canvas` `Renderer` 的实习方式。
 
 # Canvas Renderer
 ## 组件
@@ -277,7 +277,7 @@ const HostConfig = {
 
 *resetAfterCommit*
 
-在[React 源码解读之一首次渲染流程](/2020/07/26/react-first-render/)这篇文章中，我们知道 React 的每次更新过程包括 `Render` 和 `Commit` 两大阶段，其中 `Render` 会计算出 `Effect` 链表供 `Commit` 阶段处理，而 `resetAfterCommit` 这个函数就是在 `Commit` 阶段执行完 `commitMutationEffects` 函数后进行调用，此时所有对元素的更新操作已处理完毕，所以这里是一个适合 `Canvas` `Renderer` 调用 `container.render()` 进行重新渲染的地方。该函数中首先清空了整个画布，然后依次调用子组件的 `render` 方法：
+在[React 源码解读之一首次渲染流程](/2020/07/26/react-first-render/)这篇文章中已阐明 React 的每次更新过程包括 `Render` 和 `Commit` 两大阶段，其中 `Render` 阶段会计算出 `Effect` 链表供 `Commit` 阶段处理，而 `resetAfterCommit` 这个函数就是在 `Commit` 阶段执行完 `commitMutationEffects` 函数后进行调用，此时所有对元素的更新操作已处理完毕，所以这里是一个适合 `Canvas` `Renderer` 调用 `container.render()` 进行重新渲染的地方。该函数中首先清空了整个画布，然后依次调用子组件的 `render` 方法：
 
 ```javascript
 // Stage.js
@@ -328,8 +328,8 @@ const HostConfig = {
 
 值得一提的是，[Remax](https://remaxjs.org/) 也是在这里触发了小程序的更新。
 
-# 总结
-本文分析了 `Canvas` `Renderer` 的实现方式，详细代码见 https://github.com/ParadeTo/react-canvas-renderer
+至此，我们的 `Canvas` `Renderer` 的核心实现原理就分析完了，更多内容详见[源码](https://github.com/ParadeTo/react-canvas-renderer)
+
 
 
 
