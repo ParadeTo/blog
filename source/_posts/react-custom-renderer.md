@@ -14,7 +14,7 @@ description: 介绍如何实现一个简单的 Custom React Renderer
 ![](react-custom-renderer/1.gif)
 ![](react-custom-renderer/2.gif)
 
-下面就来剖析下 `Canvas` `Renderer` 的实习方式。
+下面就来剖析下 `Canvas` `Renderer` 的实现方式。
 
 # Canvas Renderer
 ## 组件
