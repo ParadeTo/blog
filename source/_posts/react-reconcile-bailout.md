@@ -5,7 +5,7 @@ tags:
   - react
 categories:
   - javascript
-description: 介绍 React 协调过程中的 render 阶段
+description: 介绍 React 协调过程中的 beginWork 阶段
 ---
 
 # 引言
