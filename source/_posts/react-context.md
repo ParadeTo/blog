@@ -265,7 +265,7 @@ function updateContextConsumer(
   return workInProgress.child;
 }
 ```
-该函数中的核心方法是 `readContext`：
+该函数中的核心方法是 `readContext`，即从 `context` 读取最新的值：
 
 ```javascript
 
@@ -273,19 +273,7 @@ export function readContext<T>(
   context: ReactContext<T>,
   observedBits: void | number | boolean,
 ): T {
-  if (__DEV__) {
-    // This warning would fire if you read context inside a Hook like useMemo.
-    // Unlike the class check below, it's not enforced in production for perf.
-    if (isDisallowedContextReadInDEV) {
-      console.error(
-        'Context can only be read while React is rendering. ' +
-          'In classes, you can read it in the render method or getDerivedStateFromProps. ' +
-          'In function components, you can read it directly in the function body, but not ' +
-          'inside Hooks like useReducer() or useMemo().',
-      );
-    }
-  }
-
+  ...
   if (lastContextWithAllBitsObserved === context) {
     // Nothing to do. We already observe everything in this context.
   } else if (observedBits === false || observedBits === 0) {
@@ -304,19 +292,13 @@ export function readContext<T>(
     }
 
     const contextItem = {
-      context: ((context: any): ReactContext<mixed>),
+      f: ((context: any): ReactContext<mixed>),
       observedBits: resolvedObservedBits,
       next: null,
     };
 
     if (lastContextDependency === null) {
-      invariant(
-        currentlyRenderingFiber !== null,
-        'Context can only be read while React is rendering. ' +
-          'In classes, you can read it in the render method or getDerivedStateFromProps. ' +
-          'In function components, you can read it directly in the function body, but not ' +
-          'inside Hooks like useReducer() or useMemo().',
-      );
+      ...
 
       // This is the first dependency for this component. Create a new list.
       lastContextDependency = contextItem;
@@ -332,17 +314,71 @@ export function readContext<T>(
   }
   return isPrimaryRenderer ? context._currentValue : context._currentValue2;
 }
-
 ```
 
+所谓读取 `context` 最新的值，也很简单，看当前渲染器是不是 `primary`，如果是就返回 `context._currentValue`，不是就返回 `context._currentValue2`。同时还会标记当前 `Fiber` 节点对于 `context` 的依赖，该依赖对于后续 `context` 的更新非常有用。从代码中可以看到有时 `Fiber` 节点可能会依赖多个 `context`，形成一条依赖链表，这种情况出现在函数组件中使用 `useContext` hooks 时。下图更加直观地表示了各 `Fiber` 的 `dependencies`：
 
+![](./react-context/1.png)
 
+## 答案揭晓
+了解了 `Provider` 和 `Consumer` 后，接下来我们分析一下文章开始的问题：为什么 `Context` 更新可以透过经过了 `bailout` 的组件往下传递？答案还是在 `updateContextProvider`：
 
+```javascript
+function updateContextProvider(
+  current: Fiber | null,
+  workInProgress: Fiber,
+  renderLanes: Lanes,
+) {
+  const providerType: ReactProviderType<any> = workInProgress.type;
+  const context: ReactContext<any> = providerType._context;
 
+  const newProps = workInProgress.pendingProps;
+  const oldProps = workInProgress.memoizedProps;
 
+  const newValue = newProps.value;
 
+  ...
 
+  pushProvider(workInProgress, context, newValue);
 
- `if...else` 语句，这里我们暂时只讨论 `oldProps` 不为空且 `context` 的新值相对旧值发生了变化的情况，即调用 `propagateContextChange` 的情况。
+  if (oldProps !== null) {
+    const oldValue = oldProps.value;
+    const changedBits = calculateChangedBits(context, newValue, oldValue);
+    if (changedBits === 0) {
+      ...
+    } else {
+      // The context value changed. Search for matching consumers and schedule
+      // them to update.
+      propagateContextChange(workInProgress, context, changedBits, renderLanes);
+    }
+  }
 
-该函数代码量比较多就不放出来了，简单说一下其作用。
+  const newChildren = newProps.children;
+  reconcileChildren(current, workInProgress, newChildren, renderLanes);
+  return workInProgress.child;
+}
+```
+当 `context` 的新值相对旧值有变化时会执行 `propagateContextChange`，该函数的作用就是沿着 `workInProgress` 往下深度优先的遍历子树，找到依赖当前 `context` 的 `Fiber`，更新他们的 `lanes`（`lanes` 可以理解为更新的优先级），同时更新他们的祖先 `Fiber` 的 `childLanes`。比如说下面这个例子：
+
+![](./react-context/2.png)
+
+当进入某个 `Fiber` 的 `bailout` 时，如果检测到当前 `Fiber` 的 `lanes` 和 `renderLanes` 有交集时，会继续协调其子节点：
+
+```javascript
+function bailoutOnAlreadyFinishedWork(
+  current: Fiber | null,
+  workInProgress: Fiber,
+  renderLanes: Lanes,
+): Fiber | null {
+  ...
+  if (!includesSomeLane(renderLanes, workInProgress.childLanes)) {
+    return null;
+  } else {
+    cloneChildFibers(current, workInProgress);
+    return workInProgress.child;
+  }
+}
+```
+
+# 总结
+本文通过一个案例引出了 React 中新旧 `Context` 处理组件更新的一些不同，并着重分析了新 API 的实现思路并解释了为什么 `Context` 更新可以透过经过了 `bailout` 的组件往下传递。
