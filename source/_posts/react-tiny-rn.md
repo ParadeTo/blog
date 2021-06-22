@@ -90,7 +90,7 @@ function App() {
   * React Custom Renderer
 
 
-其中 React Custom Renderer 之前已经介绍过了，详见[React 源码解析之 Custom Renderer](/2021/04/30/react-tiny-rn/)，所以这里我们只简单的介绍下 JavaScriptCore。
+其中 React Custom Renderer 之前已经介绍过了，详见[React 源码解析之 Custom Renderer](/2021/01/28/react-custom-renderer/)，所以这里我们只简单的介绍下 JavaScriptCore。
 
 ## JavaScriptCore
 `JavaScriptCore` （以下简称 JSCore）是 iOS 上的 JavaScript（以下简称JS）执行引擎，它建立起了 Objective-C（以下简称OC）和 JS 两门语言之间沟通的桥梁。接下来我们举例来看看它的基础用法：
@@ -216,6 +216,7 @@ appendChild: function (parent, child) {
 ```
 
 剩下的其他接口按部就班实现就可以了，完整代码详见 [tiny-react-native](https://github.com/ParadeTo/tiny-react-native.git)。
+
 
 # 总结
 利用 JavaScriptCore 和 React Custom Renderer，我们实现了一个 React Native，不过目前它还非常的简单，后续可以考虑进一步增强如下功能：
