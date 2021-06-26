@@ -24,9 +24,9 @@ function App() {
 
   function handleClick() {
     console.log("=== click ===");
-    setCount((c) => c + 1); // Does not re-render yet
-    setFlag((f) => !f); // Does not re-render yet
-    // React will only re-render once at the end (that's batching!)
+    // 触发一次重新渲染
+    setCount((c) => c + 1);
+    setFlag((f) => !f);
   }
 
   return (
@@ -217,6 +217,13 @@ function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
 
 ```javascript
 const existingCallbackNode = root.callbackNode;
+const nextLanes = getNextLanes(
+  root,
+  root === workInProgressRoot ? workInProgressRootRenderLanes : NoLanes,
+);
+// This returns the priority level computed during the `getNextLanes` call.
+const newCallbackPriority = returnNextLanesPriority();
+
 ...
 if (existingCallbackNode !== null) {
   const existingCallbackPriority = root.callbackPriority;
@@ -230,7 +237,7 @@ if (existingCallbackNode !== null) {
 }
 ```
 
-这里因为更新的优先级没有发生变化，所以直接返回了。从上面的分析中可以看到，最后只调度了一个更新任务（即我们常说的宏任务，宏任务中会执行 `performSyncWorkOnRoot`），这个宏任务会在下一个事件循环中取出执行，一次性处理这两个更新。
+这里因为 `existingCallbackNode` 不为空，且更新的优先级没有发生变化，所以直接返回了。从上面的分析中可以看到，最后只调度了一个更新任务，也就是 `setCount` 触发的（这里的任务是我们常说的宏任务，宏任务中会执行 `performSyncWorkOnRoot`），这个宏任务会在下一个事件循环中取出执行，一次性处理这两个更新。
 
 # 批处理失效
 但是，批处理有时候会失效，比如，当在 `setTimeout` 中连续发起两次更新时：
@@ -245,10 +252,9 @@ function App() {
 
   function handleClick() {
     setTimeout(() => {
-      // React 17 and earlier does NOT batch these because
-      // they run *after* the event in a callback, not *during* it
-      setCount(c => c + 1); // Causes a re-render
-      setFlag(f => !f); // Causes a re-render
+      // 每次都会触发重新渲染
+      setCount(c => c + 1);
+      setFlag(f => !f);
     })
   }
 
@@ -352,8 +358,149 @@ export function scheduleUpdateOnFiber(
 
 执行完 `ensureRootIsScheduled` 后，由于 `executionContext` 为 0，会调用 `flushSyncCallbackQueue`，该函数会导致 `ensureRootIsScheduled` 中调度的更新任务立即执行。
 
-更新完后，执行 `setFlag`，同样的，也会走上面的逻辑。
+更新完成后，接下来执行 `setFlag` 时同样也会走上面的逻辑。为了在定时器等异步逻辑中避免批处理失效，我们可以使用 `unstable_batchedUpdates `：
 
+```javascript
+import { unstable_batchedUpdates } from 'react-dom';
+...
+  function handleClick() {
+    setTimeout(() => {
+      unstable_batchedUpdates(() => {
+        // 触发一次重新渲染
+        setCount(c => c + 1);
+        setFlag(f => !f);
+      })
+    })
+  }
+...
+```
 
+而 `unstable_batchedUpdates` 也没什么秘密可言，无非就是执行函数前先给 `executionContext` 添加 `BatchedContext`，执行完后进行恢复：
 
+```javascript
+export function batchedUpdates<A, R>(fn: (A) => R, a: A): R {
+  const prevExecutionContext = executionContext;
+  executionContext |= BatchedContext;
+  try {
+    return fn(a);
+  } finally {
+    executionContext = prevExecutionContext;
+    if (executionContext === NoContext) {
+      // Flush the immediate callbacks that were scheduled during this batch
+      resetRenderTimer();
+      flushSyncCallbackQueue();
+    }
+  }
+}
+```
 
+# Automatic Batching（自动批处理）
+而 18 版本以后，无论是在什么情况之下，都可以进行自动批处理了，不过需要使用 `createRoot` 开启 Concurrent 模式（参考[React 源码解读之 Concurrent 模式之时间切片](/2020/12/30/react-concurrent-1/)），还是刚才定时器的例子：
+
+```js
+import { useState, useLayoutEffect } from "react";
+import * as ReactDOM from "react-dom";
+
+function App() {
+  const [count, setCount] = useState(0);
+  const [flag, setFlag] = useState(false);
+
+  function handleClick() {
+    setTimeout(() => {
+      // React 18 以后，以下也只触发一次重新渲染
+      setCount(c => c + 1);
+      setFlag(f => !f);
+    })
+  }
+
+  return (
+    <div>
+      <button onClick={handleClick}>Next</button>
+      <h1 style={{ color: flag ? "blue" : "black" }}>{count}</h1>
+      <LogEvents />
+    </div>
+  );
+}
+
+function LogEvents(props) {
+  useLayoutEffect(() => {
+    console.log("Commit");
+  });
+  console.log("Render");
+  return null;
+}
+
+const rootElement = document.getElementById("root");
+// 使用 concurrent 模式
+ReactDOM.createRoot(rootElement).render(<App />)
+```
+
+那么，它是怎么实现的呢？
+
+当 `setCount` 的时候，还是顺藤摸瓜来到 `scheduleUpdateOnFiber`：
+
+```javascript
+export function scheduleUpdateOnFiber(
+  fiber: Fiber,
+  lane: Lane,
+  eventTime: number,
+): FiberRoot | null {
+  ...
+  if (lane === SyncLane) {
+    ...
+  } else {
+    // 会进入这个分支
+    // Schedule a discrete update but only if it's not Sync.
+    if (
+      (executionContext & DiscreteEventContext) !== NoContext &&
+      // Only updates at user-blocking priority or greater are considered
+      // discrete, even inside a discrete event.
+      (priorityLevel === UserBlockingSchedulerPriority ||
+        priorityLevel === ImmediateSchedulerPriority)
+    ) {
+      // This is the result of a discrete event. Track the lowest priority
+      // discrete update per root so we can flush them early, if needed.
+      if (rootsWithPendingDiscreteUpdates === null) {
+        rootsWithPendingDiscreteUpdates = new Set([root]);
+      } else {
+        rootsWithPendingDiscreteUpdates.add(root);
+      }
+    }
+    // Schedule other updates after in case the callback is sync.
+    ensureRootIsScheduled(root, eventTime);
+    schedulePendingInteractions(root, lane);
+  }
+
+  // We use this when assigning a lane for a transition inside
+  // `requestUpdateLane`. We assume it's the same as the root being updated,
+  // since in the common case of a single root app it probably is. If it's not
+  // the same root, then it's not a huge deal, we just might batch more stuff
+  // together more than necessary.
+  mostRecentlyUpdatedRoot = root;
+
+  return root;
+}
+```
+
+这里还是会进入 `ensureRootIsScheduled`，去开启一个更新任务。
+
+下一次 `setFlag` 的时候，也同样会进入 `ensureRootIsScheduled`，前面分析的时候说过，如果 root 上面已经有 `callbackNode` 且这次更新的优先级没有发生变化时，会直接返回。
+
+对比 Legacy 模式和 Concurrent 模式，两者之间的差别就在于，Legacy 模式下多了这一段代码：
+
+```js
+  if (executionContext === NoContext) {
+    // Flush the synchronous work now, unless we're already working or inside
+    // a batch. This is intentionally inside scheduleUpdateOnFiber instead of
+    // scheduleCallbackForFiber to preserve the ability to schedule a callback
+    // without immediately flushing it. We only do this for user-initiated
+    // updates, to preserve historical behavior of legacy mode.
+    resetRenderTimer();
+    flushSyncCallbackQueue();
+  }
+```
+
+从注释最后的评论看，Legacy 模式下加入这段代码是为了保持和历史行为一致。
+
+# 总结
+本文介绍了 Legacy 模式下 React 17 更新批处理的实现方式，以及在某些场景下失效的原因，对比了 React 18 Concurrent 模式下自动批处理的相关知识。简单来说，Legacy 模式是通过某个变量来标识是否处于批处理的状态，而 Concurrent 模式是通过判断 root 上是否已调度了任务以及更新优先级是否变化来决定是否开启新的更新任务还是复用已调度的任务。
