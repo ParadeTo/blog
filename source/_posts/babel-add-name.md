@@ -69,12 +69,16 @@ const Comp = () => {
 }
 /*
 {
-  type: 'VariableDeclarator',
-  id: { type: 'Identifier', name: 'Comp', loc: undefined },
-  init: {
-    type: 'ArrowFunctionExpression',
-    ...
-  },
+  type: 'VariableDeclaration',
+  kind: 'const',
+  declarations: [
+    {
+      type: 'VariableDeclarator',
+      id: [Object],
+      init: [Object],
+      loc: undefined
+    }
+  ],
   ...
 }
 */
@@ -132,3 +136,62 @@ export default class extends React.Component {
 这里还有一个问题是，如何区别普通函数/类与 React 的组件呢，答案就是看这些节点的子节点中是否含有 `JSXElement` 类型的节点。思路有了，代码就呼之欲出了。
 
 ## 插件实现
+
+以下给出了两种情况的 `visitor`，其他的情况类似，就不赘述了。
+
+```js
+function createDisplayNameNode(elementName, property = 'displayName') {
+  const node = t.expressionStatement(
+    t.assignmentExpression(
+      '=',
+      t.memberExpression(t.identifier(elementName), t.identifier(property)),
+      t.stringLiteral(elementName)
+    )
+  )
+  return node
+}
+
+function hasJSXElement(path) {
+  let hasJSXElement = false
+  path.traverse({
+    JSXElement(path) {
+      hasJSXElement = true
+    },
+  })
+  return hasJSXElement
+}
+
+function myCustomPlugin() {
+  return {
+    visitor: {
+      FunctionDeclaration(path) {
+        if (hasJSXElement(path)) {
+          path.insertAfter(createDisplayNameNode(path.node.id.name))
+        }
+      },
+      /**
+       * 处理有多个变量声明语句的情况：
+       * const C1 = () => { return <span>C1</span> }, C2 = () => { return <span>C2</span> }
+       */
+      VariableDeclaration(path) {
+        const arr = []
+        path.traverse({
+          VariableDeclarator(path) {
+            if (hasJSXElement(path)) {
+              arr.push(path.node.id.name)
+            }
+          },
+        })
+        arr.forEach((name) => path.insertAfter(createDisplayNameNode(name)))
+      },
+      ...
+    },
+  }
+}
+```
+
+值得注意的是，上面的代码都是在 enter 阶段进行处理。其实放在 exit 阶段也可以，只不过需要注意与 `@babel/plugin-transform-react-jsx` 插件的顺序问题，必须在其前面，因为 `@babel/plugin-transform-react-jsx` 会在 exit `JSXElement` 的时候对 `JSXElement` 进行替换。
+
+# 总结
+
+本文从实际开发场景中引申出了如何给 React 组件添加名字的主题，并分析了 React 组件常见的几种定义方式，最后通过编写 Babel 插件实现了我们的需求。
