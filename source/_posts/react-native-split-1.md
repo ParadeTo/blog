@@ -1,12 +1,11 @@
 ---
-title: React Native 拆包实战（一）
+title: React Native 按需加载实战（一）
 date: 2021-12-24 14:16:59
 tags:
   - react native
-  - 拆包
 categories:
   - javascript
-description: 这是 React Native 拆包实战的第一部分，也就是介绍如何进行拆包
+description: 这是 React Native 实现按需加载的第一部分，也就是介绍如何进行拆包
 ---
 
 # 引言
@@ -478,3 +477,5 @@ lineReplace({
 # 结语
 
 React Native 拆包听起来是个很高端的概念，但是实操一下发现还是很简单的。不过，这只是第一步，接下来我们需要修改 Native 的代码来真正实现我们前面所说的按需加载，答案在下一篇文章揭晓。
+
+https://www.canva.cn/design/DAE2RS5qW4U/fp2DBNfmnytjgCaIPWM_Tw/edit
