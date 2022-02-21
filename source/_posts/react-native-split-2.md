@@ -14,12 +14,83 @@ description: 这是 React Native 实现按需加载的第二部分，也就是�
 
 # 目标
 
-如下图所示，最终想实现如下效果：
-
-1. 进入应用时，先加载运行 `base.bundle.js`（包含 `react` 及 `react-native` 等基础库），然后加载运行 `home.bundle.js`，此时页面显示 home 相关的内容。
-2. 点击 home 页面上的 `Go To Business1` 跳转到 business1 页面，此时会加载运行 `business1.bundle.js`，然后显示 business1 页面。
-
 ![](./react-native-split-2/target.jpg)
+
+如上图所示，最终想实现如下效果：
+
+1. 利用[上一篇文章](/2021/12/24/react-native-split-1/)的方法，把 React Native 应用打包成三个 `bundle`:
+
+其中 _base.bundle.js_ 仅包括基础库:
+
+```js
+import 'react'
+import 'react-native'
+```
+
+_home.bundle.js_ 包括的内容如下：
+
+```js
+// 打包入口文件 index.js
+import {AppRegistry} from 'react-native'
+import Home from './App'
+
+AppRegistry.registerComponent('home', () => Home)
+
+// App.js
+import React, {useEffect} from 'react'
+import {View, Text, Button, StyleSheet, NativeModules} from 'react-native'
+
+const Home = () => {
+  return (
+    <View>
+      <View>
+        <Text>Home</Text>
+      </View>
+      <View>
+        <Button
+          title='Go To Business1'
+          onPress={() => {
+            NativeModules.Navigator.push('business1')
+          }}
+        />
+      </View>
+    </View>
+  )
+}
+
+export default Home
+```
+
+注意，这里我们实现了一个 Native Module `Navigator`，后面会介绍。
+
+_business1.bundle.js_ 包括的内容如下：
+
+```js
+// 打包入口文件 index.js
+import {AppRegistry} from 'react-native'
+import Business1 from './App'
+
+AppRegistry.registerComponent('business1', () => Business1)
+
+// App.js
+import React, {useEffect} from 'react'
+import {View, Text, StyleSheet, Alert} from 'react-native'
+
+const Business1 = () => {
+  useEffect(() => {
+    Alert.alert(global.name)
+  }, [])
+  return (
+    <View>
+      <Text>Business1</Text>
+    </View>
+  )
+}
+export default Business1
+```
+
+2. 进入应用时，先加载运行 `base.bundle.js`（包含 `react` 及 `react-native` 等基础库），然后加载运行 `home.bundle.js`，此时页面显示 home 相关的内容。
+3. 点击 home 页面上的 `Go To Business1` 跳转到 business1 页面，此时会加载运行 `business1.bundle.js`，然后显示 business1 页面。
 
 # 前置知识
 
@@ -150,3 +221,80 @@ AppRegistry.registerComponent(appName, () => App)
     return appKey;
   },
 ```
+
+从上面的代码来看，它只是将组件存放在了 `runnables` 中，并没有真正的渲染。那什么时候渲染呢？这就需要看看 native 的代码了，我们打开 `ios` 目录下的 `AppDelegate.m` 文件，可以看到：
+
+```objc
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+{
+  ...
+  RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
+  RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge
+                                                   moduleName:@"rnDemo"
+                                            initialProperties:nil];
+  ...
+}
+```
+
+第一行代码会进行 `bridge` 的初始化等工作，然后会异步加载 JS 文件并执行。也就是会执行 `AppRegistry.registerComponent`。
+
+第二行代码会准备一个视图容器用于渲染，并会监听 JS 文件加载。当加载成功时，会调用 JS 代码中的 `AppRegistry.runApplication`：
+
+```objc
+- (void)runApplication:(RCTBridge *)bridge
+{
+  NSString *moduleName = _moduleName ?: @"";
+  NSDictionary *appParameters = @{
+    @"rootTag" : _contentView.reactTag,
+    @"initialProps" : _appProperties ?: @{},
+  };
+
+  RCTLogInfo(@"Running application %@ (%@)", moduleName, appParameters);
+  // 调用 JS 代码中的方法
+  [bridge enqueueJSCall:@"AppRegistry" method:@"runApplication" args:@[ moduleName, appParameters ] completion:NULL];
+}
+```
+
+而 JS 代码中的 `AppRegistry.runApplication` 会执行 `runnables` 中相应的 `run` 方法：
+
+```js
+runApplication(
+    appKey: string,
+    appParameters: any,
+    displayMode?: number,
+  ): void {
+    ...
+    runnables[appKey].run(appParameters, displayMode);
+  },
+```
+
+# 实现
+
+介绍了这么多准备知识以后，我们终于要开始实现我们的按需加载了，首先介绍一下整体方案。
+
+## 方案设计
+
+![](./react-native-split-2/solution.png)
+如图所示，在应用启动的时候我们会初始化一个 `MyRNViewController` 并通过 `UINavigationContoller` 来管理。当 `MyRNViewController` 中的试图加载完成后，会通过 `Bridge` 加载并执行 `base.bundle.js` 和 `home.bundle.js`，成功后会执行 `runApplication` 方法渲染页面。
+
+当点击 `Go To Business1` 按钮时，会使用 `UINavigationContoller` 推入一个新的 `MyRNViewController`，当 `MyRNViewController` 中的试图加载完成后，会使用相同的 `Bridge` 加载执行 `business1.bundle.js`，成功后会执行 `runApplication` 方法渲染页面。
+
+接下来详细介绍一下。
+
+## AppDelegate.m 的改造
+
+如上文所说，`AppDelegate.m` 中的 `application` 方法中会初始化一个 `MyRNViewController` 并通过 `UINavigationContoller` 来管理：
+
+```js
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+{
+  ...
+  self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+  MyRNViewController *vc =  [[MyRNViewController alloc] initWithModuleName:@"home"];
+  self.window.rootViewController = [[UINavigationController alloc] initWithRootViewController:vc];
+  [self.window makeKeyAndVisible];
+  return YES;
+}
+```
+
+##
