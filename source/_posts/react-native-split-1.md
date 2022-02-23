@@ -477,5 +477,3 @@ lineReplace({
 # 结语
 
 React Native 拆包听起来是个很高端的概念，但是实操一下发现还是很简单的。不过，这只是第一步，接下来我们需要修改 Native 的代码来真正实现我们前面所说的按需加载，答案在下一篇文章揭晓。
-
-https://www.canva.cn/design/DAE2RS5qW4U/fp2DBNfmnytjgCaIPWM_Tw/edit

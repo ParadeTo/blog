@@ -164,7 +164,7 @@ OC 中也有类的概念：
 
 ## React Native 页面加载流程介绍
 
-我们通过以下命令新建一个 RN 项目：
+首先，我们通过以下命令新建一个 RN 项目：
 
 ```bash
 npx react-native init demo
@@ -255,7 +255,7 @@ AppRegistry.registerComponent(appName, () => App)
 }
 ```
 
-而 JS 代码中的 `AppRegistry.runApplication` 会执行 `runnables` 中相应的 `run` 方法：
+而 JS 代码中的 `AppRegistry.runApplication` 会执行 `runnables` 中相应的 `run` 方法最终进行页面的渲染：
 
 ```js
 runApplication(
@@ -283,9 +283,9 @@ runApplication(
 
 ## AppDelegate.m 的改造
 
-如上文所说，`AppDelegate.m` 中的 `application` 方法中会初始化一个 `MyRNViewController` 并通过 `UINavigationContoller` 来管理：
+如上文所说，应用启动的时候会初始化一个 `MyRNViewController` 并通过 `UINavigationContoller`，这一步在 `AppDelegate.m` 的 `application` 方法中来实现：
 
-```js
+```objc
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
   ...
@@ -297,4 +297,140 @@ runApplication(
 }
 ```
 
-##
+## MyRNViewController
+
+```objc
+// MyRNViewController 初始化后会自动调用
+- (void)loadView {
+  RCTRootView *rootView = [Helper createRootViewWithModuleName:_moduleName
+                                                    initialProperties:@{}];
+  self.view = rootView;
+}
+```
+
+`MyRNViewController` 初始化的时候会自动调用 `loadView` 这个方法，该方法创建了一个 `RCTRootView` 并作为该 `ViewController` 的默认视图：
+
+```objc
++ (RCTRootView *) createRootViewWithModuleName:(NSString *)moduleName initialProperties:(NSDictionary *)initialProperties {
+  // _sharedBridge 全局共享的 RCTBridge
+  // 如果还未初始化则初始化
+  if (!_sharedBridge) {
+    [self createBridgeWithURL:[NSURL URLWithString:baseUrl]];
+  }
+
+  RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:_sharedBridge
+                                                   moduleName: moduleName
+                                            initialProperties: initialProperties];
+  return rootView;
+}
+
+```
+
+`MyRNViewController` 的默认视图加载完成后会执行 `viewDidLoad` 方法：
+
+```objc
+// MyRNViewController 中的试图加载完成后
+- (void)viewDidLoad {
+  NSString *randStr = [Helper randomStr:2];
+  NSURL *moduleUrl = [NSURL URLWithString:[NSString stringWithFormat:@"http://127.0.0.1:8080/%@.bundle.js?v=%@", _moduleName, randStr]];
+  [Helper loadBundle:moduleUrl runAppOnView:self.view];
+}
+```
+
+该方法中会去加载执行对应的 `bundle` 并在当前 `view` 上执行 `runApplication` 方法：
+
+```objc
++ (void) loadBundle:(NSString *)bundleUrl runAppOnView:(RCTRootView*)view {
+  // 确保 base bundle 只加载一次
+  if (needLoadBaseBundle) {
+    [Helper loadBundleWithURL:[NSURL URLWithString:baseUrl] onComplete:^{
+      needLoadBaseBundle = false;
+      [Helper loadBundleWithURL:bundleUrl onComplete:^{
+        [Helper runApplicationOnView:view];
+      }];
+    }];
+  } else {
+    [Helper loadBundleWithURL:bundleUrl onComplete:^{
+      [Helper runApplicationOnView:view];
+    }];
+  }
+}
+
++ (void) loadBundleWithURL:(NSURL *)bundleURL onComplete:(dispatch_block_t)onComplete {
+  [_sharedBridge loadAndExecuteSplitBundleURL2:bundleURL onError:^(void){} onComplete:^{
+    NSLog([NSString stringWithFormat: @"%@", bundleURL]);
+    onComplete();
+  }];
+}
+
++ (void) runApplicationOnView:(RCTRootView *)view {
+  [view runApplication:_sharedBridge];
+}
+```
+
+这里 `loadAndExecuteSplitBundleURL2` 是在 `react-native` 源码中新加的方法，同时还把 `(void)runApplication:(RCTBridge *)bridge;` 声明为了公共方法，供外部使用。详情见[这里](https://github.com/ParadeTo/react-native/commit/3701a3484f3adfb68e5bd9163eb4d8eef3e2bb6b)。
+
+## 按需加载
+
+当我们点击 `Go To Business1` 按钮的时候会触发按需加载，这个又是如何实现的呢？我们来看看 home 页面的代码：
+
+```js
+import {View, Text, Button, StyleSheet, NativeModules} from 'react-native';
+...
+<Button
+  title='Go To Business1'
+  onPress={() => {
+    NativeModules.Navigator.push('business1')
+  }}
+/>
+...
+```
+
+这里我们其实是实现了一个 Native Module `Navigator`：
+
+```objc
+// Navigator.h
+#import <Foundation/Foundation.h>
+#import <React/RCTBridgeModule.h>
+
+@interface Navigator : NSObject <RCTBridgeModule>
+
+@end
+// Navigator.m
+#import <UIKit/UIKit.h>
+
+#import "Navigator.h"
+#import "Helper.h"
+#import "MyRNViewController.h"
+
+@implementation Navigator
+
+RCT_EXPORT_MODULE(Navigator);
+
+/**
+ * We are doing navigation operations, so make sure they are all on the UI Thread.
+ * Or you can wrap specific methods that require the main queue like this:
+ */
+- (dispatch_queue_t)methodQueue
+{
+  return dispatch_get_main_queue();
+}
+
+RCT_EXPORT_METHOD(push:(NSString *)moduleName) {
+  MyRNViewController *newVc = [[MyRNViewController alloc] initWithModuleName:moduleName];
+  [[Helper getNavigationController] showViewController:newVc sender:self];
+}
+
+@end
+```
+
+当调用 `push` 方法时，会向 `UINavigationContoller` 中新推入一个 `MyRNViewController`，之后的逻辑就跟上面说过的类似了。
+
+# 总结
+
+基于[上一篇文章](/2021/12/24/react-native-split-1/)的研究成果，本文对一个实际的 React Native 例子进行了拆包。然后通过改写 native 端的代码，实现了对不同业务包的按需加载。项目完整代码[在此](https://github.com/ParadeTo/for-money/tree/master/react-native/split)。
+
+不过，当前只是简单实现，演示过程而已，实际上还有很多优化可以做：
+
+- 当前加载过的 bundle 并没有缓存起来，每次都会重新去下载。加上缓存后，还可以做差量更新的优化，即每次发布最新的 bundle 时，计算其与之前版本的差异，客户端加载 bundle 时仅需要在旧 bundle 上应用差异的部分。
+- 所有 bundle 运行在同一个上下文之中，存在全局变量污染、某个 bundle 运行 crash 会导致所有业务奔溃等问题。
