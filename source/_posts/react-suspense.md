@@ -381,5 +381,102 @@ export default function Profile() {
 我们知道 React 在渲染时会构建 Fiber Tree，当处理到 `User` 组件时，React 代码中会捕获到异常：
 
 ```js
-
+do {
+  try {
+    workLoopConcurrent()
+    break
+  } catch (thrownValue) {
+    handleError(root, thrownValue)
+  }
+} while (true)
 ```
+
+![](./react-suspense/suspense1.png)
+
+其中，异常处理函数 `handleError` 主要做两件事：
+
+```js
+throwException(
+  root,
+  erroredWork.return,
+  erroredWork,
+  thrownValue,
+  workInProgressRootRenderLanes
+)
+completeUnitOfWork(erroredWork)
+```
+
+其中，`throwException` 主要是往上找到最近的 `Suspense` 类型的 Fiber，并更新其 `updateQueue`：
+
+```js
+const wakeables: Set<Wakeable> = (workInProgress.updateQueue: any)
+if (wakeables === null) {
+  const updateQueue = (new Set(): any)
+  updateQueue.add(wakeable) // wakeable 是 handleError(root, thrownValue) 中的 thrownValue，是一个 Promise 对象
+  workInProgress.updateQueue = updateQueue
+} else {
+  wakeables.add(wakeable)
+}
+```
+
+![](./react-suspense/suspense2.png)
+
+而 `completeUnitOfWork(erroredWork)` 在[React 源码解读之首次渲染流程](/2020/07/26/react-first-render/)中已经介绍过了，此处就不再赘述了。
+
+`render` 阶段后，会形成如下所示的 Fiber 结构：
+
+![](./react-suspense/suspense3.png)
+
+之后会进入 `commit` 阶段，将 Fiber 对应的 DOM 插入到容器之中：
+
+![](./react-suspense/display.png)
+
+注意到 `Loading articles...` 虽然也被插入了，但是确实不可见的。
+
+前面提到过 `Suspense` 的 `updateQueue` 中保存了 `Promise` 请求对象，我们需要在其 `resolve` 以后触发应用的重新渲染，这一步骤仍然是在 `commit` 阶段实现的：
+
+```js
+function commitWork(current: Fiber | null, finishedWork: Fiber): void {
+  ...
+  case SuspenseComponent: {
+    commitSuspenseComponent(finishedWork);
+    attachSuspenseRetryListeners(finishedWork);
+    return;
+  }
+  ...
+}
+```
+
+```js
+function attachSuspenseRetryListeners(finishedWork: Fiber) {
+  // If this boundary just timed out, then it will have a set of wakeables.
+  // For each wakeable, attach a listener so that when it resolves, React
+  // attempts to re-render the boundary in the primary (pre-timeout) state.
+  const wakeables: Set<Wakeable> | null = (finishedWork.updateQueue: any)
+  if (wakeables !== null) {
+    finishedWork.updateQueue = null
+    let retryCache = finishedWork.stateNode
+    if (retryCache === null) {
+      retryCache = finishedWork.stateNode = new PossiblyWeakSet()
+    }
+    wakeables.forEach((wakeable) => {
+      // Memoize using the boundary fiber to prevent redundant listeners.
+      let retry = resolveRetryWakeable.bind(null, finishedWork, wakeable)
+      if (!retryCache.has(wakeable)) {
+        if (enableSchedulerTracing) {
+          if (wakeable.__reactDoNotTraceInteractions !== true) {
+            retry = Schedule_tracing_wrap(retry)
+          }
+        }
+        retryCache.add(wakeable)
+        // promise resolve 了以后触发 react 的重新渲染
+        wakeable.then(retry, retry)
+      }
+    })
+  }
+}
+```
+
+# 总结
+
+本文介绍了 `Suspense` 提出的背景、使用方式以及原理，从文中可看出 `Suspense` 用于数据获取对我们的开发方式将是一个巨大的影响，但是目前还处在实验阶段，所以留给“中国队”的时间还是很充足的。
