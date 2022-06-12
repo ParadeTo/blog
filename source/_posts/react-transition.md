@@ -38,7 +38,7 @@ export default function App() {
 }
 ```
 
-上面例子模拟了一个关键词搜索的应用，注意到其中的每一项搜索结果 `HeavyItem` 其渲染任务是一个非常耗时的操作。所以，我们在搜索的时候会感觉到有明显的卡顿现象：
+上面例子模拟了一个关键词搜索的应用，注意到其中的每一项搜索结果 `HeavyItem` 中，我们都空循环了 10 万次，用于模拟耗时的渲染过程。所以，我们在搜索的时候会感觉到有明显的卡顿现象：
 ![](./react-transition/search.gif)
 
 根本原因在于搜索列表的渲染是一个非常耗时的操作，整个 React 应用的更新都被其所阻塞。但其实列表的更新可以稍后一些，而搜索关键字在 `input` 中的更新必须足够及时才能使得用户使用起来感觉比较流畅，也就是两个更新的优先级是有先后的。而 `transition` 的出现，就是为了解决这一类的问题。
@@ -176,3 +176,54 @@ export default function App() {
 ![](./react-transition/debounce.png)
 
 俗话说的好，“解铃还须系铃人”。React 通过虚拟 DOM、协调算法等手段给广大前端程序员的开发带来巨大便利的同时也引入了一些成本，通过外部手段很难“根治”病因，还是得官方出马才能解决问题。
+
+# 笔记
+
+https://17.reactjs.org/docs/concurrent-mode-patterns.html
+
+1. 第一次渲染，因为 current 为空，complete suspense 的时候走到了 if
+
+```js
+if (
+  hasInvisibleChildContext ||
+  hasSuspenseContext(
+    suspenseStackCursor.current,
+    InvisibleParentSuspenseContext
+  )
+) {
+  // If this was in an invisible tree or a new render, then showing
+  // this boundary is ok.
+  renderDidSuspend()
+} else {
+  // Otherwise, we're going to have to hide content so we should
+  // suspend for longer if possible.
+  renderDidSuspendDelayIfPossible()
+}
+```
+
+先显示 fallback，然后 resolve 后显示内容。
+
+2. 点击 next，startTransition，useTransition 里面其实用到了 updateState，首先 setPening(true)，然后调整更新优先级，setPending(false)，并执行 startTransition 的 callback，会 setResource，后面的两个优先级都较低
+
+3. 重新渲染，更新 pending 为 true（跳过了其他两个更新）
+4. 再次渲染，更新 pending 为 false，更新 resource，由于 current 不为空，不需要渲染 fallback，也就是下面的 else
+
+```js
+if (
+  hasInvisibleChildContext ||
+  hasSuspenseContext(
+    suspenseStackCursor.current,
+    InvisibleParentSuspenseContext
+  )
+) {
+  // If this was in an invisible tree or a new render, then showing
+  // this boundary is ok.
+  renderDidSuspend()
+} else {
+  // Otherwise, we're going to have to hide content so we should
+  // suspend for longer if possible.
+  renderDidSuspendDelayIfPossible()
+}
+```
+
+5. 等到 promise resolve 后，再次重新渲染
