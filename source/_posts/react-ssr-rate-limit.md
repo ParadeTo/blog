@@ -110,7 +110,7 @@ const listener = app.listen(process.env.PORT || 2048, () => {
 })
 ```
 
-此时，容器内容占用正常：
+此时，容器运行正常：
 
 ```
 CONTAINER ID   NAME      CPU %     MEM USAGE / LIMIT   MEM %     NET I/O           BLOCK I/O        PIDS
