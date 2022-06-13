@@ -117,7 +117,15 @@ CONTAINER ID   NAME      CPU %     MEM USAGE / LIMIT   MEM %     NET I/O        
 3bd5aa07a3a7   ssr     88.29%    203.1MiB / 512MiB   39.67%    24.5MB / 48.6MB   122MB / 2.81MB   40
 ```
 
-虽然服务对外仍然失去了对 `/` 路由的响应，但是 `/another` 却不受影响：
+虽然此时访问 `/` 路由会收到错误：
+
+```
+curl -m 5  http://localhost:2048
+
+exceed limit
+```
+
+但是 `/another` 却不受影响：
 
 ```
 curl -m 5  http://localhost:2048/another
