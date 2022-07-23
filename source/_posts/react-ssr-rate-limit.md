@@ -74,104 +74,6 @@ d9c0189e2b56    ssr     0.00%     512MiB / 512MiB     99.99%    14.6kB / 8.65kB 
 curl: (28) Operation timed out after 5001 milliseconds with 0 bytes received
 ```
 
-我们改造一下代码，使用 `counter.js` 来统计 QPS，并限制为 2：
-
-```js
-const express = require('express')
-const counter = require('./counter.js')
-
-const app = express()
-
-const limit = 2
-let cnt = counter()
-app.get(
-  '/',
-  (req, res, next) => {
-    cnt(1)
-    if (cnt() > limit) {
-      res.writeHead(500, {
-        'content-type': 'text/pain',
-      })
-      res.end('exceed limit')
-      return
-    }
-    next()
-  },
-  async (req, res) => {
-    const buf = Buffer.alloc(1024 * 1024 * 200, 'a')
-    console.log(buf)
-    res.end('end')
-  }
-)
-
-app.get('/another', async (req, res) => {
-  res.end('another api')
-})
-
-const listener = app.listen(process.env.PORT || 2048, () => {
-  console.log('Your app is listening on port ' + listener.address().port)
-})
-
-// counter.js
-module.exports = function counter(interval = 1000) {
-  let arr = []
-  return function cnt(number) {
-    const now = Date.now()
-    if (number > 0) {
-      arr.push({
-        time: now,
-        value: number,
-      })
-      const newArr = []
-      // 删除超出一秒的数据
-      for (let i = 0, len = arr.length; i < len; i++) {
-        if (now - arr[i].time > interval) continue
-        newArr.push(arr[i])
-      }
-      arr = newArr
-      return
-    }
-
-    // 计算前一秒的数据和
-    let sum = 0
-    for (let i = arr.length - 1; i >= 0; i--) {
-      const {time, value} = arr[i]
-      if (now - time <= interval) {
-        sum += value
-        continue
-      }
-      break
-    }
-    return sum
-  }
-}
-```
-
-此时，容器运行正常：
-
-```
-CONTAINER ID   NAME      CPU %     MEM USAGE / LIMIT   MEM %     NET I/O           BLOCK I/O        PIDS
-3bd5aa07a3a7   ssr     88.29%    203.1MiB / 512MiB   39.67%    24.5MB / 48.6MB   122MB / 2.81MB   40
-```
-
-虽然此时访问 `/` 路由会收到错误：
-
-```
-curl -m 5  http://localhost:2048
-
-exceed limit
-```
-
-但是 `/another` 却不受影响：
-
-```
-curl -m 5  http://localhost:2048/another
-
-another api
-```
-
-由此可见，限流确实是系统进行自我保护的一个比较好的方法。
-
 # 令牌桶算法
 
 常见的限流算法有“滑动窗口算法”、“令牌桶算法”，我们这里讨论[“令牌桶算法”](https://en.wikipedia.org/wiki/Token_bucket)。在令牌桶算法中，存在一个桶，容量为 `burst`。该算法以一定的速率（设为 `rate`）往桶中放入令牌，超过桶容量会丢弃。每次请求需要先获取到桶中的令牌才能继续执行，否则拒绝。
@@ -180,26 +82,11 @@ another api
 
 ```javascript
 export default class TokenBucket {
-  private burst: number
-  private rate: number
-  private lastFilled: number
-  private tokens: number
-
-  constructor(burst: number, rate: number) {
+  constructor(burst, rate) {
     this.burst = burst
     this.rate = rate
     this.lastFilled = Date.now()
     this.tokens = burst
-  }
-
-  setBurst(burst: number) {
-    this.burst = burst
-    return this
-  }
-
-  setRate(rate: number) {
-    this.rate = rate
-    return this
   }
 
   take() {
@@ -216,7 +103,10 @@ export default class TokenBucket {
   refill() {
     const now = Date.now()
     const elapse = now - this.lastFilled
-    this.tokens = Math.min(this.burst, this.tokens + elapse * (this.rate / 1000))
+    this.tokens = Math.min(
+      this.burst,
+      this.tokens + elapse * (this.rate / 1000)
+    )
     this.lastFilled = now
   }
 }
@@ -256,4 +146,68 @@ Math.min(this.burst, this.tokens + elapse * (this.rate / 1000))
 T = burst / (M - rate) // rate < M
 ```
 
-可以理解为一个水池里面有 `burst` 的水量，进水的速率为 `rate`，出水的速率为 `M`，则净出水速率为 `M-rate`，则水池中的水放空的时间即为激增流量的持续时间。
+可以理解为一个水池里面有 `burst` 的水量，进水的速率为 `rate`，出水的速率为 `M`，则净出水速率为 `M-rate`，所以水池中的水放空的时间即为激增流量的持续时间。
+
+我们改造一下之前的代码，加上限流：
+
+我们改造一下代码，使用 `counter.js` 来统计 QPS，并限制为 2：
+
+```js
+const express = require('express')
+const TokenBucket = require('./tokenBucket.js')
+
+const app = express()
+
+const tokenBucket = new TokenBucket(2, 2)
+app.get(
+  '/',
+  (req, res, next) => {
+    if (!tokenBucket.take()) {
+      res.writeHead(500, {
+        'content-type': 'text/pain',
+      })
+      res.end('exceed limit')
+      return
+    }
+    next()
+  },
+  async (req, res) => {
+    const buf = Buffer.alloc(1024 * 1024 * 200, 'a')
+    console.log(buf)
+    res.end('end')
+  }
+)
+
+app.get('/another', async (req, res) => {
+  res.end('another api')
+})
+
+const listener = app.listen(process.env.PORT || 2048, () => {
+  console.log('Your app is listening on port ' + listener.address().port)
+})
+```
+
+然后继续执行之前的压测命令，可以看到此时容器运行正常：
+
+```
+CONTAINER ID   NAME      CPU %     MEM USAGE / LIMIT   MEM %     NET I/O           BLOCK I/O        PIDS
+3bd5aa07a3a7   ssr     88.29%    203.1MiB / 512MiB   39.67%    24.5MB / 48.6MB   122MB / 2.81MB   40
+```
+
+虽然此时访问 `/` 路由会收到错误：
+
+```
+curl -m 5  http://localhost:2048
+
+exceed limit
+```
+
+但是 `/another` 却不受影响：
+
+```
+curl -m 5  http://localhost:2048/another
+
+another api
+```
+
+由此可见，限流确实是系统进行自我保护的一个比较好的方法。
