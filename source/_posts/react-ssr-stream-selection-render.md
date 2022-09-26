@@ -73,7 +73,7 @@ app.get('/string', async (req, res) => {
 })
 ```
 
-通过浏览器访问，可以看到需要等待比较长的诗句页面才显示出所有内容：
+通过浏览器访问，可以看到需要等待比较长的时间页面才显示出所有内容：
 ![](./react-ssr-stream-selection-render/string.gif)
 
 我们换成 `renderToNodeStream` 再试一试：
@@ -107,7 +107,10 @@ app.get('/node_stream', (req, res, next) => {
 
 ![](./react-ssr-stream-selection-render/node_stream.gif)
 
-这样，当用户访问一个大型的 React 页面时，可以让其尽早的看到一部分内容，从而提供一个比较好的用户体验。
+这样，当用户访问一个大型的 React 页面时，可以让其尽早地看到一部分内容，从而提供一个比较好的用户体验。
+
+其原理主要是利用了 http 的 [Transfer-Encoding: chunked
+](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding) 响应头。
 
 那么，React 每次返回多少内容呢？通过断点调试可以知道，这个值是 16 KB。但是实际返回的长度可能会略大于 16 KB，因为 React 总是会完整的返回标签，比如 `</li>`，而不是拆成两部分 `</` 和 `li>`。
 
@@ -115,7 +118,7 @@ app.get('/node_stream', (req, res, next) => {
 
 为了能够让开发更好的控制流式渲染每次返回的内容，我们可以结合 `Suspense`，但是由于 16 版本不支持 SSR 使用 `Suspense`，所以接下来我们换成 v18.2.0 继续我们的实验。
 
-假设我们有如下应用，期待的效果是用户先看到 `List:Loading`，4 秒后显示 `List:Loading`。
+假设我们有如下应用，期待的效果是用户先看到 `List:Loading`，4 秒后显示 `List:a`。
 
 ```js
 import React, {Suspense} from 'react'
@@ -199,7 +202,7 @@ export default App
 </script>
 ```
 
-其中 `<script>` 中的代码主要功能是将 `<template id="B:0"></template>Loading` 用 `a<!-- -->` 来替换。
+其中 `<script>` 中的代码主要功能是将 `<template id="B:0"></template>Loading` 用 `<div hidden id="S:0">` 中的内容来替换。
 
 这样，React 不用等待整个应用的数据全部准备好才开始返回 HTML 内容给用户了，从而解决了第一个问题：“必须获取到所有数据以后，才能返回内容”。
 
@@ -217,10 +220,14 @@ const Comp = React.lazy(() => import('./Item')) // Item.js 是一个非常大的
 const App = () => {
   return (
     <ul>
-      <button onClick={() => window.alert('click!')}>Click Me</button>
-      <Suspense fallback='Loading'>
+      <Suspense fallback='Loading...'>
         <Comp />
       </Suspense>
+      <button
+        style={{position: 'absolute', top: '10px', zIndex: '1'}}
+        onClick={() => window.alert('click!')}>
+        Click Me
+      </button>
     </ul>
   )
 }
