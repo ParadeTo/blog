@@ -3,6 +3,7 @@ title: React SSR 之限流
 date: 2022-07-07 10:00:29
 tags:
   - react
+  - ssr
 categories:
   - javascript
 description: 讨论 React 服务端渲染限流的问题
@@ -10,8 +11,8 @@ description: 讨论 React 服务端渲染限流的问题
 
 # 引言
 
-当对 React 应用进行页面加载或 SEO 优化时，我们一般绕不开 React SSR。但 React SSR 毕竟涉及到了服务端，有很多服务端特有的问题需要考虑，而限流就是其中之一。
-所谓限流，就是当我们的服务资源有限、处理能力有限时，通过对请求或并发数进行限制从而保障系统正常运行的一种策略。本文会通过一个简单的案例来说明，为什么服务端需要进行限流。
+当对 React 应用进行页面加载或 SEO 优化时，我们一般会想到用 React SSR。但 React SSR 毕竟涉及到了服务端，有很多服务端特有的问题需要考虑，而限流就是其中之一。
+所谓限流，就是当我们的服务资源有限、处理能力有限时，通过对请求或并发数进行限制从而保障系统正常运行的一种策略。本文会通过一个简单的案例来说明，为什么服务端需要进行限流，并介绍一种限流算法。
 
 # 为什么要限流
 
@@ -139,18 +140,16 @@ Math.min(this.burst, this.tokens + elapse * (this.rate / 1000))
 
 令牌桶算法具有以下两个特点：
 
-1. 当外部请求的 QPS `M` 大于令牌补充的速率 `rate` 时，长期来看，最终有效的 QPS 会趋向于 `rate`。这个很好理解，拉的总不可能比吃的多吧。
+1. 当外部请求的 QPS `M` 大于令牌补充的速率 `rate` 时，长期来看，最终有效的 QPS 会趋向于 `rate`。这个很好理解，拉的总不可能比吃的多。
 2. 因为令牌桶可以存下 `burst` 个令牌，所以可以允许短时间的激增流量，持续的时间为：
 
 ```js
 T = burst / (M - rate) // rate < M
 ```
 
-可以理解为一个水池里面有 `burst` 的水量，进水的速率为 `rate`，出水的速率为 `M`，则净出水速率为 `M-rate`，所以水池中的水放空的时间即为激增流量的持续时间。
+可以理解为一个水池里面有 `burst` 的水量，进水的速率为 `rate`，出水的速率为 `M`，则净出水速率为 `M-rate`，所以水池中的水放空的时间 `burst / (M - rate)` 即为激增流量的持续时间。
 
 我们改造一下之前的代码，加上限流：
-
-我们改造一下代码，使用 `counter.js` 来统计 QPS，并限制为 2：
 
 ```js
 const express = require('express')
@@ -158,7 +157,7 @@ const TokenBucket = require('./tokenBucket.js')
 
 const app = express()
 
-const tokenBucket = new TokenBucket(2, 2)
+const tokenBucket = new TokenBucket(1, 2)
 app.get(
   '/',
   (req, res, next) => {
