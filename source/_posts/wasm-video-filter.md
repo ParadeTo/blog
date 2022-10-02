@@ -225,7 +225,9 @@ func main() {
 }
 ```
 
-然后是我们的 JS 侧：
+Golang 部分提供了两个方法供 JS 调用，为了避免修改图像数据的时候 JS 每次都向 Golang 拷贝数据，我们这里采用共享内存的方式来传递数据，实现方法如 `initShareMemory` 所示。而 `filterByGO` 是我们的滤镜算法，其代码跟之前介绍的 JS 版类似。
+
+然后 JS 侧就可以按照如下方式来使用：
 
 ```js
 WebAssembly.instantiateStreaming(fetch('/main.wasm'), go.importObject).then(
@@ -238,8 +240,22 @@ WebAssembly.instantiateStreaming(fetch('/main.wasm'), go.importObject).then(
     const {internalptr: ptr} = window.initShareMemory(size)
     // 通过这块内存实例化一个 Uint8ClampedArray 对象 mem，mem 和 ptr 都指向这一块内存
     const mem = new Uint8ClampedArray(goInstance.exports.mem.buffer, ptr, size)
+    // 将图像数据赋值给共享的内存
     mem.set(pixels.data)
+    // 对图像进行滤镜
     window.filterByGO(ptr, width, height, kernel)
   }
 )
 ```
+
+好了，一切就绪后，我们调式一下，结果报错了：
+
+![](./wasm-video-filter/out_of_bounds.png)
+
+这个问题搜索了很久也没有得到完美的解决方案，怀疑是内存不够，将 `canvas` 的宽高减小后就不报错了，但是最后网页只能像这样了：
+
+![](./wasm-video-filter/wasm.png)
+
+即便如此，Golang 版的 FPS 也反而还不如 JS 版的，这就有点尴尬了。
+
+出师不利，难道是假期不适合学习？不过暂时先告一段落吧，下次试试用 Rust 实现一个。
