@@ -10,13 +10,13 @@ description: 简单学习一下 WebAssembly，实现视频实时滤镜效果
 
 # 前言
 
-WebAssembly 出来已经很久了，但是一直都没有实践过，实在是不应该，所以就趁这次国庆假期浅学一下吧。毛主席说过，“实践是检验真理的唯一标准”，所以我们今天就实现一个“视频实时滤镜效果”的功能。也可直接看[代码](https://github.com/ParadeTo/video-filter)。
+WebAssembly 出来已经很久了，但是一直都没有实践过，实在是不应该，所以就趁这次国庆假期浅学一下吧。毛主席说过，“实践是检验真理的唯一标准”，所以我们今天就实现一个“视频实时滤镜效果”的功能。可直接看[代码](https://github.com/ParadeTo/video-filter)。
 
 # 基本原理介绍
 
 ## 视频处理
 
-我们知道，视频其实是由一幅幅的图像组成的，每一辅图像称为一“帧”。所以，我们可以通过 `canvas` 来获取视频的图像数据，对图像数据进行处理完后再绘制到 `canvas` 上去，然后通过 `requestAnimationFrame` 让图像动起来，代码大致如下：
+我们知道，视频其实是由一幅幅的图像组成的，每一幅图像称为一“帧”。所以，我们可以通过 `canvas` 来获取视频的图像数据，对图像数据进行处理完后再绘制到 `canvas` 上去，然后通过 `requestAnimationFrame` 让图像动起来，代码大致如下：
 
 ```js
 function draw() {
@@ -38,7 +38,7 @@ function draw() {
   const pixels = context2D.getImageData(0, 0, canvas.width, canvas.height)
 
   // 处理
-  const newData = filter()
+  const newData = filter(...)
 
   // 修改 canvas 上的内容
   pixels.data.set(newData)
@@ -248,7 +248,7 @@ WebAssembly.instantiateStreaming(fetch('/main.wasm'), go.importObject).then(
 )
 ```
 
-好了，一切就绪后，我们调式一下，结果报错了：
+好了，一切就绪后，我们调试一下，结果报错了：
 
 ![](./wasm-video-filter/out_of_bounds.png)
 
