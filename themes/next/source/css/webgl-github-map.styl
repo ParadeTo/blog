@@ -1,0 +1,136 @@
+html,body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #222;
+}
+* {
+  margin: 0;
+  padding: 0;
+}
+.data-container {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  justify-content: space-between;
+  border-radius: 10px;
+  height: 40px;
+  padding-left: 10px;
+  box-sizing: border-box;
+  margin-top: 4px;
+  /* box-shadow: 0 0 1.75rem 0.2rem rgb(255 0 200 /70%); */
+  border: 1px solid #dc459f;
+  color: #222;
+}
+.params-container {
+  color: white;
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}
+.fields {
+  width: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 5px;
+}
+.point-light {
+  justify-content: flex-start;
+}
+*:focus {
+  outline: none;
+}
+#name {
+  border: none;
+  border-right: 1px solid #222;
+  flex: 1;
+}
+#year {
+  border: none;
+}
+button {
+  height: 38px;
+  border-radius: 8px;
+  padding: 0 20px;
+  border: none;
+  background-image: linear-gradient(90deg, #db469f, #7891d5);
+  color: white;
+  margin-left: 5px;
+}
+button:active {
+  background-image: linear-gradient(90deg, #ce2088, #1f4dcc);
+}
+#getData {
+}
+#edit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background-color: white;
+}
+.modal {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(1.1);
+  transition: visibility 0s linear 0.25s, opacity 0.25s 0s,
+    transform 0.25s;
+}
+
+.modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 1rem 1.5rem;
+  width: 24rem;
+  max-width: 80%;
+  border-radius: 0.5rem;
+}
+
+.modal-content p {
+  margin-top: 4px;
+}
+
+.close-button {
+  float: right;
+  width: 1.5rem;
+  line-height: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 0.75rem;
+  /* background-color: lightgray; */
+}
+
+.close-button:hover {
+  background-color: darkgray;
+}
+
+.show-modal {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+  transition: visibility 0s linear 0s, opacity 0.25s 0s, transform 0.25s;
+}
+
+#data {
+  resize: none;
+}

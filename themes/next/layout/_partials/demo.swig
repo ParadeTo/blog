@@ -16,4 +16,6 @@
   {% include './demo/vue-float.swig' %}
 {% elif page.title=='react-render' %}
   {% include './demo/react-render.swig' %}
+{% elif page.title=='webgl-github-map' %}
+  {% include './demo/webgl-github-map.swig' %}
 {% endif %}
