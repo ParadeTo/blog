@@ -7,7 +7,7 @@ resumeCh:
   name: 游行至
   vocation: 前端工程师
   birthday: 1989/12
-  intro: 学习是一辈子的事情！
+  intro: 实践是检验真理的唯一标准！
   skills:
     - name: html, css, javascript
       score: 80
@@ -19,7 +19,7 @@ resumeCh:
       score: 20
   experience:
     - corp: 深圳虾皮信息科技有限公司
-      vocation: 高级前端工程师
+      vocation: 资深前端工程师
       period: 2018/03 ~ now
     - corp: 深圳极视角科技有限公司
       vocation: 高级前端工程师
@@ -66,7 +66,7 @@ resumeEn:
   name: Xingzhi You
   vocation: Web Front End Developer
   birthday: 1989/12
-  intro: Learning is a lifelong process!
+  intro: Practice is the sole criterion for testing truth. !
   skills:
     - name: html, css, javascript
       score: 80
@@ -78,7 +78,7 @@ resumeEn:
       score: 20
   experience:
     - corp: Shopee
-      vocation: Senior Web Front End Developer
+      vocation: Expert Front End Developer
       period: 2018/03 ~ now
     - corp: Extreme Vision Technology Co., LTD
       vocation: Senior Web Front End Developer
