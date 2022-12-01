@@ -10,7 +10,7 @@ description: 再爆肝一周，美化了一下乞丐版的 GitHub Skyline 并发
 
 # 先睹为快
 
-接[上会](/2022/10/17/webgl-github-skyline/)实现了一个乞丐版的 Github Skyline 后，这次又新加了一些东西，虽然不多，但是也肝了一周。
+接[上回](/2022/10/17/webgl-github-skyline/)实现了一个乞丐版的 Github Skyline 后，这次又新加了一些东西，虽然不多，但是也肝了一周。
 
 老规矩，先来看下效果：
 ![](./webgl-github-skyline-2/demo.gif)
