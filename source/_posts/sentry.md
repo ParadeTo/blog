@@ -1,5 +1,5 @@
 ---
-title: 重学 Sentry：搞清楚 Issues 页面几个重要的内容
+title: 搞清楚 Sentry Issues 页面几个重要的内容
 date: 2022-12-01 10:22:07
 tags:
   - sentry
@@ -247,9 +247,7 @@ try {
 }
 ```
 
-![](./sentry/tag.png)
-
-可以按如下方式进行搜索：
+之后就可以根据 Tag 进行搜索：
 
 ![](./sentry/search-city.png)
 
