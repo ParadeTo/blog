@@ -10,7 +10,7 @@ description: 研究下 Cluster 的实现原理
 
 # 前言
 
-日常工作中，对 Node.js 的使用都比较粗浅，趁这次 CY 之际，来学点稍微高级的，那就先从 cluster 开始吧。
+日常工作中，对 Node.js 的使用都比较粗浅，趁未羊之际，来学点稍微高级的，那就先从 cluster 开始吧。
 
 鲁迅说过，“带着问题去学习是一个比较好的方法”，所以我们也来试一试。
 
@@ -40,7 +40,7 @@ if (cluster.isPrimary) {
 }
 ```
 
-该段代码通过父进程 `fork` 出了多个子进程，且这些子进程都监听了 9999 这个端口并能正常提供服务，这是如何做到的呢？我们来调试一下。
+该段代码通过父进程 `fork` 出了多个子进程，且这些子进程都监听了 9999 这个端口并能正常提供服务，这是如何做到的呢？我们来研究一下。
 
 # 准备调试环境
 
@@ -54,9 +54,10 @@ if (cluster.isPrimary) {
 git clone https://github.com/nodejs/node.git
 ```
 
-然后在 `lib/internal/cluster/primary.js` `queryServer` 函数中加个断点，方便后面调试用：
+然后在下面这两个地方加入断点，方便后面调试用：
 
 ```js
+// lib/internal/cluster/primary.js
 function queryServer(worker, message) {
   debugger;
   // Stop processing if worker already disconnecting
@@ -64,6 +65,22 @@ function queryServer(worker, message) {
 
   ...
 }
+```
+
+```js
+// lib/internal/cluster/child.js
+send(message, (reply, handle) => {
+  debugger
+  if (typeof obj._setServerData === 'function') obj._setServerData(reply.data)
+
+  if (handle) {
+    // Shared listen socket
+    shared(reply, {handle, indexesKey, index}, cb)
+  } else {
+    // Round-robin.
+    rr(reply, {indexesKey, index}, cb)
+  }
+})
 ```
 
 2. 进入目录，执行
@@ -84,21 +101,31 @@ make -j4
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "node",
-      "runtimeExecutable": "****/out/Debug/node",
+      "name": "Debug C++",
+      "type": "cppdbg",
+      "program": "/Users/youxingzhi/ayou/node/out/Debug/node",
       "request": "launch",
+      "args": ["/Users/youxingzhi/ayou/node/index.js"],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "lldb"
+    },
+    {
       "name": "Debug Node",
-      "args": [
-        "--expose-internals",
-        "--nolazy",
-      ],
-      "skipFiles": [], // 这个不能去掉
+      "type": "node",
+      "runtimeExecutable": "/Users/youxingzhi/ayou/node/out/Debug/node",
+      "request": "launch",
+      "args": ["--expose-internals", "--nolazy"],
+      "skipFiles": [],
       "program": "${workspaceFolder}/index.js"
     }
   ]
 }
-
 ```
+
+其中第一个是用于调式 C++ 代码（需要安装 C/C++ 插件），第二个用于调式 JS 代码。接下来就可以开始调试了，我们暂时用调式 JS 代码的那个配置就好了。
 
 # Cluster 源码调试
 
@@ -138,7 +165,7 @@ const childOrPrimary = 'NODE_UNIQUE_ID' in process.env ? 'child' : 'primary'
 module.exports = require(`internal/cluster/${childOrPrimary}`)
 ```
 
-会根据当前 `process.env` 上是否有 `NODE_UNIQUE_ID` 来引入不同的模块，此时是没有的，所以会引入 `internal/cluster/primary` 这个模块：
+会根据当前 `process.env` 上是否有 `NODE_UNIQUE_ID` 来引入不同的模块，此时是没有的，所以会引入 `internal/cluster/primary.js` 这个模块：
 
 ```js
 ...
@@ -234,13 +261,13 @@ function createWorkerProcess(id, env) {
 }
 ```
 
-可以看到，该方法主要是通过 `fork` 启动了一个子进程来执行我们的 `index.js`，且启动子进程的时候设置了环境变量 `NODE_UNIQUE_ID`，这样 `index.js` 中 `require('cluster')` 的时候，引入的就是 `internal/cluster/child` 模块了。
+可以看到，该方法主要是通过 `fork` 启动了一个子进程来执行我们的 `index.js`，且启动子进程的时候设置了环境变量 `NODE_UNIQUE_ID`，这样 `index.js` 中 `require('cluster')` 的时候，引入的就是 `internal/cluster/child.js` 模块了。
 
 `worker.process.on('internalMessage', internal(worker, onmessage))`：监听子进程传递过来的消息并处理。
 
 _接下来就进入了子进程的逻辑：_
 
-前面说了，此时引入的是 `internal/cluster/child` 模块，我们先跳过，继续往下，看下 `server.listen(9999)` 做了啥：
+前面说了，此时引入的是 `internal/cluster/child.js` 模块，我们先跳过，继续往下，执行 `server.listen(9999)` 时实际上是调用了 `Server` 上的方法：
 
 ```js
 // lib/net.js
@@ -338,7 +365,7 @@ cluster._getServer = function (obj, options, cb) {
 }
 ```
 
-该函数最终会向父进程发送 `queryServer` 的消息，父进程处理完后会调用回调函数，最终调用 `listenOnPrimaryHandle`。看来，`listen` 的逻辑是在父进程中进行的了。
+该函数最终会向父进程发送 `queryServer` 的消息，父进程处理完后会调用回调函数，回调函数中会调用 `cb` 即 `listenOnPrimaryHandle`。看来，`listen` 的逻辑是在父进程中进行的了。
 
 _接下来进入父进程：_
 
@@ -415,7 +442,7 @@ function SharedHandle(key, address, {port, addressType, fd, flags}) {
 }
 ```
 
-在 `createServerHandle` 中除了创建 `TCP` 对象外，还绑定了端口：
+在 `createServerHandle` 中除了创建 `TCP` 对象外，还绑定了端口和地址：
 
 ```js
 // lib/net.js
@@ -439,7 +466,7 @@ function createServerHandle(address, port, addressType, fd, flags) {
 }
 ```
 
-然后，`queryServer` 中继续执行，会调用 `add` 方法，将 `TCP` 对象传递给子进程：
+然后，`queryServer` 中继续执行，会调用 `add` 方法，最终会将 `handle` 也就是 `TCP` 对象传递给子进程：
 
 ```js
 // lib/internal/cluster/primary.js
@@ -552,7 +579,10 @@ function setupListenHandle(address, port, addressType, backlog, fd, flags) {
 }
 ```
 
-这里最重要的一句就是 `this._handle.onconnection = onconnection`，当有客户端请求过来时会调用 `this._handle`（也就是 `TCP` 对象）上的 `onconnection` 方法建立起连接，然后调用 `listen` 监听连接，注意这里参数 `backlog` 跟之前不同，这里不是表示端口，指定在拒绝连接之前，操作系统可以挂起的最大连接数量，我们平时遇到的 `listen EADDRINUSE: address already in use` 错误就是这行代码导致的。再进入这个函数，就是套接字编程相关的内容了，暂时先不研究。
+首先会执行 `this._handle.onconnection = onconnection`，由于客户端请求过来时会调用 `this._handle`（也就是 `TCP` 对象）上的 `onconnection` 方法，也就是会执行
+`lib/net.js` 中的 `onconnection` 方法建立连接，之后就可以通信了。为了控制篇幅，该方法就不继续往下了。
+
+然后调用 `listen` 监听，注意这里参数 `backlog` 跟之前不同，不是表示端口，而是表示在拒绝连接之前，操作系统可以挂起的最大连接数量，也就是连接请求的排队数量。我们平时遇到的 `listen EADDRINUSE: address already in use` 错误就是因为这行代码返回了非 0 的错误。
 
 如果还有其他子进程，也会同样走一遍上述的步骤，不同之处是在主进程中 `queryServer` 时，由于已经有 `handle` 了，不需要再重新创建了：
 
@@ -571,7 +601,7 @@ function queryServer(worker, message) {
 }
 ```
 
-内容太多了，整理成流程图如下：
+以上内容整理成流程图如下：
 
 ![](./nodejs-cluster-principle/sharedhandle.png)
 
@@ -659,7 +689,7 @@ function setupListenHandle(address, port, addressType, backlog, fd, flags) {
 }
 ```
 
-且由于此时 `this._handle` 为空，会调用 `createServerHandle()` 生成一个 `TCP` 对象作为 `_handle`，到此 `new RoundRobinHandle()` 就走完了。跟 `SharedHandle` 一样，最后也会回到子进程：
+且由于此时 `this._handle` 为空，会调用 `createServerHandle()` 生成一个 `TCP` 对象作为 `_handle`。之后就跟 `SharedHandle` 一样了，最后也会回到子进程：
 
 ```js
 // lib/internal/cluster/child.js
@@ -682,7 +712,7 @@ cluster._getServer = function (obj, options, cb) {
 }
 ```
 
-不过，此时会执行 `rr`：
+不过由于 `RoundRobinHandle` 不会传递 `handle` 给子进程，所以此时会执行 `rr`：
 
 ```js
 function rr(message, {indexesKey, index}, cb) {
@@ -706,7 +736,7 @@ function rr(message, {indexesKey, index}, cb) {
 
 可以看到，这里构造了一个假的 `handle`，然后执行 `cb` 也就是 `listenOnPrimaryHandle`。最终跟 `SharedHandle` 一样会调用 `setupListenHandle` 执行 `this._handle.onconnection = onconnection`。
 
-`RoundRobinHandle` 逻辑到此就结束了，好像缺了点什么的样子。回顾下，我们给每个子进程中的 `server` 上都挂载了一个假的 `handle`，但它跟绑定了端口的 `TCP` 对象没有任何关系，如果客户端请求过来了，是不会执行它上面的 `onconnection` 方法的。
+`RoundRobinHandle` 逻辑到此就结束了，好像缺了点什么的样子。回顾下，我们给每个子进程中的 `server` 上都挂载了一个假的 `handle`，但它跟绑定了端口的 `TCP` 对象没有任何关系，如果客户端请求过来了，是不会执行它上面的 `onconnection` 方法的。之所以要这样写，估计是为了保持跟之前 `SharedHandle` 代码逻辑的统一。
 
 此时，我们需要回到 `RoundRobinHandle`，有这样一段代码：
 
@@ -724,7 +754,7 @@ this.server.once('listening', () => {
 
 在 `listen` 执行完后，会触发 `listening` 事件的回调，这里重写了 `handle` 上面的 `onconnection`。
 
-当客户端请求过来时，会调用 `distribute` 在多个子进程中轮询分发，这里又有一个 `handle`，这里的 `handle` 姑且理解为 `clientHandle`，即客户端连接的 `handle`，别搞混了。总之，最后会将这个 `clientHandle` 发送给子进程：
+所以，当客户端请求过来时，会调用 `distribute` 在多个子进程中轮询分发，这里又有一个 `handle`，这里的 `handle` 姑且理解为 `clientHandle`，即客户端连接的 `handle`，别搞混了。总之，最后会将这个 `clientHandle` 发送给子进程：
 
 ```js
 // lib/internal/cluster/round_robin_handle.js
@@ -756,7 +786,7 @@ function onmessage(message, handle) {
 }
 ```
 
-最终会走到 `net.js` 中的 `function onconnection(err, clientHandle)` 方法。这个方法第二个参数名就叫 `clientHandle`，这也是为什么前面的 `handle` 我想叫这个名字的原因。
+最终也同样会走到 `net.js` 中的 `function onconnection(err, clientHandle)` 方法。这个方法第二个参数名就叫 `clientHandle`，这也是为什么前面的 `handle` 我想叫这个名字的原因。
 
 还是用图来总结下：
 
@@ -768,7 +798,7 @@ function onmessage(message, handle) {
 
 cluster 模块的调试就到此告一段落了，接下来我们来回答一下一开始的问题，为什么多个进程监听同一个端口没有报错？
 
-首先，网上很多地方都说是因为设置了 `SO_REUSEADDR`，但其实跟这个没关系。通过上面的分析知道，不管什么调度策略，最终都只会在主进程中对 `TCP` 对象 `bind` 一次。虽然每个子进程中都 `listen` 了，但是没什么关系，`SharedHandle` 策略时，在不同子进程中执行 `listen` 也还是这同一个 `TCP` 对象，而 `RoundRobinHandle` 就更绝了，子进程中执行 `listen` 的 `handle` 是一个假的对象而已。
+网上有些文章说是因为设置了 `SO_REUSEADDR`，但其实跟这个没关系。通过上面的分析知道，不管什么调度策略，最终都只会在主进程中对 `TCP` 对象 `bind` 一次。虽然每个子进程中都 `listen` 了，但是没什么关系，因为在 `SharedHandle` 策略下，在不同子进程中执行 `listen` 的都还是这同一个 `TCP` 对象，而 `RoundRobinHandle` 就更绝了，子进程中执行 `listen` 的 `handle` 是一个假的对象而已。
 
 我们可以修改一下源代码来测试一下：
 
@@ -825,6 +855,8 @@ server2.listen(9999)
 
 ## `SharedHandle` 和 `RoundRobinHandle` 两种模式的对比
 
+先准备下测试代码：
+
 ```js
 // cluster.js
 const cluster = require('cluster')
@@ -852,7 +884,7 @@ for (let i = 0; i < 20; i++) {
 ```
 
 _RoundRobin_
-先执行 `node cluster.js`，然后执行 `node client.js`，会看到如下输出，可以看到没有任何一个进程的 PID 是紧挨着的。
+先执行 `node cluster.js`，然后执行 `node client.js`，会看到如下输出，可以看到没有任何一个进程的 PID 是紧挨着的。至于为什么没有一直按照一样的顺序，后面再研究一下。
 
 ```js
 PID: 42904!
@@ -879,7 +911,7 @@ PID: 42904!
 
 _Shared_
 
-先执行 `NODE_CLUSTER_SCHED_POLICY=none node cluster.js`，则 Node.js 会使用 `SharedHandle`，然后执行 `node client.js`，会看到如下输出，可以看到同一个 PID 连续输出了多次，所以这种策略会导致进程任务分配不均的现象（有些人忙到 996，有些人天天摸鱼），不推荐使用。
+先执行 `NODE_CLUSTER_SCHED_POLICY=none node cluster.js`，则 Node.js 会使用 `SharedHandle`，然后执行 `node client.js`，会看到如下输出，可以看到同一个 PID 连续输出了多次，所以这种策略会导致进程任务分配不均的现象。就像公司里有些人忙到 996，有些人天天摸鱼，这显然不是老板愿意看到的现象，所以不推荐使用。
 
 ```js
 PID: 42561!
@@ -907,3 +939,6 @@ PID: 42563!
 # 参考
 
 https://cloud.tencent.com/developer/article/1600191
+https://www.jianshu.com/p/141aa1c41f15
+https://theanarkh.github.io/understand-nodejs/chapter15-Cluster/
+https://www.tripfe.cn/node-js-four-postures-of-source-code-debugging/
