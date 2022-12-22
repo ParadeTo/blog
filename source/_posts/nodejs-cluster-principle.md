@@ -530,11 +530,29 @@ function setupListenHandle(address, port, addressType, backlog, fd, flags) {
   this[async_id_symbol] = getNewAsyncId(this._handle)
   this._handle.onconnection = onconnection
   this._handle[owner_symbol] = this
-  ...
+
+  // Use a backlog of 512 entries. We pass 511 to the listen() call because
+  // the kernel does: backlogsize = roundup_pow_of_two(backlogsize + 1);
+  // which will thus give us a backlog of 512 entries.
+  const err = this._handle.listen(backlog || 511)
+
+  if (err) {
+    const ex = uvExceptionWithHostPort(err, 'listen', address, port)
+    this._handle.close()
+    this._handle = null
+    defaultTriggerAsyncIdScope(
+      this[async_id_symbol],
+      process.nextTick,
+      emitErrorNT,
+      this,
+      ex
+    )
+    return
+  }
 }
 ```
 
-这里最重要的一句就是 `this._handle.onconnection = onconnection`，当有客户端请求过来时会调用 `this._handle`（也就是 `TCP` 对象）上的 `onconnection` 方法建立起连接。接下来就是套接字编程相关的内容了，暂时先不研究。
+这里最重要的一句就是 `this._handle.onconnection = onconnection`，当有客户端请求过来时会调用 `this._handle`（也就是 `TCP` 对象）上的 `onconnection` 方法建立起连接，然后调用 `listen` 监听连接，注意这里参数 `backlog` 跟之前不同，这里不是表示端口，指定在拒绝连接之前，操作系统可以挂起的最大连接数量，我们平时遇到的 `listen EADDRINUSE: address already in use` 错误就是这行代码导致的。再进入这个函数，就是套接字编程相关的内容了，暂时先不研究。
 
 如果还有其他子进程，也会同样走一遍上述的步骤，不同之处是在主进程中 `queryServer` 时，由于已经有 `handle` 了，不需要再重新创建了：
 
@@ -636,6 +654,7 @@ function setupListenHandle(address, port, addressType, backlog, fd, flags) {
   this[async_id_symbol] = getNewAsyncId(this._handle)
   this._handle.onconnection = onconnection
   this._handle[owner_symbol] = this
+
   ...
 }
 ```
@@ -743,7 +762,64 @@ function onmessage(message, handle) {
 
 ![](./nodejs-cluster-principle/roundrobinhandle.png)
 
-该调度策略中 `onconnection` 最开始是在主进程中触发的，然后通过轮询算法挑选一个子进程，将 `clientHandle` 传递给它。
+跟 `SharedHandle` 不同的是，该调度策略中 `onconnection` 最开始是在主进程中触发的，然后通过轮询算法挑选一个子进程，将 `clientHandle` 传递给它。
+
+# 为什么端口不冲突
+
+cluster 模块的调试就到此告一段落了，接下来我们来回答一下一开始的问题，为什么多个进程监听同一个端口没有报错？
+
+首先，网上很多地方都说是因为设置了 `SO_REUSEADDR`，但其实跟这个没关系。通过上面的分析知道，不管什么调度策略，最终都只会在主进程中对 `TCP` 对象 `bind` 一次。虽然每个子进程中都 `listen` 了，但是没什么关系，`SharedHandle` 策略时，在不同子进程中执行 `listen` 也还是这同一个 `TCP` 对象，而 `RoundRobinHandle` 就更绝了，子进程中执行 `listen` 的 `handle` 是一个假的对象而已。
+
+我们可以修改一下源代码来测试一下：
+
+```js
+// deps/uv/src/unix/tcp.c 下面的 SO_REUSEADDR 改成 SO_DEBUG
+if (setsockopt(tcp->io_watcher.fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)))
+```
+
+编译后执行发现，我们仍然可以正常使用 cluster 模块。
+
+那这个 `SO_REUSEADDR` 到底影响的是啥呢？我们继续来研究一下。
+
+# SO_REUSEADDR
+
+首先，我们我们知道，下面的代码是会报错的：
+
+```js
+const net = require('net')
+const server1 = net.createServer()
+const server2 = net.createServer()
+server1.listen(9999)
+server2.listen(9999)
+```
+
+但是，如果我稍微修改一下，就不会报错了：
+
+```js
+const net = require('net')
+const server1 = net.createServer()
+const server2 = net.createServer()
+server1.listen(9999, '127.0.0.1')
+server2.listen(9999, '10.53.48.67')
+```
+
+原因在于 `listen` 时，如果不指定 `address`，则相当于绑定了所有地址，当两个 server 都这样做时，请求到来就不知道要给谁处理了。
+
+我们可以类比成找对象，`port` 是对外貌的要求，`address` 是对城市的要求。现在甲乙都想要一个 `port` 是 `1米7以上` 不限城市的对象，那如果有一个 `1米7以上` 来自 `深圳` 的妹子，就不知道介绍给谁了。而如果两者都指定了城市就好办多了。
+
+那如果一个指定了 `address`，一个没有呢？就像下面这样：
+
+```js
+const net = require('net')
+const server1 = net.createServer()
+const server2 = net.createServer()
+server1.listen(9999, '127.0.0.1')
+server2.listen(9999)
+```
+
+结果是：设置了 `SO_REUSEADDR` 可以正常运行，而修改成 `SO_DEBUG` 的会报错。
+
+还是上面的例子，甲对城市没有限制，乙需要是来自 `深圳` 的，那当一个妹子来自 `深圳`，我们可以选择优先介绍给乙，非 `深圳` 的就选择介绍给甲，这个就是 `SO_REUSEADDR` 的作用，显然更加智能。
 
 # 补充
 
@@ -803,7 +879,7 @@ PID: 42904!
 
 _Shared_
 
-先执行 `NODE_CLUSTER_SCHED_POLICY=none node cluster.js`，则 Node.js 会使用 `SharedHandle`，然后执行 `node client.js`，会看到如下输出，可以看到同一个 PID 连续输出了多次：
+先执行 `NODE_CLUSTER_SCHED_POLICY=none node cluster.js`，则 Node.js 会使用 `SharedHandle`，然后执行 `node client.js`，会看到如下输出，可以看到同一个 PID 连续输出了多次，所以这种策略会导致进程任务分配不均的现象（有些人忙到 996，有些人天天摸鱼），不推荐使用。
 
 ```js
 PID: 42561!
@@ -827,3 +903,7 @@ PID: 42563!
 PID: 42564!
 PID: 42563!
 ```
+
+# 参考
+
+https://cloud.tencent.com/developer/article/1600191
