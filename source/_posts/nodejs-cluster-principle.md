@@ -342,7 +342,412 @@ cluster._getServer = function (obj, options, cb) {
 
 _接下来进入父进程：_
 
-# 两种模式的对比
+父进程收到 `queryServer` 的消息后，最终会调用 `queryServer` 这个方法：
+
+```js
+// lib/internal/cluster/primary.js
+function queryServer(worker, message) {
+  // Stop processing if worker already disconnecting
+  if (worker.exitedAfterDisconnect) return
+
+  const key =
+    `${message.address}:${message.port}:${message.addressType}:` +
+    `${message.fd}:${message.index}`
+  let handle = handles.get(key)
+
+  if (handle === undefined) {
+    let address = message.address
+
+    // Find shortest path for unix sockets because of the ~100 byte limit
+    if (
+      message.port < 0 &&
+      typeof address === 'string' &&
+      process.platform !== 'win32'
+    ) {
+      address = path.relative(process.cwd(), address)
+
+      if (message.address.length < address.length) address = message.address
+    }
+
+    // UDP is exempt from round-robin connection balancing for what should
+    // be obvious reasons: it's connectionless. There is nothing to send to
+    // the workers except raw datagrams and that's pointless.
+    if (
+      schedulingPolicy !== SCHED_RR ||
+      message.addressType === 'udp4' ||
+      message.addressType === 'udp6'
+    ) {
+      handle = new SharedHandle(key, address, message)
+    } else {
+      handle = new RoundRobinHandle(key, address, message)
+    }
+
+    handles.set(key, handle)
+  }
+
+  ...
+}
+```
+
+可以看到，这里主要是对 `handle` 的处理，这里的 `handle` 指的是调度策略，分为 `SharedHandle` 和 `RoundRobinHandle`，分别对应抢占式和轮询两种策略（文章最后补充部分有关于两者对比的例子）。
+
+Node.js 中默认是 `RoundRobinHandle` 策略，可通过环境变量 `NODE_CLUSTER_SCHED_POLICY` 来修改，取值可以为 `none`（`SharedHandle`） 或 `rr`（`RoundRobinHandle`）。
+
+## SharedHandle
+
+首先，我们来看一下 `SharedHandle`，由于我们这里是 `TCP` 协议，所以最后会通过 `net._createServerHandle` 创建一个 `TCP` 对象挂载在 `handle` 属性上（注意这里又有一个 `handle`，别搞混了）：
+
+```js
+// lib/internal/cluster/shared_handle.js
+function SharedHandle(key, address, {port, addressType, fd, flags}) {
+  this.key = key
+  this.workers = new SafeMap()
+  this.handle = null
+  this.errno = 0
+
+  let rval
+  if (addressType === 'udp4' || addressType === 'udp6')
+    rval = dgram._createSocketHandle(address, port, addressType, fd, flags)
+  else rval = net._createServerHandle(address, port, addressType, fd, flags)
+
+  if (typeof rval === 'number') this.errno = rval
+  else this.handle = rval
+}
+```
+
+在 `createServerHandle` 中除了创建 `TCP` 对象外，还绑定了端口：
+
+```js
+// lib/net.js
+function createServerHandle(address, port, addressType, fd, flags) {
+  ...
+  } else {
+    handle = new TCP(TCPConstants.SERVER);
+    isTCP = true;
+  }
+
+  if (address || port || isTCP) {
+      ...
+      err = handle.bind6(address, port, flags);
+    } else {
+      err = handle.bind(address, port);
+    }
+  }
+
+  ...
+  return handle;
+}
+```
+
+然后，`queryServer` 中继续执行，会调用 `add` 方法，将 `TCP` 对象传递给子进程：
+
+```js
+// lib/internal/cluster/primary.js
+function queryServer(worker, message) {
+  ...
+  if (!handle.data) handle.data = message.data
+
+  // Set custom server data
+  handle.add(worker, (errno, reply, handle) => {
+    const {data} = handles.get(key)
+
+    if (errno) handles.delete(key) // Gives other workers a chance to retry.
+
+    send(
+      worker,
+      {
+        errno,
+        key,
+        ack: message.seq,
+        data,
+        ...reply,
+      },
+      handle // TCP 对象
+    )
+  })
+  ...
+}
+```
+
+_之后进入子进程：_
+
+子进程收到父进程对于 `queryServer` 的回复后，会调用 `shared`：
+
+```js
+// lib/internal/cluster/child.js
+// `obj` is a net#Server or a dgram#Socket object.
+cluster._getServer = function (obj, options, cb) {
+  ...
+
+  send(message, (reply, handle) => {
+    if (typeof obj._setServerData === 'function') obj._setServerData(reply.data)
+
+    if (handle) {
+      // Shared listen socket
+      shared(reply, {handle, indexesKey, index}, cb)
+    } else {
+      // Round-robin.
+      rr(reply, {indexesKey, index}, cb) // cb 是 listenOnPrimaryHandle
+    }
+  })
+  ...
+}
+```
+
+`shared` 中最后会调用 `cb` 也就是 `listenOnPrimaryHandle`：
+
+```js
+// lib/net.js
+function listenOnPrimaryHandle(err, handle) {
+  err = checkBindError(err, port, handle)
+
+  if (err) {
+    const ex = exceptionWithHostPort(err, 'bind', address, port)
+    return server.emit('error', ex)
+  }
+  // Reuse primary's server handle 这里的 server 是 index.js 中 net.createServer 返回的那个对象
+  server._handle = handle
+  // _listen2 sets up the listened handle, it is still named like this
+  // to avoid breaking code that wraps this method
+  server._listen2(address, port, addressType, backlog, fd, flags)
+}
+```
+
+这里会把 `handle` 赋值给 `server._handle`，这里的 `server` 是 `index.js` 中 `net.createServer` 返回的那个对象，并调用 `server._listen2`，也就是 `setupListenHandle`：
+
+```js
+// lib/net.js
+function setupListenHandle(address, port, addressType, backlog, fd, flags) {
+  debug('setupListenHandle', address, port, addressType, backlog, fd)
+  // If there is not yet a handle, we need to create one and bind.
+  // In the case of a server sent via IPC, we don't need to do this.
+  if (this._handle) {
+    debug('setupListenHandle: have a handle already')
+  } else {
+    ...
+  }
+
+  this[async_id_symbol] = getNewAsyncId(this._handle)
+  this._handle.onconnection = onconnection
+  this._handle[owner_symbol] = this
+  ...
+}
+```
+
+这里最重要的一句就是 `this._handle.onconnection = onconnection`，当有客户端请求过来时会调用 `this._handle`（也就是 `TCP` 对象）上的 `onconnection` 方法建立起连接。接下来就是套接字编程相关的内容了，暂时先不研究。
+
+如果还有其他子进程，也会同样走一遍上述的步骤，不同之处是在主进程中 `queryServer` 时，由于已经有 `handle` 了，不需要再重新创建了：
+
+```js
+
+function queryServer(worker, message) {
+  debugger;
+  // Stop processing if worker already disconnecting
+  if (worker.exitedAfterDisconnect) return;
+
+  const key =
+    `${message.address}:${message.port}:${message.addressType}:` +
+    `${message.fd}:${message.index}`;
+  let handle = handles.get(key);
+  ...
+}
+```
+
+内容太多了，整理成流程图如下：
+
+![](./nodejs-cluster-principle/sharedhandle.png)
+
+所谓的 `SharedHandle`，其实是在多个子进程中共享 `TCP` 对象，当客户端请求过来时，多个进程会去竞争该请求的处理权，会导致任务分配不均的问题，这也是为什么需要 `RoundRobinHandle` 的原因。接下来继续看看这种调度方式。
+
+## RoundRobinHandle
+
+```js
+// lib/internal/cluster/round_robin_handle.js
+function RoundRobinHandle(
+  key,
+  address,
+  {port, fd, flags, backlog, readableAll, writableAll}
+) {
+  ...
+  this.server = net.createServer(assert.fail)
+
+  ...
+  else if (port >= 0) {
+    this.server.listen({
+      port,
+      host: address,
+      // Currently, net module only supports `ipv6Only` option in `flags`.
+      ipv6Only: Boolean(flags & constants.UV_TCP_IPV6ONLY),
+      backlog,
+    })
+  }
+  ...
+  this.server.once('listening', () => {
+    this.handle = this.server._handle
+    this.handle.onconnection = (err, handle) => {
+      this.distribute(err, handle)
+    }
+    this.server._handle = null
+    this.server = null
+  })
+}
+```
+
+如上所示，`RoundRobinHandle` 会调用 `net.createServer()` 创建一个 `server`，然后调用 `listen` 方法，最终会来到 `setupListenHandle`：
+
+```js
+// lib/net.js
+function setupListenHandle(address, port, addressType, backlog, fd, flags) {
+  debug('setupListenHandle', address, port, addressType, backlog, fd)
+  // If there is not yet a handle, we need to create one and bind.
+  // In the case of a server sent via IPC, we don't need to do this.
+  if (this._handle) {
+    debug('setupListenHandle: have a handle already')
+  } else {
+    debug('setupListenHandle: create a handle')
+
+    let rval = null
+
+    // Try to bind to the unspecified IPv6 address, see if IPv6 is available
+    if (!address && typeof fd !== 'number') {
+      rval = createServerHandle(DEFAULT_IPV6_ADDR, port, 6, fd, flags)
+
+      if (typeof rval === 'number') {
+        rval = null
+        address = DEFAULT_IPV4_ADDR
+        addressType = 4
+      } else {
+        address = DEFAULT_IPV6_ADDR
+        addressType = 6
+      }
+    }
+
+    if (rval === null)
+      rval = createServerHandle(address, port, addressType, fd, flags)
+
+    if (typeof rval === 'number') {
+      const error = uvExceptionWithHostPort(rval, 'listen', address, port)
+      process.nextTick(emitErrorNT, this, error)
+      return
+    }
+    this._handle = rval
+  }
+
+  this[async_id_symbol] = getNewAsyncId(this._handle)
+  this._handle.onconnection = onconnection
+  this._handle[owner_symbol] = this
+  ...
+}
+```
+
+且由于此时 `this._handle` 为空，会调用 `createServerHandle()` 生成一个 `TCP` 对象作为 `_handle`，到此 `new RoundRobinHandle()` 就走完了。跟 `SharedHandle` 一样，最后也会回到子进程：
+
+```js
+// lib/internal/cluster/child.js
+// `obj` is a net#Server or a dgram#Socket object.
+cluster._getServer = function (obj, options, cb) {
+  ...
+
+  send(message, (reply, handle) => {
+    if (typeof obj._setServerData === 'function') obj._setServerData(reply.data)
+
+    if (handle) {
+      // Shared listen socket
+      shared(reply, {handle, indexesKey, index}, cb)
+    } else {
+      // Round-robin.
+      rr(reply, {indexesKey, index}, cb) // cb 是 listenOnPrimaryHandle
+    }
+  })
+  ...
+}
+```
+
+不过，此时会执行 `rr`：
+
+```js
+function rr(message, {indexesKey, index}, cb) {
+  ...
+  // Faux handle. Mimics a TCPWrap with just enough fidelity to get away
+  // with it. Fools net.Server into thinking that it's backed by a real
+  // handle. Use a noop function for ref() and unref() because the control
+  // channel is going to keep the worker alive anyway.
+  const handle = {close, listen, ref: noop, unref: noop}
+
+  if (message.sockname) {
+    handle.getsockname = getsockname // TCP handles only.
+  }
+
+  assert(handles.has(key) === false)
+  handles.set(key, handle)
+  debugger
+  cb(0, handle)
+}
+```
+
+可以看到，这里构造了一个假的 `handle`，然后执行 `cb` 也就是 `listenOnPrimaryHandle`。最终跟 `SharedHandle` 一样会调用 `setupListenHandle` 执行 `this._handle.onconnection = onconnection`。
+
+`RoundRobinHandle` 逻辑到此就结束了，好像缺了点什么的样子。回顾下，我们给每个子进程中的 `server` 上都挂载了一个假的 `handle`，但它跟绑定了端口的 `TCP` 对象没有任何关系，如果客户端请求过来了，是不会执行它上面的 `onconnection` 方法的。
+
+此时，我们需要回到 `RoundRobinHandle`，有这样一段代码：
+
+```js
+// lib/internal/cluster/round_robin_handle.js
+this.server.once('listening', () => {
+  this.handle = this.server._handle
+  this.handle.onconnection = (err, handle) => {
+    this.distribute(err, handle)
+  }
+  this.server._handle = null
+  this.server = null
+})
+```
+
+在 `listen` 执行完后，会触发 `listening` 事件的回调，这里重写了 `handle` 上面的 `onconnection`。
+
+当客户端请求过来时，会调用 `distribute` 在多个子进程中轮询分发，这里又有一个 `handle`，这里的 `handle` 姑且理解为 `clientHandle`，即客户端连接的 `handle`，别搞混了。总之，最后会将这个 `clientHandle` 发送给子进程：
+
+```js
+// lib/internal/cluster/round_robin_handle.js
+RoundRobinHandle.prototype.handoff = function (worker) {
+  ...
+
+  const message = { act: 'newconn', key: this.key };
+  // 这里的 handle 是 clientHandle
+  sendHelper(worker.process, message, handle, (reply) => {
+    if (reply.accepted) handle.close();
+    else this.distribute(0, handle); // Worker is shutting down. Send to another.
+
+    this.handoff(worker);
+  });
+};
+```
+
+而子进程在 `require('cluster')` 时，已经监听了该事件：
+
+```js
+// lib/internal/cluster/child.js
+process.on('internalMessage', internal(worker, onmessage))
+send({act: 'online'})
+
+function onmessage(message, handle) {
+  if (message.act === 'newconn') onconnection(message, handle)
+  else if (message.act === 'disconnect')
+    ReflectApply(_disconnect, worker, [true])
+}
+```
+
+最终会走到 `net.js` 中的 `function onconnection(err, clientHandle)` 方法。这个方法第二个参数名就叫 `clientHandle`，这也是为什么前面的 `handle` 我想叫这个名字的原因。
+
+还是用图来总结下：
+
+![](./nodejs-cluster-principle/roundrobinhandle.png)
+
+该调度策略中 `onconnection` 最开始是在主进程中触发的，然后通过轮询算法挑选一个子进程，将 `clientHandle` 传递给它。
+
+# 补充
+
+## `SharedHandle` 和 `RoundRobinHandle` 两种模式的对比
 
 ```js
 // cluster.js
@@ -363,6 +768,7 @@ if (cluster.isMaster) {
 ```
 
 ```js
+// client.js
 const net = require('net')
 for (let i = 0; i < 20; i++) {
   net.connect({port: 9997})
@@ -370,6 +776,7 @@ for (let i = 0; i < 20; i++) {
 ```
 
 _RoundRobin_
+先执行 `node cluster.js`，然后执行 `node client.js`，会看到如下输出，可以看到没有任何一个进程的 PID 是紧挨着的。
 
 ```js
 PID: 42904!
@@ -396,7 +803,7 @@ PID: 42904!
 
 _Shared_
 
-`NODE_CLUSTER_SCHED_POLICY=none node cluster.js`
+先执行 `NODE_CLUSTER_SCHED_POLICY=none node cluster.js`，则 Node.js 会使用 `SharedHandle`，然后执行 `node client.js`，会看到如下输出，可以看到同一个 PID 连续输出了多次：
 
 ```js
 PID: 42561!
