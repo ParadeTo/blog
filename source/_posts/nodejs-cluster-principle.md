@@ -605,7 +605,7 @@ function queryServer(worker, message) {
 
 ![](./nodejs-cluster-principle/sharedhandle.png)
 
-所谓的 `SharedHandle`，其实是在多个子进程中共享 `TCP` 对象，当客户端请求过来时，多个进程会去竞争该请求的处理权，会导致任务分配不均的问题，这也是为什么需要 `RoundRobinHandle` 的原因。接下来继续看看这种调度方式。
+所谓的 `SharedHandle`，其实是在多个子进程中共享 `handle` 的 `fd`，当客户端请求过来时，多个进程会去竞争该请求的处理权，会导致任务分配不均的问题，这也是为什么需要 `RoundRobinHandle` 的原因。接下来继续看看这种调度方式。
 
 ## RoundRobinHandle
 
@@ -798,7 +798,7 @@ function onmessage(message, handle) {
 
 cluster 模块的调试就到此告一段落了，接下来我们来回答一下一开始的问题，为什么多个进程监听同一个端口没有报错？
 
-网上有些文章说是因为设置了 `SO_REUSEADDR`，但其实跟这个没关系。通过上面的分析知道，不管什么调度策略，最终都只会在主进程中对 `TCP` 对象 `bind` 一次。虽然每个子进程中都 `listen` 了，但是没什么关系，因为在 `SharedHandle` 策略下，在不同子进程中执行 `listen` 的都还是这同一个 `TCP` 对象，而 `RoundRobinHandle` 就更绝了，子进程中执行 `listen` 的 `handle` 是一个假的对象而已。
+网上有些文章说是因为设置了 `SO_REUSEADDR`，但其实跟这个没关系。通过上面的分析知道，不管什么调度策略，最终都只会在主进程中对 `TCP` 对象 `bind` 一次。
 
 我们可以修改一下源代码来测试一下：
 
@@ -942,3 +942,5 @@ https://cloud.tencent.com/developer/article/1600191
 https://www.jianshu.com/p/141aa1c41f15
 https://theanarkh.github.io/understand-nodejs/chapter15-Cluster/
 https://www.tripfe.cn/node-js-four-postures-of-source-code-debugging/
+
+https://segmentfault.com/a/1190000005069010
