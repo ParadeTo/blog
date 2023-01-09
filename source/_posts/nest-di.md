@@ -307,7 +307,7 @@ private async createInstances(modules: Map<string, Module>) {
 }
 ```
 
-这里的意思是实例化所有的 `Module`，然后实例化 `Module` 前，我们需要先实例化它的依赖，具体到这里就是实例化 `providers`：
+这里的意思是实例化所有的 `Module`，实例化 `Module` 前，我们需要先实例化它的依赖，具体到这里就是实例化 `providers`：
 
 ```ts
 private async createInstancesOfProviders(moduleRef: Module) {
@@ -406,6 +406,8 @@ public async resolveConstructorParams<T>(
 ```
 
 这里的 `PARAMTYPES_METADATA` 就是 `design:paramtypes`。
+
+终于看到了我们想要的结果，那本文暂时就分析到这里吧，这样一次带着一个问题看源码，目标明确，不至于陷入源码的汪洋大海之中。
 
 # 总结
 
