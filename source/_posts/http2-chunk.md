@@ -21,9 +21,11 @@ description: 当 Transfer-Encoding chunked 遇上 HTTP2
 
 ![](./http2-chunk/problem.png)
 
-问题原因知道了，那就面向 Google 开发呗，可以经过各种组合搜索后也没有找到相关的内容。没方法了，只能灰溜溜的跟 Leader 说做不了了。
+问题原因知道了，那就面向 Google 开发呗，可是经过各种组合搜索后也没有找到相关的内容。没方法了，只能灰溜溜的跟 Leader 说做不了了。
 
-但是这个问题一直萦绕在我脑海，害得我夜不能寐，饭不能食。毕竟，丢了的面子得找回来，而且不可能大家的服务都没有像这样部署过吧，肯定还是自己太菜了。而且，根据上面这个链接所说：“HTTP2 提供了比 `chunked` 更为高效的数据流传输机制”，所以有可能 HTTP2 已经默默的帮我们做了些什么了。既然这样，我们还是来验证一下吧。
+但是这个问题一直萦绕在我脑海，害得我夜不能寐，饭不能食。毕竟，丢了的面子得找回来，而且不可能大家的服务都没有像这样部署过吧，肯定还是自己太菜了。
+
+而且，根据上面这个链接所说：“HTTP2 提供了比 `chunked` 更为高效的数据流传输机制”，所以有可能 HTTP2 已经默默的帮我们做了些什么了？既然有此疑虑，直接验证一下呗。
 
 # 验证
 
@@ -32,7 +34,7 @@ description: 当 Transfer-Encoding chunked 遇上 HTTP2
 - Nginx：需要开启 HTTP2，需要生成自签名证书，相关内容可自行搜索。这里仅给出配置文件：
 
 ```nginx
-events {
+events {https://juejin.cn/post/7133238781452222472
     worker_connections 2048;
 }
 
@@ -93,7 +95,7 @@ const listener = app.listen(2048, () => {
 
 我们可以通过 wireshark 进一步的验证我们的想法，使用 wireshark 抓包需要配置其可以解密 HTTP2 流量，可参考[使用 Wireshark 调试 HTTP/2 流量](https://imququ.com/post/http2-traffic-in-wireshark.html)。
 
-如下所示，`chunked` 的两部分数据被 HTTP2 作为了了两个 Data 帧进行传输，两个 Data 帧的时间相差 4 秒左右。
+如下所示，`chunked` 的两部分数据被 HTTP2 作为了两个 Data 帧进行传输，两个 Data 帧的时间相差 4 秒左右。
 
 ![](./http2-chunk/data1.png)
 ![](./http2-chunk/data2.png)
@@ -171,7 +173,7 @@ const listener = app.listen(2048, () => {
 
 ![](./http2-chunk/favicon.png)
 
-从上图可以看到，`:authority` 现在也属于“整个头部键值对都在字典中”的情况了，用 1 个字节即可表示，数据进一步得到了压缩。
+从上图可以看到，更新完动态字典后 `:authority` 现在也属于“整个头部键值对都在字典中”的情况了，用 1 个字节即可表示，数据进一步得到了压缩。
 
 然后，我们来看看 Data 帧的数据：
 
