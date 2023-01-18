@@ -56,7 +56,7 @@ http {
 - 返回 chunked 内容的 server：本文使用 Node.js，代码如下：
 
 ```js
-const express = rquire('express')
+const express = require('express')
 
 const app = express()
 
