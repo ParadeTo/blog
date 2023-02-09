@@ -292,6 +292,51 @@ writeStream.on('open', () => {
 })
 ```
 
+另外 `write` 函数是有返回值的，当返回 `false` 时，表示池子中的水位超过了 `highWaterMark`（16 KB），此时正确的做法应该停止继续往池子中注水，等待池子中的水排干了（即触发 `drain` 事件）再继续注水：
+
+```js
+const writeStream = fs.createWriteStream('./file3')
+const ret = writeStream.write(Array(20000).fill('a').join(''))
+
+if (!ret) {
+  writeStream.on('drain', () => {
+    writeStream.write(Array(1).fill('b').join(''))
+    console.log(fs.readFileSync('./file2').length) // 20001
+  })
+}
+```
+
+但是事实上你也可以不管返回值是什么都一直注水即可：
+
+```js
+const writeStream = fs.createWriteStream('./file3')
+let i = 0
+while (i++ < 999999) {
+  writeStream.write(Array(999999).fill('a').join(''))
+}
+```
+
+直到把机器内存全部占满为止，注意这里不会受 Node.js 的运行内存限制，因为 `write` 的数据最后都会转为 `Buffer`。
+
+而且 Node.js 还会在每次事件循环中去刷 `buffered` 中的数据，比如上面的代码改成如下这样内存就不会一直增长了：
+
+```js
+const writeStream = fs.createWriteStream('./file3')
+let i = 0
+const tId = setInterval(() => {
+  writeStream.write(Array(20000).fill('a').join(''))
+  console.log(writeStream._writableState.buffered.length)
+  i++
+  if (i > 999999) clearInterval(tId)
+})
+```
+
+以上就是 `Writable Stream` 的核心了，其他方法和事件比较简单，就不过多介绍了。
+
+介绍完这两个东西，接下来我们把他们合起来再讨论讨论。
+
+# Readable Stream + Writable Stream
+
 # 参考
 
 https://www.freecodecamp.org/news/node-js-streams-everything-you-need-to-know-c9141306be93/
