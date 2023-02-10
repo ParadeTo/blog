@@ -1,5 +1,5 @@
 ---
-title: Node.js 高级编程之 Stream
+title: Node.js 高级编程之 Stream（我是跟 ChatGPT 学会的）
 date: 2023-02-09 10:48:07
 tags:
   - nodejs
@@ -11,6 +11,8 @@ description: 系统的学习下 Node.js 中的流
 # 前言
 
 在做 SSR Stream Render 的时候遇到了 Node.js 的 stream，但是对其总是一知半解，这次就趁着詹姆斯打破历史总得分记录之际来研究下，作为献给老詹的礼物。
+
+文末有跟 ChatGPT 的精彩对线。
 
 # 为什么需要 Stream
 
@@ -98,6 +100,8 @@ server.listen(8000)
 
 水龙头的水来自于哪，需要具体的 `Readable Stream` 来实现。比如 `fs.createReadStream` 创建的 `Readable Stream` 其水源自于文件，`process.stdin` 水源自于标准输入。
 
+### 两个状态 flowing 和 paused
+
 水龙头有两个状态 `flowing` 和 `paused`，即龙头打开或关闭。初始化一个 `Readable Stream` 时，默认是关闭的：
 
 ```js
@@ -136,15 +140,14 @@ setTimeout(() => {
 ```js
 const readStream = fs.createReadStream('./big.file')
 
-let paused = false
-readStream.on('data', (chunk) => {
-  if (!paused) {
-    readStream.pause()
-  }
+readStream.once('data', (chunk) => {
+  readStream.pause()
 })
 ```
 
-不过此时水源的水不会停止，会放到水龙头的一个 `buffer` 中，直到达到 `highWaterMark` （最高水位线）则停止：
+### buffer
+
+上面代码调用 `pause` 后水源的水不会停止，会流到水龙头的一个 `buffer` 中，直到达到 `highWaterMark` （最高水位线）则停止：
 
 ![](./nodejs-stream/readable-pause.png)
 
@@ -153,28 +156,44 @@ readStream.on('data', (chunk) => {
 ```js
 const readStream = fs.createReadStream('./big.file')
 
-let paused = false
-readStream.on('data', (chunk) => {
-  if (!paused) {
-    readStream.pause()
-    setTimeout(() => {
-      console.log(
-        readStream._readableState.length, // 水龙头 buffer 的大小
-        readStream._readableState.highWaterMark // 最高水位线
-      ) // 65536 65536
-    }, 1000)
-  }
+readStream.once('data', (chunk) => {
+  readStream.pause()
+  setTimeout(() => {
+    console.log(
+      readStream._readableState.length, // 水龙头 buffer 的大小
+      readStream._readableState.highWaterMark // 最高水位线
+    ) // 65536 65536
+  }, 1000)
 })
 ```
 
-有没有发现，上面这些例子都是水龙头来多少水（即代码中的 `chunk`）我们就接多少水，有没有可能我们自己控制接水的多少呢？答案是肯定的，我们可以调用 `read` 这个方法：
+而且，我们可以重新再次打开水龙头，此时会先消耗掉 `buffer` 中的水，然后再从源头读取，比如下面这个例子（文末 ChatGPT 给的例子也不错）：
+
+```js
+const readStream = fs.createReadStream('./big.file')
+
+readStream.once('data', (chunk) => {
+  readStream.pause()
+  setTimeout(() => {
+    const data = readStream._readableState.buffer.head.data.toString()
+    readStream.once('data', (chunk) => {
+      console.log(data === chunk.toString()) // 第二次读到的数据确实是来自上次 pause 后存放到 buffer 中的
+    })
+    readStream.resume()
+  }, 2000)
+})
+```
+
+### 使用 read 来手动取水
+
+有没有发现，上面这些例子都是水龙头来多少水（即代码中的 `chunk`）我们就接多少水，有没有可能我们自己控制接水的多少呢？答案是肯定的，我们可以调用 `read` 这个方法，比如下面这个例子：
 
 ```js
 const readStream = fs.createReadStream('./big.file')
 console.log(readStream(100))
 ```
 
-不过，上面的这个代码是读不到数据的。原因在于，`read` 方法是从 `buffer` 中读取数据，而此时 `buffer` 里面还是空的呢。我们需要这样：
+不过，上面的这个代码是读不到数据的。原因在于，`read` 方法是从 `buffer` 中读取数据，而此时 `buffer` 里面还是空的。我们需要这样：
 
 ```js
 const readStream = fs.createReadStream('./big.file')
@@ -187,7 +206,7 @@ readStream.on('readable', () => {
 })
 ```
 
-调用 `on('readable'` 会触发水源往 `buffer` 中灌水，当 `buffer` 中灌满水后，会调用 `readable` 的回调函数，此时可以通过 `read` 方法来消费 `buffer` 中的水。这里有个问题，当我们 `read` 的数据超过了 `buffer` 中的怎么办？我们来实验一把：
+调用 `on('readable'` 会触发水源往 `buffer` 中灌水，当 `buffer` 中灌满水后，会调用 `readable` 的回调函数，此时可以通过 `read` 方法来消费 `buffer` 中的水。这里有个问题，当我们 `read` 的数据超过了 `buffer` 中的怎么办？我们来实验一下：
 
 ```js
 const readStream = fs.createReadStream('./big.file')
@@ -223,7 +242,7 @@ Stream is readable (new data received in buffer)
 ...
 ```
 
-分析这个日志，我们发现第一并没有进入 `while` 循环，且第一次之后 `highWaterMark` 的值增加了。经过一番源码调试后，我得到了结论，图示如下：
+分析这个日志，我们发现第一次 `readable` 事件并没有进入 `while` 循环，且第一次之后 `highWaterMark` 的值增加了。经过一番源码调试后，我得到了结论，图示如下：
 
 ![](./nodejs-stream/read.png)
 
@@ -232,6 +251,8 @@ Stream is readable (new data received in buffer)
 然后，触发第二次 `readable` 事件，此时 `buffer` 数据总长度为 `65536 + 131072 = 196608`，我们可以读入两次 `65537` 的数据。此时 `buffer` 数据总长度变为 `196608 - 2 * 65537 = 65534`，数据又不够了，`read` 返回 `null`，且由于 `read` 读取的数据小于 `highWaterMark`，不需要更新，仍然以原来的值从水源中再读入一段数据到一个新的 `buffer` 节点中。
 
 然后，触发第三次 `readable`...
+
+### 自定义 Readable Stream
 
 到此，`Readalbe Stream` 的核心基本上就介绍完了，接下来介绍 `Writable Stream`。
 
@@ -336,6 +357,16 @@ const tId = setInterval(() => {
 介绍完这两个东西，接下来我们把他们合起来再讨论讨论。
 
 # Readable Stream + Writable Stream
+
+# 补充内容
+
+## 和 ChatGPT 讨论技术
+
+![](./nodejs-stream/chatgpt1.png)
+
+![](./nodejs-stream/chatgpt2.png)
+![](./nodejs-stream/chatgpt3.png)
+![](./nodejs-stream/chatgpt4.png)
 
 # 参考
 
