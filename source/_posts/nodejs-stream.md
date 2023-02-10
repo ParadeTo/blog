@@ -278,6 +278,8 @@ readStream.on('data', (chunk) => {
 
 我们把 `Writable Stream` 比作一个有入口和出口的池子：
 
+![](./nodejs-stream/pool.png)
+
 池子的水最终流向哪，需要具体的 `Writable Stream` 来实现。比如 `fs.createWriteStream` 创建的 `Writable Stream` 其水流向文件，`process.stdout` 水流向标准输出。
 
 ### 两种工作模式
