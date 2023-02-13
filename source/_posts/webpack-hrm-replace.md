@@ -1,5 +1,5 @@
 ---
-title: webpack HRM 是怎么更新模块的？
+title: webpack HMR 是怎么更新模块的？
 date: 2023-02-12 10:50:38
 tags:
   - webpack
@@ -8,7 +8,7 @@ categories:
 description: 对 webpack HRM 简单研究下
 ---
 
-网上看过很多关于 webpack HRM 的介绍，对整个流程已经有了一个大致的了解，但是有几个地方一直没有搞清楚，比如下面这个代码：
+网上看过很多关于 webpack HMR 的介绍，对整个流程已经有了一个大致的了解，但是有几个地方一直没有搞清楚，比如下面这个代码：
 
 ```js
 // const.js
