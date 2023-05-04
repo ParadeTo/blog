@@ -8,11 +8,11 @@ categories:
 description: 浅析 React Server Component
 ---
 
-<!-- https://www.thearmchaircritic.org/mansplainings/react-server-components-vs-server-side-rendering#:~:text=RSC%20differs%20from%20SSR%20by,browser%20when%20SSR%20is%20used. -->
+# 前言
 
 [React Server Component](https://github.com/reactjs/rfcs/pull/188) （以下简称 RSC）这个概念已经提出很久了，但是一直对其一知半解，这次就借五一小长假来搞清楚吧。我们通过官网的[例子](https://github.com/reactjs/server-components-demo)来学习一下，不过这个例子还需要安装 postgres，为了简单起见我们用另外一个 [fork](https://github.com/pomber/server-components-demo/) 的版本。
 
-## 浅玩 Server Component Demo
+# 浅玩 Server Component Demo
 
 安装好依赖并启动后，在浏览器中打开 `http://localhost:4000`，可以看到如下页面：
 
@@ -33,7 +33,7 @@ description: 浅析 React Server Component
 
 那么，它到底是怎么实现的呢？接下来让我们来简单剖析一下。
 
-## 浅析 Server Component 实现原理
+# 浅析 Server Component 实现原理
 
 我们先从 Client 端入口看起：
 
@@ -243,7 +243,7 @@ console.log(dom.outerHTML)
 
 总结一下，所谓的 Server Component 其实就是在 Server 端将组件进行序列化后返回给 Client 端，Client 端再解析成 `ReactElement` 而已。因为组件要经过序列化后传输，所以 Server Component 不能有 `Function` 等无法序列化的参数类型，这也是为什么 Server Component 中不能有跟用户交互相关的代码。
 
-## RSC vs SSR
+# RSC vs SSR
 
 RSC 因为名字中带有 Server，很自然地会让我们跟 Server Side Rendering（SSR）进行对比，接下来我们就来讨论一下，我们先从 Client Side Rendering（CSR）开始说起。
 
@@ -330,6 +330,8 @@ RSC 虽然学习完了，但是还是不免想多说几句。
 
 所以，你看，没有 React，也没有 SSR，RSP，Stream Rendering 这些概念，我们仍然可以实现一个高性能和具有良好用户体验的网页。
 
-不过，这种方式最大的缺点就是代码不利于维护，有过这种开发经历的童鞋应该深有同感。所以才出现了基于组件的类似 React 的这种前端 UI 库或框架，从此改变了网页开发的方式，也使得前端这个职业登上了历史舞台。
+不过，这种方式的缺点就是代码不利于维护，有过这种开发经历的童鞋应该深有同感。所以才出现了基于组件的类似 React 的这种前端 UI 库或框架，从此改变了网页开发的方式，也使得前端这个职业登上了历史舞台。
 
-所以为什么一个简单的网页开发工作会变得越来越复杂？因为这是综合考虑性能、用户体验、代码可维护性后的结果。
+另外，使用了这些 UI 库或框架后，网页开发的效率也得到了提升，之前那种原始的方式下开发者需要同时关注数据的处理以及 DOM 对象的操作，但现在只需要关注前者了。
+
+所以为什么一个简单的网页开发工作会变得越来越复杂？因为这是综合考虑性能、用户体验、代码可维护性、开发效率后的结果。
