@@ -285,3 +285,73 @@ ssr_histogram_3_bucket{exported_job="ssr", instance="10.53.48.243:9091", job="pu
 2 小于 5 的值 / 小于 10 的值为 0.5，说明 90 线在 5 - 10 这个区间，接下来通过线性插值得到 90 线：
 
 ![](./react-ssr-promethus/90line.png)
+
+如果是多进程的话，可以这样写：
+
+```js
+histogram_quantile(0.9, sum(ssr_histogram_bucket{}) by (le, url))
+```
+
+这里得到的是全量数据的 90 线，如果是想统计过去某段时间的，比如 1 分钟，可以这样写：
+
+```js
+histogram_quantile(0.9, sum(increase(ssr_histogram_bucket{}[1m])) by (le, url))
+```
+
+## 案例三：监控转化率
+
+用户访问 SSR 提供的页面可以分为以下三个步骤：
+
+1. 请求到达服务端
+2. 用户加载到 HTML
+3. 用户完成注水
+
+其中 1 到 2，2 到 3 都有可能失败，为了监控用户的使用情况，我们需要监控用户在这几个步骤的转化率。
+
+我们先定义一个 Counter 类型的数据：
+
+```js
+export const eventCounter = new PromClient.Counter({
+  registers: [registry],
+  name: 'ssr_event_counter',
+  help: 'ssr event counter',
+  labelNames: ['event'],
+})
+```
+
+同时修改 `/api` 路由：
+
+```js
+app.get('/api', (req, res, next) => {
+  const {event} = req.query
+  eventCounter.labels({event}).inc()
+  res.end()
+})
+```
+
+接着，我们在 HTML 脚本和组件里面分别调用 `/api` 接口上报数据：
+
+```html
+  ...
+    <script>
+      fetch('/api?event=htmlLoaded')
+    </script>
+  </body>
+  ...
+```
+
+```js
+...
+useEffect(() => {
+  fetch('/api?event=hydrated')
+}, [])
+...
+```
+
+之后可以使用这些语句来统计各个步骤的转化率：
+
+```js
+sum(increase(ssr_event_counter{event="htmlLoaded"}[1m])) / sum(increase(ssr_counter{url="/"}[1m])) // 1 -> 2
+sum(increase(ssr_event_counter{event="hydrated"}[1m])) / sum(increase(ssr_event_counter{event="htmlLoaded"}[1m])) // 2 -> 3
+sum(increase(ssr_event_counter{event="hydrated"}[1m])) / sum(increase(ssr_counter{url="/"}[1m])) // 1 -> 3
+```
