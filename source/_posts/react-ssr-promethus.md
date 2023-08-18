@@ -67,7 +67,7 @@ scrape_configs:
 
 然后执行 `docker-compose up`，这样就搞定了。
 
-稍微解释下上面干了啥，我们启动了两个容器 `prometheus`、`prom-pushgateway`。`prometheus` 本身采取的是“拉模式”获取数据。为了实现“推模式”，我们启动了 `prom-pushgateway` 这个中间角色，这样我们的 SSR 服务就可以主动往 `prom-pushgateway` 推数据，`prometheus` 从 `prom-pushgateway` 拉数据。`prometheus/config.yml` 配置了中定义了拉取数据的目标，即 `prom-pushgateway` 服务的地址，由于 `prometheus` 本身也会产生一些监控数据，所以这里还配置了它自己的地址。
+稍微解释下上面干了啥，我们启动了两个容器 `prometheus`、`prom-pushgateway`。`prometheus` 本身采取的是“拉模式”获取数据，为了实现“推模式”，我们启动了 `prom-pushgateway` 这个中间角色，这样我们的 SSR 服务就可以主动往 `prom-pushgateway` 推数据，而 `prometheus` 仍然从 `prom-pushgateway` 拉数据。`prometheus/config.yml` 配置了中定义了拉取数据的目标，即 `prom-pushgateway` 服务的地址，由于 `prometheus` 本身也会产生一些监控数据，所以这里还配置了它自己的地址。
 
 ![](./react-ssr-promethus/prometheus.png)
 
@@ -207,31 +207,11 @@ export const histogram = new PromClient.Histogram({
 ...
 app.use(async (req, res, next) => {
   const startTime = Date.now()
-  await next()
+  next()
   if (req.url.indexOf('static') === -1)
     histogram.labels({url: req.url}).observe(Date.now() - startTime)
 })
 ...
-```
-
-当然 `SSR` 部分也需要稍微修改一下：
-
-```js
-app.get('/', (req, res, next) => {
-  return new Promise((resolve, reject) => {
-    const reactApp = ReactDOMServer.renderToString(React.createElement(App))
-    const indexFile = path.resolve('build/index.html')
-    fs.readFile(indexFile, 'utf8', (_, data) => {
-      resolve()
-      return res.send(
-        data.replace(
-          '<div id="root"></div>',
-          `<div id="root">${reactApp}</div>`
-        )
-      )
-    })
-  })
-})
 ```
 
 为了简单起见，我们先启动一个进程进行实验。
@@ -252,37 +232,27 @@ histogram_quantile(0.9, ssr_histogram_bucket)
 
 ![](./react-ssr-promethus/6.png)
 
-下面我们举个例子来说明这个是怎么工作的，比如下面的这个数据：
+下面我们举个例子来说明这个是怎么计算的，比如下面的这个数据：
 
 ```js
-ssr_histogram_3_bucket{exported_job="ssr", instance="10.53.48.243:9091", job="pushgateway", le="+Inf", process="20379", url="/"}
-2
-ssr_histogram_3_bucket{exported_job="ssr", instance="10.53.48.243:9091", job="pushgateway", le="0.005", process="20379", url="/"}
-0
-ssr_histogram_3_bucket{exported_job="ssr", instance="10.53.48.243:9091", job="pushgateway", le="0.01", process="20379", url="/"}
-0
-ssr_histogram_3_bucket{exported_job="ssr", instance="10.53.48.243:9091", job="pushgateway", le="0.025", process="20379", url="/"}
-0
-ssr_histogram_3_bucket{exported_job="ssr", instance="10.53.48.243:9091", job="pushgateway", le="0.05", process="20379", url="/"}
-0
-ssr_histogram_3_bucket{exported_job="ssr", instance="10.53.48.243:9091", job="pushgateway", le="0.1", process="20379", url="/"}
-0
-ssr_histogram_3_bucket{exported_job="ssr", instance="10.53.48.243:9091", job="pushgateway", le="0.25", process="20379", url="/"}
-0
-ssr_histogram_3_bucket{exported_job="ssr", instance="10.53.48.243:9091", job="pushgateway", le="0.5", process="20379", url="/"}
-0
-ssr_histogram_3_bucket{exported_job="ssr", instance="10.53.48.243:9091", job="pushgateway", le="1", process="20379", url="/"}
-0
-ssr_histogram_3_bucket{exported_job="ssr", instance="10.53.48.243:9091", job="pushgateway", le="10", process="20379", url="/"}
-2
-ssr_histogram_3_bucket{exported_job="ssr", instance="10.53.48.243:9091", job="pushgateway", le="2.5", process="20379", url="/"}
-1
-ssr_histogram_3_bucket{exported_job="ssr", instance="10.53.48.243:9091", job="pushgateway", le="5", process="20379", url="/"}
-1
+ssr_histogram_bucket{exported_job="ssr", le="+Inf", process="20379", url="/"} 2
+ssr_histogram_bucket{exported_job="ssr", le="0.005", process="20379", url="/"} 0
+ssr_histogram_bucket{exported_job="ssr", le="0.01", process="20379", url="/"} 0
+ssr_histogram_bucket{exported_job="ssr", le="0.025", process="20379", url="/"} 0
+ssr_histogram_bucket{exported_job="ssr", le="0.05", process="20379", url="/"} 0
+ssr_histogram_bucket{exported_job="ssr", le="0.1", process="20379", url="/"} 0
+ssr_histogram_bucket{exported_job="ssr", le="0.25", process="20379", url="/"} 0
+ssr_histogram_bucket{exported_job="ssr", le="0.5", process="20379", url="/"} 0
+ssr_histogram_bucket{exported_job="ssr", le="1", process="20379", url="/"} 0
+ssr_histogram_bucket{exported_job="ssr", le="10", process="20379", url="/"} 2
+ssr_histogram_bucket{exported_job="ssr", le="2.5", process="20379", url="/"} 1
+ssr_histogram_bucket{exported_job="ssr", le="5", process="20379", url="/"} 1
 ```
 
-1 小于无穷大和小于 10 的值是一样的，说明 90 线不在这个区间。
-2 小于 5 的值 / 小于 10 的值为 0.5，说明 90 线在 5 - 10 这个区间，接下来通过线性插值得到 90 线：
+可以这样计算 90 线：
+
+1. 小于无穷大和小于 10 的值是一样的，说明 90 线不在这个区间。
+2. 小于 5 的值 / 小于 10 的值为 0.5，说明 90 线在 5 - 10 这个区间，接下来通过线性插值得到 90 线：
 
 ![](./react-ssr-promethus/90line.png)
 
@@ -355,3 +325,7 @@ sum(increase(ssr_event_counter{event="htmlLoaded"}[1m])) / sum(increase(ssr_coun
 sum(increase(ssr_event_counter{event="hydrated"}[1m])) / sum(increase(ssr_event_counter{event="htmlLoaded"}[1m])) // 2 -> 3
 sum(increase(ssr_event_counter{event="hydrated"}[1m])) / sum(increase(ssr_counter{url="/"}[1m])) // 1 -> 3
 ```
+
+# 总结
+
+本文通过几个案例简单介绍了使用 prometheus 监控 SSR 服务的方法，实际上 prometheus 还有好几种其他的数据类型，而且 promQL 的功能也很丰富，以后用到了再研究吧。
