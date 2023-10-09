@@ -24,9 +24,8 @@ const express = require('express')
 const app = express()
 
 app.get('/', async (req, res) => {
-  // 模拟 SSR 会大量的占用内存
+  // It will use lots of memory resources
   const buf = Buffer.alloc(1024 * 1024 * 200, 'a')
-  console.log(buf)
   res.end('end')
 })
 
@@ -46,7 +45,7 @@ const listener = app.listen(process.env.PORT || 2048, () => {
 ```bash
 docker run \
 -it \
--m 512m \ # 限制容器的内存
+-m 512m \ # Limit Container's Memory
 --rm \
 -p 2048:2048 \
 --name ssr \
@@ -72,6 +71,7 @@ d9c0189e2b56    ssr     0.00%     512MiB / 512MiB     99.99%    14.6kB / 8.65kB 
 此时，容器内存已经全部被占用，服务对外失去了响应，通过 `curl -m 5 http://localhost:2048` 访问，收到了超时的错误提示：
 
 ```
+curl -m 5 http://localhost:2048
 curl: (28) Operation timed out after 5001 milliseconds with 0 bytes received
 ```
 
@@ -200,8 +200,6 @@ curl -m 5  http://localhost:2048
 
 exceed limit
 ```
-
-但是 `/another` 却不受影响：
 
 ```
 curl -m 5  http://localhost:2048/another
