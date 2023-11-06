@@ -16,13 +16,13 @@ Chrome 浏览器自带翻译功能，但是翻译后就看不到原文了，如�
 
 好的，接下来就让我们来实现这个插件吧。很明显，实现整个插件大致包括两个部分：
 
-第一部分就是前端部分，需要分析页面，提取出需要翻译的内容，并设计好译文显示的位置。第二部分就是翻译，计划对接一下 ChatGPT 来做翻译。
+第一部分就是前端部分，需要分析页面，提取出需要翻译的内容，并计算译文显示的位置。第二部分则是翻译功能。
 
 本文先来实现第一部分。
 
 _关于插件开发环境搭建本文略过了，可以使用 vite + @crxjs/vite-plugin 快速搭建_
 
-# 版本一
+# 版本一：在所有文本节点后插入译文
 
 看到这个效果，很容易会想到可以遍历整个文档的 Text node，然后在其后面插入译文。
 
@@ -80,3 +80,52 @@ new ParallelTranslate().translate()
 
 1 不应该翻译的内容，比如 `<code></code>` 中的内容也翻译了。
 2 有些完整的段落没有作为一个整体被翻译，而是被拆成了好多小段。
+
+我们来解决这两个问题。
+
+# 版本二：过滤掉不需要翻译的节点
+
+为了解决第一个问题，我们在 `this.findTextNodes()` 前新增一个 `markExclude` 的步骤：
+
+```js
+  excludeSelector = ['code']
+  ...
+  setAttr(el: HTMLElement, attr: string, value = 't') {
+    el.setAttribute(attr, value)
+  }
+
+  isMarkAttr(el: HTMLElement, attr: string, value = 't') {
+    return el.getAttribute(attr) === value
+  }
+
+  markExclude() {
+    this.excludeSelector.forEach((selector) => {
+      document.body.querySelectorAll(selector).forEach((el) => {
+        this.setAttr(el as HTMLElement, 'translate-exclude')
+      })
+    })
+  }
+```
+
+然后，在 `findTextNodes` 可以过滤掉被标记的 Node：
+
+```js
+  ...
+  const walker = document.createTreeWalker(
+    document.body,
+    NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
+    (node) => {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        return this.isMarkAttr(node as HTMLElement, 'translate-exclude')
+          ? NodeFilter.FILTER_REJECT // 当前节点如果被标记了，则跳过它和它的子节点
+          : NodeFilter.FILTER_SKIP // 否则只跳过当前节点
+      }
+      return NodeFilter.FILTER_ACCEPT
+    }
+  )
+  ...
+```
+
+这样，第一个问题就解决了。我们接着处理第二个问题，第二个问题处理起来比较麻烦，我们需要把分散的文本节点根据某些规则组合成段落作为一个整体来进行翻译。
+
+# 版本三：按段落翻译
