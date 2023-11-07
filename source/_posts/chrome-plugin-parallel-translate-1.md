@@ -85,7 +85,7 @@ new ParallelTranslate().translate()
 
 # 版本二：过滤掉不需要翻译的节点
 
-为了解决第一个问题，我们在 `this.findTextNodes()` 前新增一个 `markExclude` 的步骤：
+为了解决第一个问题，我们在 `this.findTextNodes()` 前新增一个 `markExclude` 的步骤，这里暂时只添加了 `code`，可以根据需求添加更多的规则，甚至对不同的站点定制特殊的规则：
 
 ```js
   excludeSelector = ['code']
@@ -129,3 +129,71 @@ new ParallelTranslate().translate()
 这样，第一个问题就解决了。我们接着处理第二个问题，第二个问题处理起来比较麻烦，我们需要把分散的文本节点根据某些规则组合成段落作为一个整体来进行翻译。
 
 # 版本三：按段落翻译
+
+我们在 `findTextNodes` 后新增一个 `createParagraphs` 的步骤：
+
+```js
+  translate() {
+    this.markExclude()
+    const textNodes = this.findTextNodes()
+    const paragraphs = this.createParagraphs(textNodes)
+    ...
+  }
+```
+
+`createParagraphs` 中会遍历每个 Text 节点，找到 Text 节点最近的块状祖先节点，然后把相同祖先节点的 Text 节点都放到同一个段落的 textNodes 中：
+
+```js
+  createParagraphs(textNodes: Node[]) {
+    const paragraphs: Paragraph[] = []
+    for (const textNode of textNodes) {
+      const blockAncestorEl = this.getBlockAncestorEl(textNode.parentElement!)
+      const paragraph = paragraphs.find(
+        (p) => p.commonAncestorEl === blockAncestorEl
+      )
+      if (paragraph) {
+        paragraph.textNodes.push(textNode)
+        paragraph.text += textNode.textContent
+      } else {
+        const translationEl = this.createTranslationEl()
+        this.setAttr(blockAncestorEl, this.translationNodeAncestorAttr)
+        paragraphs.push({
+          id: uuid(),
+          commonAncestorEl: blockAncestorEl, // 多个 Text 节点的公共祖先节点
+          textNodes: [textNode], // 当前段落包含的 Text 节点
+          text: textNode.textContent!, // 当前段落的内容，由子节点的内容拼接而成
+          translationEl, // 译文会放在这个标签里
+        })
+      }
+    }
+    return paragraphs
+  }
+```
+
+最后，我们遍历 `paragraphs`，并把段落的 `text` 设置为 `translationEl` 的 `innerText`，然后把 `translationEl` 插入到 `commonAncestorEl` 的最后：
+
+```js
+  translate() {
+    ...
+    const paragraphs = this.createParagraphs(textNodes)
+    paragraphs.forEach(
+      ({commonAncestorEl, text, translationEl}) => {
+        translationEl.innerText = text.trim()
+        translationEl.style.cssText = `
+      background-repeat: repeat-x;
+      background: linear-gradient( to right, #673AB7 0%, #9C27B0 50%, transparent 50%, transparent 100% ) repeat-x left bottom;
+      background-size: 4px 1px;
+      padding-bottom: 2px;`
+        commonAncestorEl.appendChild(translationEl)
+      }
+    )
+  }
+```
+
+最后的效果是这样：
+
+![](./chrome-plugin-parallel-translate-1/3.png)
+
+# 总结
+
+本文介绍了对照翻译中前端部分的实现思路，不过还有可以优化的空间。比如我们一开始可以只显示可视区域内的译文，然后通过 `IntersectionObserver` 来监控节点是否可见，这样可以加快翻译的速度，也节省了资源；还有网站在加载的过程中可能会通过 JS 来修改网页的内容，所以我们还需要通过 `MutationObserver` 来监听节点的变化，从而对新增的内容进行翻译。最后，欢迎关注公众号“前端游”。
