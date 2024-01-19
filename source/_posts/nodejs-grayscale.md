@@ -272,7 +272,7 @@ net
   })
 ```
 
-可以看到我们把 `msg.req` 和 `socket` 分别当做了 native 的 `http.IncomingMessage` 和 `http.ServerResponse` 传给了 koa app 去处理。但是这两个东西都是我们 mock 出来的，缺失了很多属性和方案，所以目前这个 demo 也只能处理一些非常简单的请求，要想实现完整的功能可能还需要做很多工作。
+可以看到我们把 `msg.req` 和 `socket` 分别当做了 native 的 `http.IncomingMessage` 和 `http.ServerResponse` 传给了 koa app 去处理。但是这两个东西都是我们 mock 出来的，缺失了很多属性和方法，所以目前这个 demo 也只能处理一些非常简单的请求，要想实现完整的功能可能还需要做很多工作。
 
 You can see that we pass `msg.req` and `socket` as native `http.IncomingMessage` and `http.ServerResponse` to koa app to handle. But these two object is simulated by us, and they lack lots of properties and functions. So the demo can only handle some very simple requests right now. There is still a lot to do if we want to implement full functionality.
 
