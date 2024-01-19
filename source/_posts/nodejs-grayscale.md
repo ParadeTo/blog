@@ -42,7 +42,7 @@ The request reaches to the gateway, then the gateway will distribute the traffic
 
 So, we can implement grayscale release from different levels.
 
-## 基于容器 - Based on Containers
+## 基于容器 - Containers Based
 
 ![](./nodejs-grayscale/2.png)
 
@@ -56,28 +56,50 @@ So, we can implement grayscale release from different levels.
 
 - 灵活性较差，比如如果我们需要根据用户的一些特征来进行流量分发的话需要在网关层写一些代码，但是网关层一般是通用的，不一定能支持。
 
-## 基于进程 - Based on Processes
+Pros:
+
+- No need to modify server code.
+- Complete isolation between two version.
+- It is convenient to realize with some containers management tools like K8s.
+
+Cons:
+
+- Bad flexibility, ad the gateway is generic, it may not support customization like distribute traffic according to users' characteristics.
+
+## 基于进程 - Processes Based
 
 ![](./nodejs-grayscale/3.png)
 
 优点：
 
-- 非常灵活，可以在 Master Process 按照业务需求来实现各种策略的流量分发
+- 非常灵活，可以在主进程中按照业务需求来实现各种策略的流量分发。
 - 对服务代码侵入小，这里不说 0 侵入的原因是需要看具体的实现方式，见下文。
+- 版本间通过进程来进行隔离，还是比较安全的。目前能够想到的一种会导致灰度发布系统不能正常工作的场景是：某个版本的代码运行抢占了大部分的资源，从而导致另一个版本无法提供服务。
 
 缺点：
 
-- 版本间通过进程隔离，不是非常彻底。比如某个版本出现内存泄漏问题，可能会影响另一个版本的运行。
 - 需要自己实现主进程并进行进程管理，无法复用 PM2。且主进程如果出现了比较严重的问题，整个灰度发布系统也会瘫痪。
 
-## 基于模块 - Based on Modules
+Pros:
+
+- Flexible, you can customize the traffic distribution strategy in master process.
+- Need very few changes to server code. Why not zero changes? Because it depends how to implement, see below.
+- The isolation between versions is implemented by multi-processes, and it is safe enough. There is a scenario that may make grayscale release system cannot work properly is that the resources are exhausted
+
+Cons:
+
+- Need to implement master process and manage processes by yourself, cannot use PM2 cluster mode to deploy. If something seriously goes wrong with the master process, the whole grayscale system will go down.
+
+## 基于模块 - Modules Based
 
 ![](./nodejs-grayscale/4.png)
 
-所谓模块，其实就是一个 JS 文件，以 koa 为例，用代码表示大概就是这样：
+以 koa 为例，基于模块的方式，用代码表示大概就是这样：
+
+Taking koa as an example, the modules based approach will be like this:
 
 ```js
-// canary.js/stable.js
+// canary.js or stable.js
 const koa = require('koa')
 const app = new Koa()
 app.use(async function(ctx) {
@@ -107,6 +129,80 @@ http.createServer((req, res) => {
 
 缺点：
 
-- 不同版本运行在同一个上下文，版本间的隔离性非常依赖程序员的技术水平。如果某个版本运行有异常，可能另外一个版本也无法运行，这个是最为致命的，直接导致我们的灰度发布无法起作用。
+- 不同版本运行在同一个上下文，版本间的隔离性非常依赖程序员的技术水平。比如，如果代码中有修改全局变量的操作，两者之间会互相影响。
 
-考虑到我们的需求一：需要可以灵活制定流量分发策略，排除基于容器的方案。而方案 3 又有着致命的缺点，所以我们采用方案 2，即基于进程来实现。
+Pros:
+
+- It is also very flexible
+- Compared to processed based way, it don't need to implement master process and process management logic and we can still use PM2 cluster mode to deploy.
+
+Cons:
+
+- It is very dependent on developers' skill levels to achieve a good level of isolation between two versions as they run in the same context. Fox example, if the server has the code that changes global variable, the two versions will affect each other.
+
+考虑到我们的需求一：需要可以灵活制定流量分发策略，排除基于容器的方案。又由于我们的服务中确实有修改全局变量的操作，且重构起来有比较大的风险，所以不得已只好采取方案 2，即基于进程的方式。
+
+Considering our requirement one: need to support customizing traffic distribution strategy flexibly, we ruled out solution which is based on container. Since our server indeed contains the operation of changing global variable, and refactoring is risky, we have to choose option two, which is processes based.
+
+# 实现基于进程的灰度发布 - Implement Grayscale Release Based on Processes
+
+![](./nodejs-grayscale/5.png)
+
+系统架构图如上，我们需要开发一个 Traffic Distribution(TD) 服务，当它启动时会根据流量比例 fork 出 canary 和 stable 作为它的子进程。TD 维护两个进程池来管理这些子进程，进程池主要功能包括负载均衡，端口的管理（避免子进程启动时出现端口冲突），扩缩容等。TD 同时作为 HTTP 请求代理，上游对接用户请求，下游对接子进程。TD 对接配置服务，支持实时修改流量分发策略。
+
+We need to implement a Traffic Distribution(TD) server, when it is started, it will fork out some canary and stable child processes. TD will use two process pools to manage these processes by group, the process pool's functions include: load balance, port management, scale/shrink etc. TD will act as a HTTP proxy between users and child processes. TD will connect to configuration server to support update strategy in real time.
+
+看起来还不错，但是总感觉奇奇怪怪是怎么回事呢？系统不仅多了一次 HTTP 调用，而且还得小心地进行端口处理来避免多个进程监听同一个端口。能不能做到像 PM2 那么丝滑呢？仔细想了想，其实没法做到。我们知道，PM2 的 cluster 模式是通过进程间句柄传递来实现的，关于这个可以看[这篇文章](/2022/12/15/nodejs-cluster-principle/)，如果模仿它，简单的实现方式如下所示：
+
+Looks good, but a bit strange. It add an extra HTTP calling, and need to manage the port carefully to avoid port conflict. Can we implement like PM2? The answer is no. As we al know that the PM2 cluster mode is implemented by passing handle, refer to this [article](/2022/12/15/nodejs-cluster-principle/). A simple mock demo is like this:
+
+```js
+// master.js
+const cp = require('child_process')
+const child1 = cp.fork('child.js')
+const child2 = cp.fork('child.js')
+
+const tcpServer = require('net').createServer()
+
+const processes = [child1, child2]
+
+tcpServer.on('connection', function (socket) {
+  const child = processes.pop()
+  child1.send('socket', socket)
+  processes.unshift(child)
+})
+
+tcpServer.listen(8081)
+
+// child.js
+const http = require('http')
+
+const httpServer = http.createServer(function (req, res) {
+  res.writeHead(200, {'Content-Type': 'text/plain'})
+  res.end('handled by child, pid is ' + process.pid + '\n')
+})
+
+process.on('message', function (m, socket) {
+  if (m === 'socket') {
+    httpServer.emit('connection', socket)
+  }
+})
+```
+
+上图代码表示的大概意思是，主进程建立好连接后把 handle 传递给子进程，交给子进程进行后续的处理。显然，主进程中此时是无法获取到任何应用层相关的信息的，如果流量分发策略仅跟用户 IP 地址相关的话是没问题的，因为 socket 里面有相关信息：
+
+From the code above, we can learn that the master process cannot access anything infomation of application layer, if the strategy is only related with IP address, it is ok. As the socket contains these information:
+
+```js
+console.log(socket.remoteAddress, socket.remotePort)
+```
+
+但是如果是跟 HTTP 中的内容如 cookie 等相关的话，就无法实现了。
+
+But if the strategy is related with the content of HTTP like cookie, it cannot achieve.
+
+那有没有可能 master 和 child 之间的数据传输用别的更快的方式来实现呢？
+
+# 总结
+
+keep alive
