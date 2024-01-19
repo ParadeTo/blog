@@ -11,7 +11,7 @@ description: 本文介绍了实现了灰度发布的几个方案，并针对一�
 
 # 前言 - Preface
 
-所谓灰度发布（本文特指金丝雀发布），就是线上同时存在两个版本，这里我们把新发布的版本称作金丝雀版，旧版称作稳定版。根据一定的策略让部分用户访问金丝雀版，部分用户访问稳定版。同时还需要根据线上两个版本的监控数据来调整流量比例。通过这种方式可以，我们可以：
+所谓灰度发布（本文特指金丝雀发布），就是线上同时存在两个版本，这里我们把新发布的版本称作金丝雀版，旧版称作稳定版，根据一定的策略让部分用户访问金丝雀版，部分用户访问稳定版。同时还需要根据线上两个版本的监控数据来调整流量比例。通过这种方式可以，我们可以：
 
 - 在不影响太多用户的前提下，帮助我们提前发现软件中潜在的问题
 - 方便我们在同一时期在两个版本之间进行一些对比
@@ -73,17 +73,17 @@ Cons:
 优点：
 
 - 非常灵活，可以在主进程中按照业务需求来实现各种策略的流量分发。
-- 对服务代码侵入小，这里不说 0 侵入的原因是需要看具体的实现方式，见下文。
+- 对服务代码侵入小
 - 版本间通过进程来进行隔离，还是比较安全的。目前能够想到的一种会导致灰度发布系统不能正常工作的场景是：某个版本的代码运行抢占了大部分的资源，从而导致另一个版本无法提供服务。
 
 缺点：
 
-- 需要自己实现主进程并进行进程管理，无法复用 PM2。且主进程如果出现了比较严重的问题，整个灰度发布系统也会瘫痪。
+- 需要自己实现主进程并进行进程管理，无法复用 PM2 的 cluster 模式。且主进程如果出现了比较严重的问题，整个灰度发布系统也会瘫痪。
 
 Pros:
 
 - Flexible, you can customize the traffic distribution strategy in master process.
-- Need very few changes to server code. Why not zero changes? Because it depends how to implement, see below.
+- Need very few changes to server code.
 - The isolation between versions is implemented by multi-processes, and it is safe enough. There is a scenario that may make grayscale release system cannot work properly is that the resources are exhausted
 
 Cons:
@@ -148,7 +148,7 @@ Considering our requirement one: need to support customizing traffic distributio
 
 ![](./nodejs-grayscale/5.png)
 
-系统架构图如上，我们需要开发一个 Traffic Distribution(TD) 服务，当它启动时会根据流量比例 fork 出 canary 和 stable 作为它的子进程。TD 维护两个进程池来管理这些子进程，进程池主要功能包括负载均衡，端口的管理（避免子进程启动时出现端口冲突），扩缩容等。TD 同时作为 HTTP 请求代理，上游对接用户请求，下游对接子进程。TD 对接配置服务，支持实时修改流量分发策略。
+系统架构图如上，我们需要开发一个 Traffic Distribution(TD) 服务，当它启动时会根据流量比例 fork 出 canary 和 stable 作为它的子进程。TD 维护两个进程池来管理这些子进程，进程池主要功能包括负载均衡，端口的管理（避免子进程启动时出现端口冲突），扩缩容等。TD 同时作为 HTTP 请求代理，上游对接用户请求，下游对接子进程。TD 对接配置服务，支持实时修改流量分发策略。具体实现代码有点多就不贴出来了。
 
 We need to implement a Traffic Distribution(TD) server, when it is started, it will fork out some canary and stable child processes. TD will use two process pools to manage these processes by group, the process pool's functions include: load balance, port management, scale/shrink etc. TD will act as a HTTP proxy between users and child processes. TD will connect to configuration server to support update strategy in real time.
 
@@ -201,8 +201,87 @@ console.log(socket.remoteAddress, socket.remotePort)
 
 But if the strategy is related with the content of HTTP like cookie, it cannot achieve.
 
-那有没有可能 master 和 child 之间的数据传输用别的更快的方式来实现呢？
+那有没有可能 master 和 child 之间的数据传输用别的更快的方式来实现呢？理论上是可以的，比如使用 IPC 的方式，下面是一个简单的例子：
 
-# 总结
+Is it possible to pass data more effectively between master and child? Of course yes, for example by IPC, here is a simple demo:
 
-keep alive
+```js
+// master.js
+const child = require('child_process').fork('./child.js')
+const http = require('http')
+const net = require('net')
+const url = require('url')
+
+child.on('message', (msg) => {
+  if (msg.cmd === 'ipc_ready') {
+    http
+      .createServer((req, res) => {
+        console.log('0000')
+        const {pathname} = url.parse(req.url)
+        const reqNeedToSerialize = {
+          host: 'localhost',
+          port: 3001,
+          path: pathname,
+          method: req.method,
+          headers: req.headers,
+          url: pathname,
+        }
+
+        const socket = net.createConnection({path: msg.ipcPath})
+        socket.write(JSON.stringify({req: reqNeedToSerialize}))
+        socket.pipe(res)
+      })
+      .listen(8080)
+  }
+})
+
+// child.js
+const Koa = require('koa')
+const Router = require('koa-router')
+const net = require('net')
+const crypto = require('crypto')
+
+const app = new Koa()
+const router = new Router()
+
+router.get('/', (ctx) => {
+  ctx.body = 'hello world'
+})
+
+app.use(router.routes())
+
+app.on('error', console.log)
+
+const ipcPrefix =
+  (process.platform != 'win32' ? '/tmp/' : '\\\\.\\pipe\\') +
+  crypto.randomBytes(8).toString('hex')
+
+const ipcPath = `${ipcPrefix}${process.pid}`
+
+net
+  .createServer() // the IPC server
+  .listen(ipcPath, () => process.send({cmd: 'ipc_ready', ipcPath}))
+  .on('connection', (socket) => {
+    socket.on('data', (chunk) => {
+      const msg = JSON.parse(chunk.toString())
+      if (msg.req) {
+        socket.setHeader = () => {}
+        app.callback()(msg.req, socket)
+      }
+    })
+  })
+```
+
+可以看到我们把 `msg.req` 和 `socket` 分别当做了 native 的 `http.IncomingMessage` 和 `http.ServerResponse` 传给了 koa app 去处理。但是这两个东西都是我们 mock 出来的，缺失了很多属性和方案，所以目前这个 demo 也只能处理一些非常简单的请求，要想实现完整的功能可能还需要做很多工作。
+
+You can see that we pass `msg.req` and `socket` as native `http.IncomingMessage` and `http.ServerResponse` to koa app to handle. But these two object is simulated by us, and they lack lots of properties and functions. So the demo can only handle some very simple requests right now. There is still a lot to do if we want to implement full functionality.
+
+可见，使用 HTTP 代理的方式目前是不得已的。
+
+As you can see, using HTTP proxy is currently a last resort.
+
+# 总结 - Summary
+
+本文从三个层面介绍了实现灰度发布的方式：基于容器、基于进程、基于模块。然后着重讨论了基于进程的方案，并分析了为什么采用 HTTP 代理的方式。
+
+This article introduced how to implement grayscale release from three levels: Containers Based, Processes Based, Modules Based. Then discussed emphatically the solution of Processes Based, and why it need to use HTTP proxy.
