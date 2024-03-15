@@ -9,9 +9,13 @@ categories:
 
 设计模式中带“工厂”两个字的有：简单工厂模式、工厂方法模式、抽象工厂模式。下面用 TypeScript 和 Rust 分别演示一下：
 
+In design patterns, there are three patterns with the word "Factory" in their names: Simple Factory Pattern, Factory Method Pattern, and Abstract Factory Pattern. Let's demonstrate them using TypeScript and Rust respectively:
+
 # 简单工厂模式
 
 听说 NBA 有个专门用于生产控球后卫的工厂，保罗和纳什都出自于此，用简单工厂模式是这么实现的：
+
+I heard that the NBA has a specialized factory for producing point guards, and players like Chris Paul and Steve Nash came from there. Here's how you can implement it using the Simple Factory Pattern:
 
 ## TypeScript
 
@@ -100,6 +104,8 @@ fn main() {
 ```
 
 普通工厂概念还是比较简单的，缺点是当需要新增一个“控球后卫”时，需要改动 `SimplePointGuardFactory`，同时随着“控球后卫”越来越多，工厂的代码会变得无比庞大。所以就出现了工厂方法模式。
+
+The concept of the Factory Method Pattern is relatively simple. The drawback of the Simple Factory Pattern is that when a new point guard needs to be added, we have to modify the SimplePointGuardFactory class. Additionally, as the number of point guards increases, the code in the factory becomes extremely large. That's why the Factory Method Pattern was introduced.
 
 # 工厂方法模式
 
@@ -204,9 +210,15 @@ fn main() {
 
 现在增加一个新的控球后卫只需要增加新的后卫类以及对应的工厂类即可。但是如果我们想创建一个球队，这两种方式就都不太合适了，原因在于这两种方式的工厂类都是针对某一类产品的，我们需要一个可以创建多类产品的工厂，就这需要用到抽象工厂模式了。
 
+Now, adding a new point guard only requires adding a new guard class and its corresponding factory class. However, if we want to create a team, both of these approaches are not suitable because the factory classes in these patterns are specific to a certain type of product. We need a factory that can create multiple types of products. This is where the Abstract Factory Pattern comes into play.
+
 # 抽象工厂模式
 
 简单起见，这里假设一个球队只需要一个“控球后卫”和“中锋”即可，则实现方式如下：
+
+For simplicity, let's assume that a team only needs a point guard and a centre forward. The implementation would be as follows:
+
+## TypeScript
 
 ```ts
 interface PointGuard {
@@ -277,6 +289,8 @@ function play(teamFactory: TeamFactory) {
 play(new RocketTeam())
 play(new LakersTeam())
 ```
+
+## Rust
 
 ```rust
 pub trait PointGuard {
@@ -362,3 +376,5 @@ fn main() {
 ```
 
 以上只是照本宣科地实现了一遍，实际情况中还是得灵活变通。
+
+The above implementation is just a straightforward example. In actual situations, it's important to be flexible and adapt accordingly.
