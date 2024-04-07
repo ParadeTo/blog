@@ -8,7 +8,7 @@ categories:
   - rust
 ---
 
-> 模仿 [big-react](https://github.com/BetaSu/big-react)，使用 Rust 和 WebAssembly，从 0 到 1 实现从零实现 React v18 的核心功能。深入理解 React 源码的同时，还锻炼了 Rust 的技能，简直赢麻了！
+> 模仿 [big-react](https://github.com/BetaSu/big-react)，使用 Rust 和 WebAssembly，从零实现 React v18 的核心功能。深入理解 React 源码的同时，还锻炼了 Rust 的技能，简直赢麻了！
 >
 > 代码地址：https://github.com/ParadeTo/big-react-wasm
 >
@@ -16,7 +16,7 @@ categories:
 
 # 实现 react 库
 
-[上篇文章]()我们搭建好了开发调式环境，这次我们来实现 react 这个库。
+[上篇文章](/2024/04/03/big-react-wasm-1/)我们搭建好了开发调式环境，这次我们来实现 react 这个库。
 
 话不多说，我们还是来看看编译后的代码：
 
@@ -43,7 +43,7 @@ pub fn jsx_dev(_type: &JsValue, config: &JsValue，key: &JsValue) -> JsValue {
 
 1. JsValue 是什么，为什么类型用 JsValue？
 
-JsValue 内部包括了一个 u32 类型的索引，可以用它来获取 JS 中的对象。因为传入函数的这些参数类型是不确定的（比如 \_type 有可能是 `string` 或者 `function`），所以这里只能使用`JsValue`。如果可以保证 key 是字符串，则 key 可以定义为`&str`。
+JsValue 内部包括了一个 u32 类型的索引，可以通过这个索引来访问 JS 中的对象，详情见文末。
 
 2. 为什么返回不是 `ReactElement` 对象？
 
@@ -128,4 +128,83 @@ shared = { path = "../shared" }
 
 本文小试牛刀实现了 WASM 版 React18 中的 react 部分，还是比较简单的，接下来就要开始难度升级了。我们知道 React 一次更新流程分为 render 和 commit 两大阶段，所以下一篇我们来实现 render 阶段。
 
-#
+# 补充：JsValue 原理探究
+
+前面简单的讲了下 JsValue，现在我们进一步来研究下其原理。首先我们来看看 `wasm-pack` 打包后的 `jsx-dev-runtime_bg.js` 文件中的代码，我们找到 `jsxDEV` 函数：
+
+```js
+export function jsxDEV(_type, config, key) {
+  try {
+    const ret = wasm.jsxDEV(
+      addBorrowedObject(_type),
+      addBorrowedObject(config),
+      addBorrowedObject(key)
+    )
+    return takeObject(ret)
+  } finally {
+    heap[stack_pointer++] = undefined
+    heap[stack_pointer++] = undefined
+    heap[stack_pointer++] = undefined
+  }
+}
+```
+
+传入的参数都被 `addBorrowedObject` 这个方法处理过，那么继续来看看它：
+
+```js
+const heap = new Array(128).fill(undefined);
+
+heap.push(undefined, null, true, false);
+let stack_pointer = 128;
+...
+function addBorrowedObject(obj) {
+  if (stack_pointer == 1) throw new Error('out of js stack')
+  heap[--stack_pointer] = obj
+  return stack_pointer
+}
+```
+
+哦，原来是在 JS 这边通过 `Array` 模拟了一个堆结构，把参数都存到了这个堆上，上面三个参数会按如下方式存放：
+
+![](./big-react-wasm-2/2.png)
+
+而真正传入 `wasm.jsxDEV` 中的竟然只是数组的下标而已。那 WASM 这边是怎么通过这个索引获取到真正的对象的呢？比如，这个代码 `Reflect::get(conf, &prop);` 是怎么工作的呢？
+
+仔细想想，既然数据还在 JS 这边，传给 WASM 的只是索引，那必然 JS 这边还必须提供一些接口给 WASM 那边调用才行。我们继续看 `jsx-dev-runtime_bg.js` 中的代码，发现有一个 `getObject(idx)` 的方法，他的作用是通过索引来获取堆中的数据：
+
+```js
+function getObject(idx) {
+  return heap[idx]
+}
+```
+
+那我们在这个函数打个断点，不断下一步，直到来到这样一个调用栈：
+
+![](./big-react-wasm-2/3.png)
+
+WASM 中显示调用了 `__wbg_get_e3c254076557e348` 这个方法：
+
+![](./big-react-wasm-2/5.png)
+
+`__wbg_get_e3c254076557e348` 这个方法在 `jsx-dev-runtime_bg.js` 可以找到：
+
+```js
+export function __wbg_get_e3c254076557e348() {
+  return handleError(function (arg0, arg1) {
+    const ret = Reflect.get(getObject(arg0), getObject(arg1))
+    return addHeapObject(ret)
+  }, arguments)
+}
+```
+
+此时，相关的数据如图所示：
+
+![](./big-react-wasm-2/4.png)
+
+相当于是在执行 Rust 代码中的这一步：
+
+```rust
+let val = Reflect::get(conf, &prop); // prop 为 children
+```
+
+到此，真相大白。
