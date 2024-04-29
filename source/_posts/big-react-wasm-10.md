@@ -127,7 +127,7 @@ error[E0597]: `queue` does not live long enough
 
 都说 Rust 学习曲线陡峭的原因就在此，大部分时候都在和编译器作斗争。不过 Rust 的理念就是这样，在程序编译时就把大部分的问题给发现出来，这样修复的效率比上线后发现再修复的效率要高得多。而且，Rust 编译器也很智能，给出的问题描述一般都很清晰。
 
-继续回到使用 move 和 `queue` 的错误。分析一下，因为 `queue` 被 move 了，所以后面不能使用 `queue`，那么如果我们 move 一个别的东西不就可以了么，所以就有了 `queue_rc`，两者的内存模型对比如下所示：
+继续回到使用 move 和 `queue` 的错误。分析一下，因为 `queue` 被 move 了，所以后面不能使用 `queue`，那么如果我们 move 一个别的值不就可以了么，所以就有了 `queue_rc`，两者的内存模型对比如下所示：
 
 ![](./big-react-wasm-10/1.png)
 
@@ -190,16 +190,16 @@ fn dispatch_set_state(
 
 - `HostRoot`：从 `memoized_state` 取值
 - `HostComponent`：从 `pending_props` 中取值
-- `FunctionComponent`：通过执行 `_type` 指向的 Function 来得到
+- `FunctionComponent`：通过执行 `type` 指向的 `Function` 来得到
 - `HostText`：没有这个过程，略
 
 而如何产生这个新的子 `FiberNode`，也有两种情况：
 
-- Diff 的 `ReactElement` 和 `FiberNode` 的 key 和 type 都一样，复用 `FiberNode`，使用 `ReactElement` 上的 `props` 来更新 `FiberNode` 中的 `pending_props`：
+- Diff 的 `ReactElement` 和 `FiberNode` 的 `key` 和 `type` 都一样。复用 `FiberNode`，使用 `ReactElement` 上的 `props` 来更新 `FiberNode` 中的 `pending_props`：
 
 ![](./big-react-wasm-10/4.png)
 
-- 其他情况，创建新的 `FiberNode`，并在父节点打上 `ChildDeletion` 标记，同时把旧的 `FiberNode` 添加到 `deletions` 列表中：
+- 其他情况。创建新的 `FiberNode`，并在父节点打上 `ChildDeletion` 标记，同时把旧的 `FiberNode` 添加到 `deletions` 列表中：
 
 ![](./big-react-wasm-10/5.png)
 
@@ -335,8 +335,20 @@ fn commit_mutation_effects_on_fiber(&self, finished_work: Rc<RefCell<FiberNode>>
   ...
 ```
 
-`Update` 中目前只处理了 `HostText`，比较简单，就不介绍了，直接看代码吧，这里重点介绍下 `ChildDeletion`。begin work 中我们说过标记为删除的子节点会被加入父节点的 `deletions` 列表中，所以这里会遍历这个列表，然后调用 `commit_deletion`，该函数会采取前序的方式遍历（优先遍历根节点） `child_to_delete` 为根节点的子树，并执行这些节点上的副作用，比如这个例子：
+`Update` 中目前只处理了 `HostText`，比较简单，就不介绍了，直接看代码吧，这里重点介绍下 `ChildDeletion`。
+
+begin work 中我们说过标记为删除的子节点会被加入父节点的 `deletions` 列表中，所以这里会遍历这个列表，然后调用 `commit_deletion`，该函数会采取前序的方式遍历（优先遍历根节点） `child_to_delete` 为根节点的子树，并执行这些节点上相关的副作用，如：执行 `componentWillUnmount` 方法或 `useEffect` 返回的 `destroy` 方法，从这里也可以发现父组件的副作用会先执行。
+
+比如下面这个例子：
 
 ![](./big-react-wasm-10/6.png)
 
-的遍历顺序为 `div->p->i->span`。而且会记录第一个遍历到的节点，此例为 `div`，然后在该节点上执行删除操作。
+的遍历顺序为 `div->p->i->span`。同时还会记录第一个遍历到的节点，此例为 `div`，然后在该节点上执行删除操作。
+
+好了，单节点更新流程就实现完毕了，简单总结下就是：
+
+- 在 begin work 阶段中标记子节点的删除、插入
+- complete work 阶段中标记节点的更新
+- commit 流程中深度优先遍历 Fiber Tree，处理有标记的节点。对于标记为 `ChildDeletion` 的节点，会采用前序遍历的方式遍历以此节点为根节点的子树。
+
+更多详见本次[更新](https://github.com/ParadeTo/big-react-wasm/pull/9)。
