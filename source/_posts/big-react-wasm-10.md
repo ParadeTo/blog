@@ -224,12 +224,12 @@ Next, the process is similar to the initial rendering. First, let's look at the 
 
 其中，不同类型的 `FiberNode` 节点产生 children 的方式有所不同：
 
-The way children are generated differs based on the type of `FiberNode`:
-
 - `HostRoot`：从 `memoized_state` 取值
 - `HostComponent`：从 `pending_props` 中取值
 - `FunctionComponent`：通过执行 `type` 指向的 `Function` 来得到
 - `HostText`：没有这个过程，略
+
+The way children are generated differs based on the type of `FiberNode`:
 
 - `HostRoot`: Values are taken from `memoized_state`.
 - `HostComponent`: Values are taken from `pending_props`.
