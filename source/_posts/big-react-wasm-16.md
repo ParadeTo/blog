@@ -14,9 +14,19 @@ categories:
 >
 > 本文对应 tag：[v16](https://github.com/ParadeTo/big-react-wasm/tree/v16)
 
+> Based on [big-react](https://github.com/BetaSu/big-react)，I am going to implement React v18 core features from scratch using WASM and Rust.
+>
+> Code Repository：https://github.com/ParadeTo/big-react-wasm
+>
+> The tag related to this article：[v16](https://github.com/ParadeTo/big-react-wasm/tree/v16)
+
 之前的文章总是在说要实现 React Noop 用于单元测试，今天就来完成这个任务。
 
+The previous articles always mentioned the implementation of React Noop for unit testing, and today we will complete this task.
+
 首先，我们按照之前的方式，在 react-dom 同级目录下新建一个 react-noop：
+
+First, following the previous approach, we create a react-noop directory at the same level as react-dom:
 
 ```
 ├── packages
@@ -29,6 +39,8 @@ categories:
 ```
 
 项目结构与 react-dom 类似，不同之处在于 react-noop 对于 `HostConfig` 的实现方式不同。比如 react-dom 中的 `create_instance` 返回的是一个 `Element` 对象：
+
+The project structure is similar to react-dom, but the difference lies in the implementation of `HostConfig` in react-noop. For example, in react-dom, the `create_instance` function returns an `Element` object:
 
 ```rust
 fn create_instance(&self, _type: String, props: Rc<dyn Any>) -> Rc<dyn Any> {
@@ -51,6 +63,8 @@ fn create_instance(&self, _type: String, props: Rc<dyn Any>) -> Rc<dyn Any> {
 
 而 react-noop 返回的是一个普通的 JS 对象：
 
+In react-noop, it returns a regular JavaScript object:
+
 ```rust
 fn create_instance(&self, _type: String, props: Rc<dyn Any>) -> Rc<dyn Any> {
   let obj = Object::new();
@@ -69,7 +83,11 @@ fn create_instance(&self, _type: String, props: Rc<dyn Any>) -> Rc<dyn Any> {
 
 其他方法也都是对普通 JS 对象的操作而已，具体请看[这里](https://github.com/ParadeTo/big-react-wasm/pull/15)。
 
+Other methods are also operations on regular JavaScript objects. For more details, please refer to [this link](https://github.com/ParadeTo/big-react-wasm/pull/15).
+
 另外，为了方便测试，还需要新增一个 `getChildrenAsJSX` 的方法：
+
+Additionally, to facilitate testing, we need to add a method called `getChildrenAsJSX`:
 
 ```rust
 impl Renderer {
@@ -94,6 +112,8 @@ impl Renderer {
 
 这样就可以通过 `root` 来得到一颗包含 JSX 对象的树状结构了，比如下面的代码：
 
+This allows us to obtain a tree structure containing JSX objects using the `root` object. For example, the following code:
+
 ```js
 const ReactNoop = require('react-noop')
 const root = ReactNoop.createRoot()
@@ -109,6 +129,8 @@ setTimeout(() => {
 ```
 
 最终打印的结果会是：
+
+The final printed result would be:
 
 ```js
 {
@@ -143,7 +165,11 @@ setTimeout(() => {
 
 注意到上面打印结果的代码放在了 `setTimeout` 中，是因为我们在实现 Batch Update 的时候把更新流程放在了宏任务中，可参考[这篇文章](/2024/05/11/big-react-wasm-13/)。
 
+Note that the code for printing the result is placed inside a `setTimeout` because we put the update process in a macro task while implementing Batch Update. You can refer to [this article](/2024/05/11/big-react-wasm-13/) for more information.
+
 然后，我们把 react-noop 也加入到构建脚本中，并设置构建 target 为 `nodejs`，这样我们就能在 Node.js 环境中使用了。不过要想在 Node.js 中支持 jsx 语法，还得借助 babel，这里我们直接使用 babel-node 来运行我们的脚本即可，并配置好相关的 preset：
+
+Next, we include react-noop in the build script and set the build target to `nodejs` so that we can use it in a Node.js environment. However, to support JSX syntax in Node.js, we need to use Babel. Here, we can directly use `babel-node` to run our script and configure the necessary presets:
 
 ```js
 // .babelrc
@@ -161,6 +187,8 @@ setTimeout(() => {
 
 不出意外的话，上面的代码就可以正常运行在 Node.js 中了。不过，当我尝试在 jest 中使用 react-noop 时，却运行出错：
 
+If everything goes well, the above code should run successfully in Node.js. However, when I tried to use react-noop in Jest, I encountered an error:
+
 ```js
 work_loop error JsValue(RuntimeError: unreachable
     RuntimeError: unreachable
@@ -169,6 +197,8 @@ work_loop error JsValue(RuntimeError: unreachable
 ```
 
 由于一直无法解决，所以最后不得不在 Node.js 中来进行单元测试，下面是一个用例：
+
+Since I couldn't solve the issue, I had to perform unit testing in Node.js instead. Here's an example test case:
 
 ```js
 async function test1() {
@@ -207,3 +237,5 @@ async function test1() {
 ```
 
 执行 `test1` 成功，说明我们的 React Noop 可以正常工作了。
+
+Executing `test1` successfully indicates that our React Noop is working correctly.
