@@ -18,7 +18,7 @@ categories:
 >
 > Code Repository：https://github.com/ParadeTo/big-react-wasm
 >
-> The tag related to this article：[v14](https://github.com/ParadeTo/big-react-wasm/tree/v14)
+> The tag related to this article：[v15](https://github.com/ParadeTo/big-react-wasm/tree/v15)
 
 本次更新详见[这里](https://github.com/ParadeTo/big-react-wasm/pull/14/files)，下面来过一遍整个流程。
 
