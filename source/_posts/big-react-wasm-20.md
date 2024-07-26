@@ -22,6 +22,8 @@ categories:
 
 Context 也是 React 中非常重要的一个特性，所以我们的 WASM 版也得安排上。回想下，我们平时一般都会这样来使用 Context：
 
+Context is also a very important feature in React, so we need to include it in our WASM version as well. Let's recall how we usually use Context:
+
 ```js
 import {createContext, useContext} from 'react'
 
@@ -42,6 +44,8 @@ function Cpn() {
 ```
 
 所以，我们需要先从 react 库中导出两个方法：
+
+So, we need to first export two methods from the React library:
 
 ```rust
 #[wasm_bindgen(js_name = useContext)]
@@ -72,6 +76,8 @@ pub unsafe fn create_context(default_value: &JsValue) -> JsValue {
 
 其中，`create_context` 中的代码翻译成 JS，是下面这样：
 
+The code inside `create_context` translates to the following in JavaScript:
+
 ```js
 const context {
   $$typeof: REACT_CONTEXT_TYPE,
@@ -86,6 +92,8 @@ return context
 ```
 
 可见，`ctxA.Provider` 是一种新的 `FiberNode` 类型，我们需要新增分支进行处理，按照流程顺序，首先是 `begin_work`：
+
+As you can see, `ctxA.Provider` is a new type of `FiberNode`, and we need to add a new branch to handle it. Following the flow sequence, the first step is `begin_work`:
 
 ```rust
 fn update_context_provider(
@@ -103,6 +111,8 @@ fn update_context_provider(
 
 这里难以理解的是 `push_provider`：
 
+The part that is difficult to understand here is `push_provider`.
+
 ```rust
 static mut PREV_CONTEXT_VALUE: JsValue = JsValue::null();
 static mut PREV_CONTEXT_VALUE_STACK: Vec<JsValue> = vec![];
@@ -117,6 +127,8 @@ pub fn push_provider(context: &JsValue, new_value: JsValue) {
 ```
 
 与之对应的，还有一个 `pop_provider`：
+
+Correspondingly, there is also a `pop_provider` that goes along with it.
 
 ```rust
 pub fn pop_provider(context: &JsValue) {
@@ -134,6 +146,8 @@ pub fn pop_provider(context: &JsValue) {
 
 它会在 `complete_work` 中调用：
 
+It will be called within `complete_work`.
+
 ```rust
 WorkTag::ContextProvider => {
   let _type = { work_in_progress.borrow()._type.clone() };
@@ -145,6 +159,8 @@ WorkTag::ContextProvider => {
 ```
 
 我们通过下面这个例子来搞清楚这部分代码：
+
+We will clarify this portion of the code through the following example:
 
 ```js
 const ctxA = createContext('A0')
@@ -180,6 +196,8 @@ function Child() {
 
 上述例子结果显而易见，应该是：
 
+The expected result of the above example should be:
+
 ```
 A: A2 B: B2
 A: A2 B: B1
@@ -189,23 +207,35 @@ A: A1 B: B0
 
 我们来分析一下，根据流程，当 `begin_work` 执行到最底层的 `Child` 时，此时经过了四次 `push_provider`，`FiberNode` 状态如下：
 
+Let's analyze it. According to the flow, when `begin_work` reaches the bottommost `Child`, it goes through four `push_provider` operations, and the state of the `FiberNode` is as follows:
+
 ![](./big-react-wasm-20/1.png)
 
 到了第三层的 `Child` 时，会执行一次 `pop_provider`，状态如下：
+
+When it reaches the third level `Child`, it performs one `pop_provider` operation, and the state becomes:
 
 ![](./big-react-wasm-20/2.png)
 
 到了第二层的 `Child` 时，再执行一次 `pop_provider`，状态如下：
 
+When it reaches the second level `Child`, it performs another `pop_provider` operation, and the state becomes:
+
 ![](./big-react-wasm-20/3.png)
 
 到了第一层的 `Child` 时，最后执行一次 `pop_provider`，状态如下：
+
+When it reaches the first level `Child`, it performs the final `pop_provider` operation, and the state becomes:
 
 ![](./big-react-wasm-20/4.png)
 
 这里不好理解的原因在于它把多个 Context 的值都存到一个 stack 里面了，可以对着这个例子多看几遍。
 
+The reason it may be difficult to understand is that it stores the values of multiple contexts in a single stack. You can go through this example a few more times to better understand it.
+
 理解了这个，Context 的基本流程就介绍差不多了。不过还有一个 `useContext`，它也很简单，按照之前其他 Hooks 的流程添加相关代码即可，最后的核心是 `fiber_hooks` 中的 `read_context` 方法：
+
+Once you understand this, the basic flow of Context is mostly covered. However, there is also `useContext`, which is quite simple. You can add the relevant code following the flow of other Hooks we discussed earlier, and the core is the `read_context` method in `fiber_hooks`.
 
 ```rust
 fn read_context(context: JsValue) -> JsValue {
@@ -220,7 +250,11 @@ fn read_context(context: JsValue) -> JsValue {
 
 这样，上面的例子就可以跑起来了，本次更新详见[这里](https://github.com/ParadeTo/big-react-wasm/pull/20/files#diff-31401af59fde9c70273d07c510a6fdeb5c5c68541f5c099b2b24d896dc2fd393)。
 
+With these changes, the example mentioned above can be executed. For more details about this update, please refer to [here](https://github.com/ParadeTo/big-react-wasm/pull/20/files#diff-31401af59fde9c70273d07c510a6fdeb5c5c68541f5c099b2b24d896dc2fd393).
+
 不过，目前的 Context 还不够完善，一旦它跟性能优化相关的特性结合起来使用，就会有问题了，比如下面这个例子：
+
+However, the current implementation of Context is not yet complete. It can cause issues when combined with performance optimization-related features. For example, consider the following example:
 
 ```js
 const ctx = createContext(0)
@@ -252,3 +286,5 @@ function Child() {
 ```
 
 点击后 `Child` 组件不会重新渲染，页面没有得到更新。原因在于 `Child` 命中了 `bailout` 策略，但其实 `Child` 中使用了 context，而 context 的值发生了变化，`Child` 应该重新渲染才对，这个问题就留到下篇文章再解决吧。
+
+After clicking, the `Child` component does not re-render, and the page does not update. The reason is that the `Child` component hits the `bailout` strategy. However, the `Child` component actually uses context, and the value of the context has changed. The `Child` component should be re-rendered. We will address this issue in the next article.
