@@ -76,7 +76,7 @@
 {% endif %}
 
 {% if page.layout && page.layout.indexOf('vue') > -1 %}
-  <link href="https://cdn.bootcss.com/bulma/0.4.2/css/bulma.min.css" rel="stylesheet">
+  <link href="//lf9-cdn-tos.bytecdntp.com/cdn/expire-1-M/bulma/0.4.2/css/bulma.min.css" rel="stylesheet">
 {% endif %}
 
 {% if theme.favicon.apple_touch_icon %}
@@ -157,7 +157,7 @@
 </script>
 
 {% if page.title.indexOf('vue') > -1 %}
-  <script src="//cdn.bootcss.com/vue/2.6.10/vue.min.js"></script>
+  <script src="//lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/vue/2.6.10/vue.min.js"></script>
   <script>
     window.Vue.config.delimiters = ['{[', ']}']
   </script>
