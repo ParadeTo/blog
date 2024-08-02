@@ -14,7 +14,15 @@ categories:
 >
 > 本文对应 tag：[v22](https://github.com/ParadeTo/big-react-wasm/tree/v22)
 
+> Based on [big-react](https://github.com/BetaSu/big-react)，I am going to implement React v18 core features from scratch using WASM and Rust.
+>
+> Code Repository：https://github.com/ParadeTo/big-react-wasm
+>
+> The tag related to this article：[v22](https://github.com/ParadeTo/big-react-wasm/tree/v22)
+
 前面几篇文章都是围绕 React 性能优化相关的特性展开的，不过还差一个 memo，今天就来实现一下。以下面代码为例：
+
+The previous articles were focused on exploring performance optimization features related to React. However, there is still one missing feature: memo. Today, let's implement it. Take the following code as an example:
 
 ```js
 import {useState, memo} from 'react'
@@ -48,6 +56,8 @@ function Child() {
 
 首次渲染时，会打印：
 
+When initially rendered, the following will be printed:
+
 ```
 App render 0
 render cpn1
@@ -58,6 +68,8 @@ Child render
 
 点击后，应该只有第一个 Cpn 组件会重新渲染，控制台打印：
 
+After clicking, only the first Cpn component should be re-rendered, and the console will print:
+
 ```
 App render 1
 render cpn1
@@ -66,7 +78,11 @@ Child render
 
 下面我们来看看要怎么实现。
 
+Now let's see how to implement this.
+
 首先，需要从 react 这个库中导出 `memo` 方法，如下所示：
+
+First, we need to import the `memo` method from the React library, as shown below:
 
 ```rust
 #[wasm_bindgen]
@@ -96,6 +112,8 @@ pub unsafe fn memo(_type: &JsValue, compare: &JsValue) -> JsValue {
 
 翻译成 JS 的话，是这样：
 
+In JavaScript, the translation would be as follows:
+
 ```rust
 export function memo(
 	type: FiberNode['type'],
@@ -111,6 +129,8 @@ export function memo(
 ```
 
 跟之前的 context Provider 类似，这里也是返回了一个对象，并且把传入的组件保存在了 `type` 字段中，同时把第二个参数存在了 `compare` 字段中，该字段的作用应该都清楚，就不赘述了。很明显，这里又是一个新的 `FiberNode` 类型，我们需要在 begin work 中增加对该类型的处理：
+
+Similar to the previous context Provider, here we also return an object. The passed-in component is saved in the `type` field, and the second argument is stored in the `compare` field. The purpose of the `compare` field should be clear, so I won't elaborate on it. Clearly, this is a new `FiberNode` type, and we need to add handling for this type in the `begin work` phase.
 
 ```rust
 
@@ -165,3 +185,13 @@ fn update_memo_component(
 否则，进入 `update_function_component` 逻辑，因为 memo 只是在 `FunctionComponent` 外面多套了一层而已。注意到这里的 `update_function_component` 的参数跟之前不一样了，之前只有 `work_in_progress` 和 `render_lane` 是因为只考虑 `FunctionComponent` 的情况下，可以从 `work_in_progress` 的 `_type` 中获取 `Component`，现在加入了 `MemoComponent`，则需要从 `work_in_progress` 的 `_type` 中的 `type` 来获取 `Component`。
 
 其他比较细微的改动就不介绍了，详情请见[这里](https://github.com/ParadeTo/big-react-wasm/pull/22)。
+
+The code here is easy to understand. If there is a `current` value, it means it's not the initial render, so we can check if there are any nodes in the descendant components that meet the priority of this update, and if not, we can perform performance optimizations related to memoization. Specifically:
+
+- We retrieve the `compare` function, and if it doesn't exist, we use the default `shallow_equal` function (which compares two objects for equality by comparing their keys and values, performing a shallow comparison).
+- We pass the new and old `props` to the function obtained above.
+- If the `compare` function returns true, we enter the `bailout` logic.
+
+Otherwise, we enter the `update_function_component` logic because memo is just an additional layer outside the `FunctionComponent`. Note that the parameters for `update_function_component` are different now. Previously, we only had `work_in_progress` and `render_lane` because we only considered the case of a `FunctionComponent`, where we could retrieve the `Component` from `work_in_progress`'s `_type`. Now, with the addition of `MemoComponent`, we need to retrieve the `Component` from `work_in_progress`'s `_type`'s `type`.
+
+I won't go into other minor changes, but you can find more details [here](https://github.com/ParadeTo/big-react-wasm/pull/22).
