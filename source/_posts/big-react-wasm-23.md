@@ -110,7 +110,7 @@ if flags.contains(Flags::Update) {
 }
 ```
 
-Bug 修复的 PR 见[这里](https://github.com/ParadeTo/big-react-wasm/pull/24)。Bug 修复完毕，接下来实现 `Fragment`。
+Bug 修复的 PR 见[这里](https://github.com/ParadeTo/big-react-wasm/pull/24)。修复完毕，接下来实现 `Fragment`。
 
 首先，`Fragment` 是从 `react` 中导出的一个常量，但是在 Rust 中，当我们尝试下面这样写时，会报错 "#[wasm_bindgen] can only be applied to a function, struct, enum, impl, or extern block"：
 
@@ -120,3 +120,81 @@ pub static Fragment: &str = "react.fragment";
 ```
 
 看来是不支持从 rust 导出字符串给 JS，那我们只能继续通过构建脚本来修改编译后的产物了，即在最终输出的 JS 文件中加上导出 `Fragment` 的代码。
+
+```js
+// add Fragment
+const reactIndexFilename = `${cwd}/dist/react/jsx-dev-runtime.js`
+const reactIndexData = fs.readFileSync(reactIndexFilename)
+fs.writeFileSync(
+  reactIndexFilename,
+  reactIndexData + `export const Fragment='react.fragment';\n`
+)
+const reactTsIndexFilename = `${cwd}/dist/react/jsx-dev-runtime.d.ts`
+const reactTsIndexData = fs.readFileSync(reactTsIndexFilename)
+fs.writeFileSync(
+  reactTsIndexFilename,
+  reactTsIndexData + `export const Fragment: string;\n`
+)
+```
+
+接着，需要在 `fiber.rs` 中新增一个 `create_fiber_from_fragment` 的方法：
+
+```rust
+pub fn create_fiber_from_fragment(elements: JsValue, key: JsValue) -> FiberNode {
+  FiberNode::new(WorkTag::Fragment, elements, key, JsValue::null())
+}
+```
+
+这里的 `elements` 是他的 `children`。
+
+然后，按照流程，需要在 `begin_work.rs` 中新增对于 `Fragment` 的处理：
+
+```rust
+pub fn begin_work(
+    work_in_progress: Rc<RefCell<FiberNode>>,
+    render_lane: Lane,
+) -> Result<Option<Rc<RefCell<FiberNode>>>, JsValue> {
+  ...
+  return match tag {
+    ...
+    WorkTag::Fragment => Ok(update_fragment(work_in_progress.clone())),
+  };
+}
+
+fn update_fragment(work_in_progress: Rc<RefCell<FiberNode>>) -> Option<Rc<RefCell<FiberNode>>> {
+    let next_children = work_in_progress.borrow().pending_props.clone();
+    reconcile_children(work_in_progress.clone(), Some(next_children));
+    work_in_progress.borrow().child.clone()
+}
+```
+
+在 `reconcile_single_element` 函数中，也需要新增对于 `Fragment` 的处理：
+
+```rust
+-    let mut fiber = FiberNode::create_fiber_from_element(element);
++    let mut fiber ;
++    if derive_from_js_value(&element, "type") == REACT_FRAGMENT_TYPE {
++        let props = derive_from_js_value(&element, "props");
++        let children = derive_from_js_value(&props, "children");
++        fiber = FiberNode::create_fiber_from_fragment(children, key);
++    } else {
++        fiber = FiberNode::create_fiber_from_element(element);
++    }
+```
+
+这样，我们的 react 就可以支持 `Fragment` 了。
+
+不过，还有一种情况也需要支持，比如：
+
+```js
+function App() {
+  const arr = [<span>Hello</span>, <span>World</span>]
+  return <div>{arr}</div>
+}
+```
+
+上面的例子并没有显示的使用 `Fragment`，但我们处理的时候得加一层，即：
+
+![](./big-react-wasm-23/1.png)
+
+这一部分主要涉及到 `child_fiber.rs` 中 `update_from_map` 函数的修改，详情请见[这里](https://github.com/ParadeTo/big-react-wasm/pull/25)。
