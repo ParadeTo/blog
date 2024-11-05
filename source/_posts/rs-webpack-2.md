@@ -149,4 +149,32 @@ pub struct AstBuilder<'a> {
 
 可以看到，只需要将 `entry_id` 和 `modules` 的内容输出到模版中即可。
 
-运行 `cargo run`，得到输出结果，使用 Node.js 运行，如果可以正常打印 `hello`，则表示 MVP 成功完成。
+运行 `cargo run`，得到输出结果：
+
+```js
+// out/bundle.js
+(function(modules) {
+    var installedModules = {};
+    ...
+    // Load entry module and return exports
+    return __webpack_require__(__webpack_require__.s = "./index.js");
+})
+({
+
+     "./const.js":
+     (function(module, exports, __webpack_require__) {
+       eval(`module.exports = "hello";
+`);
+     }),
+
+     "./index.js":
+     (function(module, exports, __webpack_require__) {
+       eval(`const b = __webpack_require__("./const.js");
+console.log(b);
+`);
+     }),
+
+});
+```
+
+使用 Node.js 运行，如果可以正常打印 `hello`，则表示 MVP 成功完成。
