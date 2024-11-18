@@ -21,6 +21,8 @@
   <script src="/js/resume/index.js"></script>
 {% elif page.title==='react-render' %}
   <script src="/js/react-render/index.js"></script>
+{% elif page.title==='react-jxba' %}
+  <script type="module" src="/js/react-jxba/index.min.js"></script>
 {% elif page.title==='webgl-github-map' %}
   <script src="/js/webgl-github-map/index.js"></script>
 {% endif %}

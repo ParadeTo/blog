@@ -163,6 +163,10 @@
   </script>
 {% endif %}
 
+{% if page.title.indexOf('react') > -1 %}
+  <script src="/lib/react/vendor.min.js"></script>
+{% endif %}
+
 {% if page.title.indexOf('webgl') > -1 %}
     <script src="/lib/webgl/webgl-utils.js"></script>
     <script src="/lib/webgl/webgl-debug.js"></script>
