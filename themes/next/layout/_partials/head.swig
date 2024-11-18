@@ -163,7 +163,7 @@
   </script>
 {% endif %}
 
-{% if page.title.indexOf('react') > -1 %}
+{% if page.title.indexOf('reactreactreact') > -1 %}
   <script src="/lib/react/vendor.min.js"></script>
 {% endif %}
 
