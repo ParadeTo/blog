@@ -149,9 +149,9 @@ test a1 a2
 这个过程中发现很多地方都不是很了解，先 mark 一下，有时间再研究研究：
 
 * Napi 中的 ThreadsafeFunction 等。Node.js 结合这个应该可以做很多事情，后面看看能不能挖掘一些案例出来。
-* Rust 中的异步处理、tokio
-* Rust 并发编程：多线程，channel 等
-* Rust 中的宏编程，这玩意即难写又不好调试
+* Rust 中的异步处理、tokio。
+* Rust 并发编程：多线程，channel 等。
+* Rust 中的宏编程，这玩意即难写又不好调试。
 
 
 
