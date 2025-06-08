@@ -8,7 +8,7 @@ categories:
   - ai
 ---
 
-上一篇文章简单调研了下利用 AI 进行 UI 自动化的技术，顺着这个思路，是不是可以给 AI 一个手机，让它帮我们做更多事情呢？搜索一下，发现已经有人开发了 [mobile-use] (https://github.com/runablehq/mobile-use) 这个项目，今天就来玩一下。
+上一篇文章简单调研了下利用 AI 进行 UI 自动化的技术，顺着这个思路，是不是可以给 AI 一个手机，让它帮我们做更多事情呢？搜索一下，发现已经有人开发了 [mobile-use](https://github.com/runablehq/mobile-use) 这个项目，今天就来玩一下。
 
 首先需要安装好 adb，并通过 USB 数据线连接安卓手机，打开开发者模式，并开启 USB 调试模式，在终端输入 `adb devices`，如果显示有设备，则说明安装成功。
 
