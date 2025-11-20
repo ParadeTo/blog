@@ -3,6 +3,7 @@ title: Agent 设计模式实战
 date: 2025-11-18 11:08:27
 tags:
   - ai
+  - agent
 categories:
   - ai
 ---
