@@ -1,10 +1,12 @@
 ---
 title: AI Agent Deep Research 实战
 date: 2025-11-20 20:45:50
+tags:
   - ai
   - agent
 categories:
   - ai
+description: 介绍 Deep Research 模式，通过反思机制让 AI Agent 主动识别知识缺口并迭代挖掘，基于 LangGraph 实现具备批判性思维的深度研究助手。
 ---
 
 # 前言
