@@ -6,7 +6,7 @@ tags:
   - agent
 categories:
   - ai
-description:
+description: 介绍如何基于 LangGraph 构建自动化股票研报助手，通过流水线思维拆解任务，涵盖跨语言数据采集、财务指标工具化计算及递归生成长文本研报的实战方案。
 ---
 
 ## 前言
@@ -679,10 +679,12 @@ export async function generateReport(state: typeof OverallState.State) {
 
 ## 四、运行效果
 
+![](./ai-finance-report/1.jpg)
+
+![](./ai-finance-report/2.jpg)
+
 ## 五、总结
 
-1. **结构化是 AI 的"义肢"**：先用代码把数据算好，再让 AI 做解读推理
-2. **长链路必须拆解**：每个节点只做一件事，中间产物（CSV、Markdown）既是"短期记忆"，也方便调试
-3. **并行提升效率**：互不依赖的子任务用 `Promise.all` 并行执行
-4. **Python 桥接**：遇到 JS 生态缺失的库，用 `child_process` 借力 Python
-5. **递归生成长文**：先生成大纲，再逐章节递归，突破 LLM 上下文限制
+这套系统的核心是"结构化计算 + AI 推理"：前半段用 Python 桥接 AkShare 采集数据并计算指标，后半段让 LLM 生成分析报告和 ECharts 可视化。通过 LangGraph 串成 6 个节点，每个节点只做一件事。
+
+未来可以往两个方向走：一是接入更多数据源（如新闻舆情、研报库），让 AI 分析更全面；二是加入实时监控和定时任务，把单次生成改造成持续跟踪系统。技术上可以尝试用 Agent 自主决策采集哪些数据、生成哪些图表，而不是写死流程。
