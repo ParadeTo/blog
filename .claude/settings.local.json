@@ -8,7 +8,22 @@
       "Bash(done)",
       "Bash(echo \"--- $section ---\")",
       "Bash(grep \"^[0-9]*: \\\\`\\\\`\\\\`$\")",
-      "Bash(awk 'NR>=331 && NR<=400' ai-spec-driven-dev.md)"
+      "Bash(awk 'NR>=331 && NR<=400' ai-spec-driven-dev.md)",
+      "Bash(npm install --save-dev marked juice)",
+      "Bash(chmod +x /Users/youxingzhi/ayou/blog/scripts/md2wechat.js)",
+      "Bash(node scripts/md2wechat.js source/_posts/ai-spec-driven-dev.md)",
+      "WebFetch(domain:mp.weixin.qq.com)",
+      "WebSearch",
+      "Bash(curl -s \"https://mp.weixin.qq.com/s/LSgI2vVeqCffm09TjPtrjg\" | grep -oP '<style[^>]*>.*?</style>' | head -c 5000)",
+      "Bash(node scripts/md2wechat.js source/_posts/ai-spec-driven-dev.md ai-spec-driven-dev-purple.html --theme=purple)",
+      "Bash(node scripts/md2wechat.js source/_posts/ai-spec-driven-dev.md ai-spec-driven-dev-blue.html --theme=blue && node scripts/md2wechat.js source/_posts/ai-spec-driven-dev.md ai-spec-driven-dev-orange.html --theme=orange)",
+      "Bash(ls -lh *.html 2>/dev/null | head -10)",
+      "Bash(chmod +x /Users/youxingzhi/ayou/blog/scripts/upload-to-wechat.js)",
+      "Bash(chmod +x /Users/youxingzhi/ayou/blog/scripts/publish.sh)",
+      "Bash(node scripts/upload-to-wechat.js scripts/output/ai-spec-driven-dev-wechat.html)",
+      "Bash(chmod +x /Users/youxingzhi/ayou/blog/scripts/upload-image.js)",
+      "Bash(node scripts/upload-image.js /Users/youxingzhi/Downloads/640.png)",
+      "Bash(open /Users/youxingzhi/ayou/blog/scripts/output/ai-spec-driven-dev-wechat.html)"
     ]
   }
 }

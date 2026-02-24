@@ -6,7 +6,10 @@
     "version": "3.7.0"
   },
   "scripts": {
-    "hexo": "hexo"
+    "hexo": "hexo",
+    "wechat": "node scripts/md2wechat.js",
+    "wechat-upload": "node scripts/upload-to-wechat.js",
+    "wechat-upload-image": "node scripts/upload-image.js"
   },
   "dependencies": {
     "hexo": "^3.2.0",

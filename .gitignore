@@ -6,3 +6,10 @@ node_modules/
 public/
 .deploy*/
 .idea/
+
+# 微信公众号转换输出目录
+scripts/output/
+*-wechat.html
+
+# 微信公众号配置（包含敏感信息）
+scripts/wechat-config.json

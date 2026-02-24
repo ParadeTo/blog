@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>微信公众号主题预览对比</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+      font-size: 32px;
+    }
+
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+
+    .theme-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .theme-header {
+      padding: 20px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 20px;
+      color: white;
+    }
+
+    .theme-purple .theme-header {
+      background: linear-gradient(to right, #667eea 0%, #764ba2 100%);
+    }
+
+    .theme-blue .theme-header {
+      background: #3498db;
+    }
+
+    .theme-orange .theme-header {
+      background: #ff6b6b;
+    }
+
+    .theme-body {
+      padding: 30px;
+    }
+
+    .theme-body h2 {
+      font-size: 18px;
+      margin: 20px 0 10px;
+      color: #333;
+    }
+
+    .theme-body p {
+      line-height: 1.8;
+      color: #666;
+      margin-bottom: 15px;
+    }
+
+    .theme-body code {
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 14px;
+    }
+
+    .theme-purple code {
+      background-color: rgba(102, 126, 234, 0.1);
+      color: #667eea;
+    }
+
+    .theme-blue code {
+      background-color: #f0f2f5;
+      color: #e74c3c;
+    }
+
+    .theme-orange code {
+      background-color: #fff3e0;
+      color: #ff6b6b;
+      border: 1px solid #ffe0b2;
+    }
+
+    .theme-body .feature-list {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .theme-body .feature-list li {
+      padding: 8px 0;
+      padding-left: 24px;
+      position: relative;
+    }
+
+    .theme-body .feature-list li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      font-weight: bold;
+    }
+
+    .theme-purple .feature-list li::before {
+      color: #667eea;
+    }
+
+    .theme-blue .feature-list li::before {
+      color: #3498db;
+    }
+
+    .theme-orange .feature-list li::before {
+      color: #ff6b6b;
+    }
+
+    .usage-section {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .usage-section h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .usage-section pre {
+      background: #282c34;
+      color: #abb2bf;
+      padding: 20px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 15px 0;
+    }
+
+    .usage-section code {
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 微信公众号主题预览</h1>
+
+    <div class="theme-grid">
+      <!-- Purple Theme -->
+      <div class="theme-card theme-purple">
+        <div class="theme-header">🟣 Purple - 紫色渐变</div>
+        <div class="theme-body">
+          <h2>主题特点</h2>
+          <ul class="feature-list">
+            <li>现代优雅的紫色渐变风格</li>
+            <li>二级标题渐变背景</li>
+            <li>macOS 风格代码块</li>
+            <li>适合科技、教程类文章</li>
+          </ul>
+
+          <h2>代码示例</h2>
+          <p>行内代码：<code>const theme = 'purple'</code></p>
+
+          <h2>使用场景</h2>
+          <p>科技博客、编程教程、技术分享、产品介绍等</p>
+        </div>
+      </div>
+
+      <!-- Blue Theme -->
+      <div class="theme-card theme-blue">
+        <div class="theme-header">🔵 Blue - 蓝色简约</div>
+        <div class="theme-body">
+          <h2>主题特点</h2>
+          <ul class="feature-list">
+            <li>清新专业的蓝色调</li>
+            <li>简约边框装饰</li>
+            <li>清晰的视觉层次</li>
+            <li>适合正式、商务类文章</li>
+          </ul>
+
+          <h2>代码示例</h2>
+          <p>行内代码：<code>const theme = 'blue'</code></p>
+
+          <h2>使用场景</h2>
+          <p>企业公告、商务报告、行业分析、专业评测等</p>
+        </div>
+      </div>
+
+      <!-- Orange Theme -->
+      <div class="theme-card theme-orange">
+        <div class="theme-header">🟠 Orange - 橙色活力</div>
+        <div class="theme-body">
+          <h2>主题特点</h2>
+          <ul class="feature-list">
+            <li>温暖醒目的橙色系</li>
+            <li>活力十足的配色</li>
+            <li>暗色代码主题</li>
+            <li>适合生活、创意类文章</li>
+          </ul>
+
+          <h2>代码示例</h2>
+          <p>行内代码：<code>const theme = 'orange'</code></p>
+
+          <h2>使用场景</h2>
+          <p>生活分享、创意设计、活动宣传、热点话题等</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="usage-section">
+      <h2>📝 使用方法</h2>
+
+      <h3>方式一：使用 npm script</h3>
+      <pre><code># 默认主题（紫色）
+npm run wechat source/_posts/your-article.md
+
+# 指定主题
+npm run wechat source/_posts/your-article.md -- --theme=blue
+npm run wechat source/_posts/your-article.md -- --theme=orange</code></pre>
+
+      <h3>方式二：直接运行脚本</h3>
+      <pre><code># 紫色主题（默认）
+node scripts/md2wechat.js source/_posts/your-article.md
+
+# 蓝色主题
+node scripts/md2wechat.js source/_posts/your-article.md --theme=blue
+
+# 橙色主题
+node scripts/md2wechat.js source/_posts/your-article.md --theme=orange</code></pre>
+
+      <h3>转换后的使用流程</h3>
+      <ol style="line-height: 2; padding-left: 20px; color: #666;">
+        <li>用浏览器打开生成的 HTML 文件</li>
+        <li>按 F12 打开开发者工具</li>
+        <li>在 Console 控制台输入：<code>copyContent()</code></li>
+        <li>粘贴到微信公众号编辑器（Cmd+V / Ctrl+V）</li>
+      </ol>
+    </div>
+  </div>
+</body>
+</html>

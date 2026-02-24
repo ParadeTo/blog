@@ -1,0 +1,6 @@
+{
+  "appid": "your_appid_here",
+  "secret": "your_secret_here",
+  "author": "作者名称",
+  "digest": "文章摘要（可选，不填则自动提取第一段）"
+}
