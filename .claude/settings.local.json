@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la ai-spec-driven-dev.md*)",
+      "Bash(for section in \"项目结构设计\" \"数据模型设计\" \"功能模块划分\" \"关键技术决策\" \"测试策略\" \"风险与挑战\" \"成功标准\" \"下一步行动\")",
+      "Bash(do)",
+      "Bash(echo \"=== $section ===\")",
+      "Bash(done)",
+      "Bash(echo \"--- $section ---\")",
+      "Bash(grep \"^[0-9]*: \\\\`\\\\`\\\\`$\")",
+      "Bash(awk 'NR>=331 && NR<=400' ai-spec-driven-dev.md)"
+    ]
+  }
+}
