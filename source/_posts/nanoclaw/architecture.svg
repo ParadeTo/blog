@@ -1,0 +1,73 @@
+<svg width="720" height="530" viewBox="0 0 720 530" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang SC','Helvetica Neue',Arial,sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#94A3B8"/>
+    </marker>
+  </defs>
+
+  <rect width="720" height="530" fill="#fff"/>
+
+  <!-- ══ LAYER 1: Channel ══ -->
+  <rect x="20" y="20" width="680" height="145" rx="12" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="2"/>
+  <text x="360" y="47" text-anchor="middle" font-size="14" font-weight="700" fill="#1E40AF" letter-spacing="0.5">消息来源层（Channel）</text>
+
+  <rect x="45"  y="62" width="118" height="82" rx="8" fill="#DBEAFE" stroke="#93C5FD" stroke-width="1.5"/>
+  <text x="104" y="97"  text-anchor="middle" font-size="13" font-weight="600" fill="#1E40AF">飞书</text>
+  <text x="104" y="117" text-anchor="middle" font-size="10" fill="#3B82F6">WebSocket</text>
+  <text x="104" y="133" text-anchor="middle" font-size="10" fill="#3B82F6">（自注册）</text>
+
+  <rect x="183" y="62" width="118" height="82" rx="8" fill="#DBEAFE" stroke="#93C5FD" stroke-width="1.5"/>
+  <text x="242" y="97"  text-anchor="middle" font-size="13" font-weight="600" fill="#1E40AF">WhatsApp</text>
+  <text x="242" y="117" text-anchor="middle" font-size="10" fill="#3B82F6">WebSocket</text>
+  <text x="242" y="133" text-anchor="middle" font-size="10" fill="#3B82F6">（自注册）</text>
+
+  <rect x="321" y="62" width="118" height="82" rx="8" fill="#DBEAFE" stroke="#93C5FD" stroke-width="1.5"/>
+  <text x="380" y="97"  text-anchor="middle" font-size="13" font-weight="600" fill="#1E40AF">Telegram</text>
+  <text x="380" y="117" text-anchor="middle" font-size="10" fill="#3B82F6">HTTP 轮询</text>
+  <text x="380" y="133" text-anchor="middle" font-size="10" fill="#3B82F6">（自注册）</text>
+
+  <rect x="459" y="62" width="118" height="82" rx="8" fill="#DBEAFE" stroke="#93C5FD" stroke-width="1.5"/>
+  <text x="518" y="97"  text-anchor="middle" font-size="13" font-weight="600" fill="#1E40AF">Slack</text>
+  <text x="518" y="117" text-anchor="middle" font-size="10" fill="#3B82F6">Socket Mode</text>
+  <text x="518" y="133" text-anchor="middle" font-size="10" fill="#3B82F6">（自注册）</text>
+
+  <text x="634" y="108" text-anchor="middle" font-size="24" fill="#93C5FD">···</text>
+
+  <!-- ══ ARROW 1 ══ -->
+  <line x1="360" y1="165" x2="360" y2="196" stroke="#94A3B8" stroke-width="2" marker-end="url(#arr)"/>
+  <rect x="268" y="170" width="184" height="20" rx="4" fill="#F1F5F9"/>
+  <text x="360" y="184" text-anchor="middle" font-size="11" fill="#64748B">onMessage() 回调</text>
+
+  <!-- ══ LAYER 2: Orchestration ══ -->
+  <rect x="20" y="198" width="680" height="155" rx="12" fill="#F0FDF4" stroke="#BBF7D0" stroke-width="2"/>
+  <text x="360" y="225" text-anchor="middle" font-size="14" font-weight="700" fill="#065F46" letter-spacing="0.5">编排层（index.ts）</text>
+
+  <rect x="45"  y="240" width="188" height="92" rx="8" fill="#DCFCE7" stroke="#86EFAC" stroke-width="1.5"/>
+  <text x="139" y="268" text-anchor="middle" font-size="13" font-weight="600" fill="#065F46">SQLite</text>
+  <text x="139" y="290" text-anchor="middle" font-size="10" fill="#16A34A">messages · sessions</text>
+  <text x="139" y="308" text-anchor="middle" font-size="10" fill="#16A34A">tasks · router_state</text>
+
+  <rect x="253" y="240" width="188" height="92" rx="8" fill="#DCFCE7" stroke="#86EFAC" stroke-width="1.5"/>
+  <text x="347" y="268" text-anchor="middle" font-size="13" font-weight="600" fill="#065F46">消息循环</text>
+  <text x="347" y="290" text-anchor="middle" font-size="10" fill="#16A34A">每 2s 轮询 · 触发词检测</text>
+  <text x="347" y="308" text-anchor="middle" font-size="10" fill="#16A34A">游标追踪 · 消息分发</text>
+
+  <rect x="461" y="240" width="219" height="92" rx="8" fill="#DCFCE7" stroke="#86EFAC" stroke-width="1.5"/>
+  <text x="570" y="268" text-anchor="middle" font-size="13" font-weight="600" fill="#065F46">GroupQueue</text>
+  <text x="570" y="290" text-anchor="middle" font-size="10" fill="#16A34A">并发控制（最多 5 个容器）</text>
+  <text x="570" y="308" text-anchor="middle" font-size="10" fill="#16A34A">指数退避重试 · 任务排队</text>
+
+  <!-- ══ ARROW 2 ══ -->
+  <line x1="360" y1="353" x2="360" y2="388" stroke="#94A3B8" stroke-width="2" marker-end="url(#arr)"/>
+  <rect x="232" y="359" width="256" height="20" rx="4" fill="#F1F5F9"/>
+  <text x="360" y="373" text-anchor="middle" font-size="11" fill="#64748B">启动容器 · stdout + IPC 文件双向通信</text>
+
+  <!-- ══ LAYER 3: Execution ══ -->
+  <rect x="20" y="390" width="680" height="120" rx="12" fill="#FAF5FF" stroke="#E9D5FF" stroke-width="2"/>
+  <text x="360" y="418" text-anchor="middle" font-size="14" font-weight="700" fill="#4C1D95" letter-spacing="0.5">执行层（Docker 容器，每个 Group 独立）</text>
+
+  <rect x="60" y="430" width="600" height="65" rx="8" fill="#EDE9FE" stroke="#C4B5FD" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="360" y="455" text-anchor="middle" font-size="13" font-weight="600" fill="#4C1D95">Claude Agent SDK</text>
+  <text x="360" y="474" text-anchor="middle" font-size="10" fill="#7C3AED">工具调用（搜索、浏览器）· session 持久化 · 文件系统沙箱隔离</text>
+  <text x="360" y="489" text-anchor="middle" font-size="10" fill="#7C3AED">仅能访问显式挂载的目录，Bash 命令在容器内执行</text>
+</svg>
