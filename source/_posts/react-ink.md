@@ -1,5 +1,5 @@
 ---
-title: 用 React 写 CLI？React Ink 源码浅析
+title: Claude Code 的终端 UI 是怎么画出来的
 date: 2026-04-02 10:00:00
 tags:
   - react
@@ -196,6 +196,90 @@ const Snake = () => {
 ```
 
 整个游戏的模式跟写 React 网页一模一样——`useInput` 处理输入，`setInterval` + `setState` 驱动帧更新，JSX 描述 UI。Ink 在底层把 emoji 网格转成 ANSI 字符串、原地刷新终端，上层代码完全不用管。
+
+最后来个实用的——**多选交互**，Claude Code 里经常能看到这种：
+
+![](./react-ink/5.jpg)
+
+```tsx
+const OPTIONS = [
+  {label: 'TypeScript', desc: '类型检查', value: 'ts'},
+  {label: 'ESLint', desc: '代码规范', value: 'eslint'},
+  // ...
+]
+
+const MultiSelect = () => {
+  const [cursor, setCursor] = useState(0)
+  const [selected, setSelected] = useState(new Set<string>())
+  const [done, setDone] = useState(false)
+
+  useInput((input, key) => {
+    if (key.upArrow) setCursor((i) => (i - 1 + OPTIONS.length) % OPTIONS.length)
+    if (key.downArrow) setCursor((i) => (i + 1) % OPTIONS.length)
+    if (input === ' ') {
+      /* toggle selected */
+    }
+    if (input === 'a') {
+      /* 全选/全不选 */
+    }
+    if (key.return) setDone(true)
+  })
+
+  return (
+    <Box
+      flexDirection='column'
+      borderStyle='round'
+      borderColor='cyan'
+      paddingX={2}
+      paddingY={1}>
+      <Text color='cyan' bold>
+        ? 选择要安装的工具 ({selected.size}/{OPTIONS.length})
+      </Text>
+      {OPTIONS.map((opt, i) => (
+        <Box key={opt.value} gap={1}>
+          <Text color={i === cursor ? 'cyan' : 'gray'}>
+            {i === cursor ? '❯' : ' '}
+          </Text>
+          <Text color={selected.has(opt.value) ? 'green' : 'gray'}>
+            {selected.has(opt.value) ? '◼' : '◻'}
+          </Text>
+          <Text
+            color={selected.has(opt.value) ? 'green' : undefined}
+            bold={i === cursor || selected.has(opt.value)}>
+            {opt.label}
+          </Text>
+          <Text dimColor>{opt.desc}</Text>
+        </Box>
+      ))}
+      <Text color='gray' dimColor>
+        ↑↓ 移动 · 空格 选中 · a 全选 · Enter 确认
+      </Text>
+    </Box>
+  )
+}
+```
+
+三个 `useState`：`cursor` 控制高亮行，`selected`（`Set`）存选中项，`done` 标记是否确认。渲染部分用 `<Box borderStyle="round">` 画圆角边框，每行根据状态切换 `❯` / 空格、`◼` / `◻`、高亮 / 暗色——跟写 React 网页的 checkbox 列表没什么区别。
+
+怎么跟实际 CLI 脚本结合呢？关键是 `render()` 返回的 `waitUntilExit()`——它是一个 Promise，在组件调用 `exit()` 时 resolve。所以主流程长这样：
+
+```typescript
+let userChoices: string[] = []
+
+async function main() {
+  // 第一步：Ink 交互，收集用户选择
+  const instance = render(<MultiSelect onDone={choices => { userChoices = choices }} />)
+  await instance.waitUntilExit()
+
+  // 第二步：Ink 已退出，终端恢复正常，执行实际逻辑
+  console.log(`安装中: ${userChoices.join(', ')}...`)
+  execSync(`npm install -D ${userChoices.join(' ')}`, {stdio: 'inherit'})
+}
+
+main()
+```
+
+先用 Ink 做交互收集输入，`exit()` 后 Promise resolve，接着就是普通的 Node.js 逻辑了。
 
 # 三、核心 API
 
