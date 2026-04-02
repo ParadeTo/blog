@@ -1,0 +1,16 @@
+{
+  "site": "github",
+  "target_url": "https://github.com/vadimdemedes/ink",
+  "final_url": "https://github.com/vadimdemedes/ink",
+  "title": "vadimdemedes/ink: 🌈 React for interactive command-line apps",
+  "framework": {
+    "nextjs": false,
+    "nuxt": false,
+    "react": true,
+    "vue2": false,
+    "vue3": false
+  },
+  "stores": [],
+  "top_strategy": "public",
+  "explored_at": "2026-04-02T02:28:18.686Z"
+}
