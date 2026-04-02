@@ -1,5 +1,5 @@
 ---
-title: 告别 DOM 重排！用 Pretext 精准计算多行文本高度
+title: Pretext：不碰 DOM 的纯 JS 文本测量与排版
 date: 2026-04-01 12:00:00
 tags:
   - javascript
