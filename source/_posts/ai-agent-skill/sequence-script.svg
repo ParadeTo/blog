@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="480" viewBox="0 0 820 480">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#555"/>
+    </marker>
+    <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#4361ee"/>
+    </marker>
+    <marker id="arr-green" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#2d8b4e"/>
+    </marker>
+  </defs>
+
+  <rect width="820" height="480" fill="#f8f9fa" rx="10"/>
+
+  <text x="410" y="32" text-anchor="middle" font-family="'PingFang SC','Helvetica Neue',Arial,sans-serif" font-size="16" font-weight="600" fill="#1a1a2e">Skill + 脚本运行时序（天气查询）</text>
+
+  <!-- Participants -->
+  <rect x="40" y="50" width="80" height="32" rx="6" fill="#4361ee"/>
+  <text x="80" y="71" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="13" fill="#fff">User</text>
+
+  <rect x="200" y="50" width="80" height="32" rx="6" fill="#7b2d8b"/>
+  <text x="240" y="71" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="13" fill="#fff">Agent</text>
+
+  <rect x="370" y="50" width="120" height="32" rx="6" fill="#f72585"/>
+  <text x="430" y="71" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="13" fill="#fff">LLM（检测）</text>
+
+  <rect x="540" y="50" width="120" height="32" rx="6" fill="#4cc9f0"/>
+  <text x="600" y="71" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="13" fill="#fff">LLM（执行）</text>
+
+  <rect x="710" y="50" width="90" height="32" rx="6" fill="#e67e22"/>
+  <text x="755" y="71" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="13" fill="#fff">脚本</text>
+
+  <!-- Lifelines -->
+  <line x1="80" y1="82" x2="80" y2="460" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="240" y1="82" x2="240" y2="460" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="430" y1="82" x2="430" y2="460" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="600" y1="82" x2="600" y2="460" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="755" y1="82" x2="755" y2="460" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- Step 1: User → Agent -->
+  <line x1="80" y1="110" x2="238" y2="110" stroke="#4361ee" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+  <text x="160" y="104" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="12" fill="#333">深圳什么天气</text>
+
+  <!-- Step 2: Agent → LLM detect -->
+  <line x1="240" y1="140" x2="428" y2="140" stroke="#f72585" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="334" y="134" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#666">判断匹配哪个 skill...</text>
+
+  <!-- Step 3: LLM detect → Agent -->
+  <line x1="428" y1="168" x2="242" y2="168" stroke="#f72585" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <text x="334" y="162" text-anchor="middle" font-family="monospace" font-size="12" fill="#f72585" font-weight="600">weather</text>
+
+
+  <!-- Step 4: Agent → LLM execute (with tools) -->
+  <line x1="240" y1="200" x2="598" y2="200" stroke="#4cc9f0" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="420" y="194" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#666">system: 天气助手 prompt + tools</text>
+
+  <!-- Step 5: LLM → tool_use(run_script) -->
+  <line x1="598" y1="230" x2="242" y2="230" stroke="#4cc9f0" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <text x="420" y="224" text-anchor="middle" font-family="monospace" font-size="11" fill="#4cc9f0">tool_use: run_script("weather.js", "深圳")</text>
+
+  <!-- Step 6: Agent → Script -->
+  <line x1="240" y1="260" x2="753" y2="260" stroke="#e67e22" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="497" y="254" text-anchor="middle" font-family="monospace" font-size="11" fill="#666">node skills/weather.js 深圳</text>
+
+  <!-- Step 7: Script → Agent -->
+  <line x1="753" y1="290" x2="242" y2="290" stroke="#e67e22" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <text x="497" y="284" text-anchor="middle" font-family="monospace" font-size="11" fill="#e67e22">{"city":"深圳","temp":28,"condition":"阵雨",...}</text>
+
+  <!-- Step 8: Agent → LLM (tool_result) -->
+  <line x1="240" y1="320" x2="598" y2="320" stroke="#4cc9f0" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="420" y="314" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#666">tool_result: 天气 JSON 数据</text>
+
+  <!-- Step 9: LLM → Agent (final reply) -->
+  <line x1="598" y1="350" x2="242" y2="350" stroke="#4cc9f0" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <text x="420" y="344" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#2d8b4e">深圳目前阵雨，28°C，湿度78%...</text>
+
+
+  <!-- Step 10: Agent → User -->
+  <line x1="238" y1="385" x2="82" y2="385" stroke="#2d8b4e" stroke-width="1.5" marker-end="url(#arr-green)"/>
+  <text x="160" y="379" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#2d8b4e">深圳阵雨 28°C...</text>
+
+  <!-- Note box -->
+  <rect x="30" y="410" width="760" height="50" rx="6" fill="#f0f0f0" stroke="#ddd" stroke-width="0.8"/>
+  <text x="410" y="432" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#555">LLM 自主决定调用 run_script，传入正确参数 → 拿到脚本输出 → 基于数据生成自然语言回复</text>
+  <text x="410" y="450" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#999">Skill prompt 只说了"用 weather.js 查询"，Agent 自己读脚本、理解参数格式、组织调用</text>
+</svg>

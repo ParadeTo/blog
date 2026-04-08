@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="720" viewBox="0 0 820 720">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#555"/>
+    </marker>
+    <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#4361ee"/>
+    </marker>
+    <marker id="arr-green" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#2d8b4e"/>
+    </marker>
+    <marker id="arr-orange" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#e67e22"/>
+    </marker>
+  </defs>
+
+  <rect width="820" height="720" fill="#f8f9fa" rx="10"/>
+
+  <text x="410" y="32" text-anchor="middle" font-family="'PingFang SC','Helvetica Neue',Arial,sans-serif" font-size="16" font-weight="600" fill="#1a1a2e">向量检索策略运行时序（3 轮对话）</text>
+
+  <!-- Participants -->
+  <rect x="50" y="50" width="80" height="32" rx="6" fill="#4361ee"/>
+  <text x="90" y="71" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="13" fill="#fff">User</text>
+
+  <rect x="230" y="50" width="80" height="32" rx="6" fill="#7b2d8b"/>
+  <text x="270" y="71" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="13" fill="#fff">Agent</text>
+
+  <rect x="410" y="50" width="120" height="32" rx="6" fill="#e67e22"/>
+  <text x="470" y="71" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="13" fill="#fff">Embedding</text>
+
+  <rect x="610" y="50" width="160" height="32" rx="6" fill="#4cc9f0"/>
+  <text x="690" y="71" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="13" fill="#fff">LLM（执行）</text>
+
+  <!-- Lifelines -->
+  <line x1="90" y1="82" x2="90" y2="700" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="270" y1="82" x2="270" y2="700" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="470" y1="82" x2="470" y2="700" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="690" y1="82" x2="690" y2="700" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- ═══ 启动阶段 ═══ -->
+  <rect x="180" y="94" width="380" height="50" rx="6" fill="#e67e2208" stroke="#e67e22" stroke-width="0.8" stroke-dasharray="6,3"/>
+  <text x="194" y="112" font-family="'PingFang SC',Arial,sans-serif" font-size="11" font-weight="600" fill="#e67e22">启动</text>
+
+  <line x1="270" y1="125" x2="468" y2="125" stroke="#e67e22" stroke-width="1.5" marker-end="url(#arr-orange)"/>
+  <text x="370" y="119" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#666">embedMany(skill descriptions)</text>
+  <text x="370" y="139" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="10" fill="#999">缓存 skill 向量</text>
+
+  <!-- ═══ Round 1: 翻译 ═══ -->
+  <rect x="20" y="155" width="780" height="165" rx="6" fill="#4361ee08" stroke="#4361ee" stroke-width="0.8" stroke-dasharray="6,3"/>
+  <text x="34" y="173" font-family="'PingFang SC',Arial,sans-serif" font-size="11" font-weight="600" fill="#4361ee">Round 1</text>
+
+  <line x1="90" y1="188" x2="268" y2="188" stroke="#4361ee" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+  <text x="180" y="182" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="12" fill="#333">翻译"你好"</text>
+
+  <line x1="270" y1="210" x2="468" y2="210" stroke="#e67e22" stroke-width="1.5" marker-end="url(#arr-orange)"/>
+  <text x="370" y="204" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#666">embed(用户输入)</text>
+
+  <line x1="468" y1="232" x2="272" y2="232" stroke="#e67e22" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <text x="370" y="226" text-anchor="middle" font-family="monospace" font-size="11" fill="#e67e22">cosine → translate: 0.475</text>
+
+  <line x1="270" y1="260" x2="688" y2="260" stroke="#4cc9f0" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="480" y="254" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#666">system: 你是一位专业翻译...</text>
+
+  <line x1="688" y1="282" x2="272" y2="282" stroke="#4cc9f0" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <text x="480" y="276" text-anchor="middle" font-family="monospace" font-size="12" fill="#2d8b4e" font-weight="600">Hello</text>
+
+  <line x1="268" y1="308" x2="92" y2="308" stroke="#2d8b4e" stroke-width="1.5" marker-end="url(#arr-green)"/>
+  <text x="180" y="302" text-anchor="middle" font-family="monospace" font-size="12" fill="#2d8b4e" font-weight="600">Hello</text>
+
+  <!-- ═══ Round 2: 笑话（未命中） ═══ -->
+  <rect x="20" y="330" width="780" height="145" rx="6" fill="#7b2d8b08" stroke="#7b2d8b" stroke-width="0.8" stroke-dasharray="6,3"/>
+  <text x="34" y="348" font-family="'PingFang SC',Arial,sans-serif" font-size="11" font-weight="600" fill="#7b2d8b">Round 2</text>
+
+  <line x1="90" y1="362" x2="268" y2="362" stroke="#4361ee" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+  <text x="180" y="356" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="12" fill="#333">讲一个笑话</text>
+
+  <line x1="270" y1="384" x2="468" y2="384" stroke="#e67e22" stroke-width="1.5" marker-end="url(#arr-orange)"/>
+  <text x="370" y="378" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#666">embed(用户输入)</text>
+
+  <line x1="468" y1="406" x2="272" y2="406" stroke="#e67e22" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <text x="370" y="400" text-anchor="middle" font-family="monospace" font-size="11" fill="#e67e22">cosine → 最高 0.306 &lt; 0.4</text>
+  <text x="370" y="416" text-anchor="middle" font-family="monospace" font-size="11" fill="#999" font-weight="600">未命中</text>
+
+  <line x1="270" y1="434" x2="688" y2="434" stroke="#4cc9f0" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="480" y="428" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#666">system: 你是一个智能助手...</text>
+
+  <line x1="688" y1="456" x2="272" y2="456" stroke="#4cc9f0" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <text x="480" y="450" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="12" fill="#2d8b4e">小鱼的烦恼...</text>
+
+  <line x1="268" y1="466" x2="92" y2="466" stroke="#2d8b4e" stroke-width="1.5" marker-end="url(#arr-green)"/>
+  <text x="180" y="460" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="12" fill="#2d8b4e">小鱼的烦恼...</text>
+
+  <!-- ═══ Round 3: 总结 ═══ -->
+  <rect x="20" y="485" width="780" height="165" rx="6" fill="#4cc9f008" stroke="#4cc9f0" stroke-width="0.8" stroke-dasharray="6,3"/>
+  <text x="34" y="503" font-family="'PingFang SC',Arial,sans-serif" font-size="11" font-weight="600" fill="#4cc9f0">Round 3</text>
+
+  <line x1="90" y1="518" x2="268" y2="518" stroke="#4361ee" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+  <text x="180" y="512" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="12" fill="#333">总结对话</text>
+
+  <line x1="270" y1="540" x2="468" y2="540" stroke="#e67e22" stroke-width="1.5" marker-end="url(#arr-orange)"/>
+  <text x="370" y="534" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#666">embed(用户输入)</text>
+
+  <line x1="468" y1="562" x2="272" y2="562" stroke="#e67e22" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <text x="370" y="556" text-anchor="middle" font-family="monospace" font-size="11" fill="#e67e22">cosine → summarize: 0.522</text>
+
+  <line x1="270" y1="590" x2="688" y2="590" stroke="#4cc9f0" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="480" y="584" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#666">system: 你是一位摘要助手...</text>
+
+  <line x1="688" y1="612" x2="272" y2="612" stroke="#4cc9f0" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <text x="480" y="606" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="12" fill="#2d8b4e">• 翻译→Hello • 笑话...</text>
+
+  <line x1="268" y1="640" x2="92" y2="640" stroke="#2d8b4e" stroke-width="1.5" marker-end="url(#arr-green)"/>
+  <text x="180" y="634" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="12" fill="#2d8b4e">• 翻译→Hello • 笑话...</text>
+
+  <!-- Legend -->
+  <rect x="30" y="665" width="760" height="40" rx="6" fill="#f0f0f0" stroke="#ddd" stroke-width="0.8"/>
+  <circle cx="60" cy="685" r="6" fill="#e67e22"/>
+  <text x="72" y="689" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#555">Embedding API 检测</text>
+  <circle cx="240" cy="685" r="6" fill="#4cc9f0"/>
+  <text x="252" y="689" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#555">LLM 执行</text>
+  <text x="380" y="689" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#999">对比 All-in-One：检测阶段用 Embedding API 替代 LLM 调用，更快更便宜</text>
+</svg>

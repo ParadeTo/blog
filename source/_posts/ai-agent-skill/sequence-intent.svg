@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="720" viewBox="0 0 820 720">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#555"/>
+    </marker>
+    <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#4361ee"/>
+    </marker>
+    <marker id="arr-green" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#2d8b4e"/>
+    </marker>
+  </defs>
+
+  <rect width="820" height="720" fill="#f8f9fa" rx="10"/>
+
+  <text x="410" y="32" text-anchor="middle" font-family="'PingFang SC','Helvetica Neue',Arial,sans-serif" font-size="16" font-weight="600" fill="#1a1a2e">LLM 意图分类策略运行时序（3 轮对话）</text>
+
+  <!-- Participants -->
+  <rect x="50" y="50" width="80" height="32" rx="6" fill="#4361ee"/>
+  <text x="90" y="71" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="13" fill="#fff">User</text>
+
+  <rect x="230" y="50" width="80" height="32" rx="6" fill="#7b2d8b"/>
+  <text x="270" y="71" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="13" fill="#fff">Agent</text>
+
+  <rect x="420" y="50" width="130" height="32" rx="6" fill="#f72585"/>
+  <text x="485" y="71" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="13" fill="#fff">Haiku（检测）</text>
+
+  <rect x="630" y="50" width="150" height="32" rx="6" fill="#4cc9f0"/>
+  <text x="705" y="71" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="13" fill="#fff">Sonnet（执行）</text>
+
+  <!-- Lifelines -->
+  <line x1="90" y1="82" x2="90" y2="700" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="270" y1="82" x2="270" y2="700" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="485" y1="82" x2="485" y2="700" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="705" y1="82" x2="705" y2="700" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- ═══ Round 1: 翻译 ═══ -->
+  <rect x="20" y="98" width="780" height="185" rx="6" fill="#4361ee08" stroke="#4361ee" stroke-width="0.8" stroke-dasharray="6,3"/>
+  <text x="34" y="116" font-family="'PingFang SC',Arial,sans-serif" font-size="11" font-weight="600" fill="#4361ee">Round 1</text>
+
+  <!-- User → Agent -->
+  <line x1="90" y1="135" x2="268" y2="135" stroke="#4361ee" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+  <text x="180" y="129" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="12" fill="#333">翻译"你好"</text>
+
+  <!-- Agent → Haiku detect -->
+  <line x1="270" y1="158" x2="483" y2="158" stroke="#f72585" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="377" y="152" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#666">system: 判断匹配哪个 skill...</text>
+
+  <!-- Haiku → Agent -->
+  <line x1="483" y1="183" x2="272" y2="183" stroke="#f72585" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <text x="377" y="177" text-anchor="middle" font-family="monospace" font-size="12" fill="#f72585" font-weight="600">translate</text>
+
+  <!-- Agent → Sonnet execute -->
+  <line x1="270" y1="213" x2="703" y2="213" stroke="#4cc9f0" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="487" y="207" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#666">system: 你是一位专业翻译...</text>
+
+  <!-- Sonnet → Agent -->
+  <line x1="703" y1="238" x2="272" y2="238" stroke="#4cc9f0" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <text x="487" y="232" text-anchor="middle" font-family="monospace" font-size="12" fill="#2d8b4e" font-weight="600">Hello</text>
+
+  <!-- Agent → User -->
+  <line x1="268" y1="272" x2="92" y2="272" stroke="#2d8b4e" stroke-width="1.5" marker-end="url(#arr-green)"/>
+  <text x="180" y="266" text-anchor="middle" font-family="monospace" font-size="12" fill="#2d8b4e" font-weight="600">Hello</text>
+
+  <!-- ═══ Round 2: 笑话（未命中） ═══ -->
+  <rect x="20" y="295" width="780" height="170" rx="6" fill="#7b2d8b08" stroke="#7b2d8b" stroke-width="0.8" stroke-dasharray="6,3"/>
+  <text x="34" y="313" font-family="'PingFang SC',Arial,sans-serif" font-size="11" font-weight="600" fill="#7b2d8b">Round 2</text>
+
+  <!-- User → Agent -->
+  <line x1="90" y1="330" x2="268" y2="330" stroke="#4361ee" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+  <text x="180" y="324" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="12" fill="#333">讲一个笑话</text>
+
+  <!-- Agent → Haiku -->
+  <line x1="270" y1="353" x2="483" y2="353" stroke="#f72585" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="377" y="347" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#666">system: 判断匹配哪个 skill...</text>
+
+  <!-- Haiku → Agent (none) -->
+  <line x1="483" y1="378" x2="272" y2="378" stroke="#f72585" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <text x="377" y="372" text-anchor="middle" font-family="monospace" font-size="12" fill="#f72585" font-weight="600">none</text>
+
+  <!-- Agent → Sonnet (default prompt) -->
+  <line x1="270" y1="405" x2="703" y2="405" stroke="#4cc9f0" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="487" y="399" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#666">system: 你是一个智能助手...</text>
+
+  <!-- Sonnet → Agent -->
+  <line x1="703" y1="430" x2="272" y2="430" stroke="#4cc9f0" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <text x="487" y="424" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="12" fill="#2d8b4e">在图书馆点餐...</text>
+
+  <!-- Agent → User -->
+  <line x1="268" y1="455" x2="92" y2="455" stroke="#2d8b4e" stroke-width="1.5" marker-end="url(#arr-green)"/>
+  <text x="180" y="449" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="12" fill="#2d8b4e">在图书馆点餐...</text>
+
+  <!-- ═══ Round 3: 总结（未命中） ═══ -->
+  <rect x="20" y="475" width="780" height="170" rx="6" fill="#4cc9f008" stroke="#4cc9f0" stroke-width="0.8" stroke-dasharray="6,3"/>
+  <text x="34" y="493" font-family="'PingFang SC',Arial,sans-serif" font-size="11" font-weight="600" fill="#4cc9f0">Round 3</text>
+
+  <!-- User → Agent -->
+  <line x1="90" y1="510" x2="268" y2="510" stroke="#4361ee" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+  <text x="180" y="504" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="12" fill="#333">总结一下对话</text>
+
+  <!-- Agent → Haiku -->
+  <line x1="270" y1="533" x2="483" y2="533" stroke="#f72585" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="377" y="527" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#666">system: 判断匹配哪个 skill...</text>
+
+  <!-- Haiku → Agent (none) -->
+  <line x1="483" y1="558" x2="272" y2="558" stroke="#f72585" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <text x="377" y="552" text-anchor="middle" font-family="monospace" font-size="12" fill="#f72585" font-weight="600">none</text>
+
+  <!-- Agent → Sonnet (default prompt) -->
+  <line x1="270" y1="585" x2="703" y2="585" stroke="#4cc9f0" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="487" y="579" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#666">system: 你是一个智能助手...</text>
+
+  <!-- Sonnet → Agent -->
+  <line x1="703" y1="610" x2="272" y2="610" stroke="#4cc9f0" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <text x="487" y="604" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="12" fill="#2d8b4e">1.翻译→Hello 2.笑话...</text>
+
+  <!-- Agent → User -->
+  <line x1="268" y1="635" x2="92" y2="635" stroke="#2d8b4e" stroke-width="1.5" marker-end="url(#arr-green)"/>
+  <text x="180" y="629" text-anchor="middle" font-family="'PingFang SC',Arial,sans-serif" font-size="12" fill="#2d8b4e">1.翻译→Hello 2.笑话...</text>
+
+  <!-- Legend -->
+  <rect x="30" y="660" width="760" height="45" rx="6" fill="#f0f0f0" stroke="#ddd" stroke-width="0.8"/>
+  <circle cx="60" cy="682" r="6" fill="#f72585"/>
+  <text x="72" y="686" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#555">Haiku 检测（快速、低成本）</text>
+  <circle cx="280" cy="682" r="6" fill="#4cc9f0"/>
+  <text x="292" y="686" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#555">Sonnet 执行</text>
+  <text x="430" y="686" font-family="'PingFang SC',Arial,sans-serif" font-size="11" fill="#999">每轮 2 次 LLM 调用：小模型检测 + 主模型执行，职责分离</text>
+</svg>
