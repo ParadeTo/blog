@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="520" viewBox="0 0 860 520">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#555"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#4361ee"/>
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#00000020"/>
+    </filter>
+  </defs>
+
+  <rect width="860" height="520" fill="#f8f9fa" rx="12"/>
+
+  <rect x="20" y="16" width="390" height="488" rx="10" fill="#fff" stroke="#ddd" stroke-width="1"/>
+  <text x="215" y="46" text-anchor="middle" font-family="PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="15" font-weight="600" fill="#555">Skill 路由（上篇）</text>
+
+  <rect x="145" y="70" width="140" height="40" rx="20" fill="#4361ee" filter="url(#shadow)"/>
+  <text x="215" y="95" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="13" fill="#fff">用户输入</text>
+
+  <line x1="215" y1="110" x2="215" y2="140" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <rect x="115" y="140" width="200" height="48" rx="8" fill="#fff" stroke="#4361ee" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="215" y="162" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="13" fill="#333">Skill 检测（路由）</text>
+  <text x="215" y="180" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#888">只能选一个 Skill</text>
+
+  <line x1="215" y1="188" x2="215" y2="218" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <rect x="105" y="218" width="220" height="48" rx="8" fill="#fff" stroke="#7b2d8b" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="215" y="240" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="13" fill="#333">注入 Skill → System Prompt</text>
+  <text x="215" y="258" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#888">一轮只能有一个 Skill 生效</text>
+
+  <line x1="215" y1="266" x2="215" y2="296" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <rect x="125" y="296" width="180" height="44" rx="8" fill="#fff" stroke="#4cc9f0" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="215" y="322" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="13" fill="#333">主 LLM 执行</text>
+
+  <line x1="215" y1="340" x2="215" y2="370" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <rect x="155" y="370" width="120" height="40" rx="20" fill="#2ec4b6" filter="url(#shadow)"/>
+  <text x="215" y="395" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="13" fill="#fff">回复用户</text>
+
+  <rect x="60" y="432" width="310" height="36" rx="6" fill="#fff3cd" stroke="#f0c040" stroke-width="1"/>
+  <text x="215" y="455" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="12" fill="#a67c00">⚠ 复合任务无法处理（只能命中一个 Skill）</text>
+
+  <rect x="450" y="16" width="390" height="488" rx="10" fill="#fff" stroke="#ddd" stroke-width="1"/>
+  <text x="645" y="46" text-anchor="middle" font-family="PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="15" font-weight="600" fill="#555">ReAct 循环（本篇）</text>
+
+  <rect x="575" y="70" width="140" height="40" rx="20" fill="#4361ee" filter="url(#shadow)"/>
+  <text x="645" y="95" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="13" fill="#fff">用户输入</text>
+
+  <line x1="645" y1="110" x2="645" y2="140" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <rect x="545" y="140" width="200" height="48" rx="8" fill="#fff" stroke="#4361ee" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="645" y="162" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="13" fill="#333">LLM 思考</text>
+  <text x="645" y="180" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#888">自主决定下一步做什么</text>
+
+  <polygon points="645,210 715,244 645,278 575,244" fill="#fff" stroke="#f72585" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="645" y="241" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="12" fill="#333">调工具？</text>
+
+  <line x1="715" y1="244" x2="780" y2="244" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="746" y="236" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#888">是</text>
+
+  <rect x="780" y="220" width="48" height="48" rx="8" fill="#fff" stroke="#f0a500" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="804" y="240" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#333">执行</text>
+  <text x="804" y="256" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#333">工具</text>
+
+  <path d="M 804 220 L 804 160 L 745 160" stroke="#4361ee" stroke-width="1.5" fill="none" marker-end="url(#arrow-blue)"/>
+  <text x="812" y="190" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#4361ee">结果追加</text>
+  <text x="812" y="202" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#4361ee">到 messages</text>
+
+  <line x1="645" y1="278" x2="645" y2="310" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="658" y="298" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#888">否</text>
+
+  <rect x="585" y="310" width="120" height="40" rx="20" fill="#2ec4b6" filter="url(#shadow)"/>
+  <text x="645" y="335" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="13" fill="#fff">回复用户</text>
+
+  <rect x="490" y="372" width="310" height="96" rx="8" fill="#f0f4ff" stroke="#4361ee" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="645" y="394" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="12" font-weight="600" fill="#4361ee">可用工具</text>
+  <text x="504" y="416" font-family="monospace" font-size="11" fill="#555">list_skills  — 查看有哪些 Skill</text>
+  <text x="504" y="434" font-family="monospace" font-size="11" fill="#555">get_skill    — 获取 Skill 详细指令</text>
+  <text x="504" y="452" font-family="monospace" font-size="11" fill="#555">read_file / run_script — 通用执行</text>
+</svg>

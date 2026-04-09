@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="560" viewBox="0 0 780 560">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#555"/>
+    </marker>
+    <marker id="arr-ret" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#4361ee"/>
+    </marker>
+    <filter id="sh" x="-3%" y="-3%" width="106%" height="106%">
+      <feDropShadow dx="1" dy="1" stdDeviation="1.5" flood-color="#00000018"/>
+    </filter>
+  </defs>
+
+  <rect width="780" height="560" fill="#f8f9fa" rx="12"/>
+
+  <text x="390" y="32" text-anchor="middle" font-family="PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="16" font-weight="600" fill="#1a1a2e">ReAct 循环执行时序：“查深圳天气，翻译成英文”</text>
+
+  <rect x="60" y="52" width="100" height="36" rx="18" fill="#4361ee" filter="url(#sh)"/>
+  <text x="110" y="75" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="13" fill="#fff">用户</text>
+
+  <rect x="280" y="52" width="140" height="36" rx="18" fill="#7b2d8b" filter="url(#sh)"/>
+  <text x="350" y="75" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="13" fill="#fff">Agent (LLM)</text>
+
+  <rect x="560" y="52" width="100" height="36" rx="18" fill="#f0a500" filter="url(#sh)"/>
+  <text x="610" y="75" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="13" fill="#fff">工具</text>
+
+  <line x1="110" y1="88" x2="110" y2="530" stroke="#4361ee" stroke-width="1" stroke-dasharray="4,3" opacity="0.4"/>
+  <line x1="350" y1="88" x2="350" y2="530" stroke="#7b2d8b" stroke-width="1" stroke-dasharray="4,3" opacity="0.4"/>
+  <line x1="610" y1="88" x2="610" y2="530" stroke="#f0a500" stroke-width="1" stroke-dasharray="4,3" opacity="0.4"/>
+
+  <!-- User -> Agent -->
+  <line x1="110" y1="110" x2="340" y2="110" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="226" y="104" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#333">查深圳天气，翻译成英文</text>
+
+  <!-- Step 1: list_skills -->
+  <rect x="234" y="124" width="84" height="18" rx="4" fill="#f72585"/>
+  <text x="276" y="137" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#fff">Step 1 (1.7s)</text>
+  <line x1="350" y1="148" x2="600" y2="148" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="476" y="142" text-anchor="middle" font-family="monospace" font-size="11" fill="#333">list_skills()</text>
+  <line x1="600" y1="168" x2="360" y2="168" stroke="#4361ee" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arr-ret)"/>
+  <text x="476" y="163" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#4361ee">[weather, translate, summarize]</text>
+
+  <!-- Step 2: get_skill x2 parallel -->
+  <rect x="234" y="186" width="84" height="18" rx="4" fill="#f72585"/>
+  <text x="276" y="199" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#fff">Step 2 (2.4s)</text>
+  <line x1="350" y1="210" x2="600" y2="210" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="476" y="204" text-anchor="middle" font-family="monospace" font-size="11" fill="#333">get_skill("weather")</text>
+  <line x1="350" y1="228" x2="600" y2="228" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="476" y="222" text-anchor="middle" font-family="monospace" font-size="11" fill="#333">get_skill("translate")</text>
+  <!-- parallel badge -->
+  <rect x="632" y="210" width="44" height="16" rx="3" fill="#f72585" opacity="0.8"/>
+  <text x="654" y="221" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="9" fill="#fff">并行</text>
+  <line x1="600" y1="248" x2="360" y2="248" stroke="#4361ee" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arr-ret)"/>
+  <text x="476" y="243" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#4361ee">天气指令 + 翻译指令</text>
+
+  <!-- Step 3: run_script -->
+  <rect x="234" y="266" width="84" height="18" rx="4" fill="#f72585"/>
+  <text x="276" y="279" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#fff">Step 3 (1.8s)</text>
+  <line x1="350" y1="290" x2="600" y2="290" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="476" y="284" text-anchor="middle" font-family="monospace" font-size="11" fill="#333">run_script("weather.js", "深圳")</text>
+  <line x1="600" y1="310" x2="360" y2="310" stroke="#4361ee" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arr-ret)"/>
+  <text x="476" y="305" text-anchor="middle" font-family="monospace" font-size="10" fill="#4361ee">{"city":"深圳","temp":28,"condition":"阵雨",...}</text>
+
+  <!-- Step 4: Final answer -->
+  <rect x="234" y="328" width="84" height="18" rx="4" fill="#2ec4b6"/>
+  <text x="276" y="341" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#fff">Step 4 (4.0s)</text>
+  <text x="350" y="368" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#7b2d8b">模型生成最终回答（无工具调用）</text>
+
+  <!-- Agent -> User -->
+  <line x1="340" y1="388" x2="120" y2="388" stroke="#2ec4b6" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="118" y="400" width="380" height="32" rx="6" fill="#e8f8f5" stroke="#2ec4b6" stroke-width="1"/>
+  <text x="308" y="421" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="12" fill="#333">The current weather in Shenzhen is scattered showers...</text>
+
+  <!-- Legend -->
+  <rect x="40" y="454" width="700" height="80" rx="8" fill="#fff" stroke="#ddd" stroke-width="1"/>
+  <rect x="56" y="468" width="12" height="12" rx="2" fill="#f72585"/>
+  <text x="76" y="479" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#555">工具调用步骤</text>
+  <rect x="176" y="468" width="12" height="12" rx="2" fill="#2ec4b6"/>
+  <text x="196" y="479" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#555">最终回答</text>
+  <line x1="276" y1="474" x2="326" y2="474" stroke="#4361ee" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <text x="336" y="479" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#555">工具返回结果</text>
+
+  <text x="56" y="502" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#888">• Step 2 模型自主并行获取了 weather 和 translate 两个 Skill，代码里没有写任何并行逻辑</text>
+  <text x="56" y="520" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#888">• 全程 4 次 LLM 调用，input tokens 从 1043 累积到 1745，总耗时 ~10s</text>
+
+  <!-- Loop bracket -->
+  <rect x="220" y="118" width="420" height="234" rx="4" fill="none" stroke="#f72585" stroke-width="1" stroke-dasharray="6,4" opacity="0.5"/>
+  <text x="232" y="132" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#f72585">ReAct 循环</text>
+</svg>

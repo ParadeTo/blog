@@ -58,7 +58,8 @@
       "Bash(npx --yes @mermaid-js/mermaid-cli --version)",
       "Bash(python3:*)",
       "WebFetch(domain:www.anthropic.com)",
-      "WebFetch(domain:docs.anthropic.com)"
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(ls /Users/youxingzhi/ayou/blog/source/_posts/*.md)"
     ]
   }
 }
