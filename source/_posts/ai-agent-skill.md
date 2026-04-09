@@ -1,5 +1,5 @@
 ---
-title: 让 Agent 支持 Skill：动态能力扩展的设计与实现
+title: 简单实战一下，如何让你的 Agent 支持 Skill
 date: 2026-04-07 10:00:00
 tags:
   - ai
@@ -7,7 +7,7 @@ tags:
   - skill
 categories:
   - ai
-description: 把 Agent 的能力拆成独立 Skill 文件，按需加载进上下文，解决 System Prompt 膨胀和 MCP 上下文爆炸的问题，附两种检测策略的完整 JS 实现与对比。
+description: 把 Agent 能力拆成独立 Skill 文件按需加载，解决 Prompt 膨胀问题。用 Vercel AI SDK 实现向量检索和 LLM 意图分类两种检测策略，附完整代码和成本对比。
 ---
 
 # 前言
@@ -402,6 +402,8 @@ if (city && mockData[city]) {
 
 # 总结
 
-Skill 就是把上下文模块化。Agent 的能力变成可以随意插拔的文件，加个新 Skill 就是加个 `.md`，不想要了直接删。只有命中的 Skill 才进上下文，不占多余 token。Skill 从两个涨到两百个，核心代码一行不用动，换个检测策略就能撑住。
+回头看，Skill 系统做的事情很简单：把 Agent 的能力从一坨巨大的 System Prompt 里拆出来，变成一个个独立的 `.md` 文件。加能力就是加文件，删能力就是删文件，不碰一行代码。只有被触发的 Skill 才会进上下文，其余的不占 token。
 
-Claude Code 的 [superpowers](https://github.com/anthropics/claude-code) 用的也是类似思路，把行为规范从硬编码的 prompt 拆成可以动态加载的独立文件。你的 Agent 要是也 prompt 越写越长，可以往这个方向试试。
+检测策略上，向量检索适合 Skill 多、对延迟敏感的场景，成本几乎可以忽略；LLM 意图分类准确率更高，用 Haiku 做检测一万轮才花 $1.6，大多数场景够用了。两种策略可以随时切换，执行逻辑不用动。
+
+加上 `read_file` 和 `run_script` 之后，Skill 不再局限于纯文字指导，还能让 Agent 自己去读脚本、跑脚本、拿数据。行为指导和工具调用捆在同一个文件里，Agent 拿到就知道该怎么干。
