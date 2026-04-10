@@ -18,7 +18,6 @@ demo/agent-memory/
 ├── bootstrap.js          # bootstrap() —— 加载身份 + 记忆，组装 system prompt
 ├── prune.js              # prune() —— 裁剪旧的 Tool Result
 ├── compress.js           # compress() —— token 阈值触发压缩 + 持久化
-├── token.js              # countTokens() —— token 计数工具
 ├── package.json
 └── workspace/            # Agent 的"工作空间"
     ├── soul.md           # 身份与性格（固定）
@@ -95,7 +94,7 @@ function prune(messages, { recentKeep = 2 } = {}) → messages
 
 当 messages 的 token 总量超过阈值时触发。
 
-**触发条件：** `countTokens(messages) > TOKEN_THRESHOLD`（默认 4000 tokens，方便演示）
+**触发条件：** 由主循环判断——上一次 LLM 调用的 `usage.promptTokens` 超过 `TOKEN_THRESHOLD`（默认 4000 tokens，方便演示）时调用 compress
 
 **流程：**
 1. **持久化（lossless）**：把当前完整 messages 追加写入 `sessions/raw.jsonl`，一行一条 JSON
@@ -108,31 +107,41 @@ function prune(messages, { recentKeep = 2 } = {}) → messages
 **函数签名：**
 
 ```javascript
-async function compress(messages, { threshold = 4000, keepRecent = 4 } = {}) → messages
+async function compress(messages, { keepRecent = 4 } = {}) → messages
 ```
 
 **日志输出：** `[Compress] 5200 → 1800 tokens`
 
-### 4. Token 计数（token.js）
+### 4. Token 计数
 
-简单的 token 估算。demo 不需要精确计数，统一用字符数 / 2 近似（中英文混合场景的合理折中）。提供一个 `countTokens(messages)` 函数。
+不自己估算，直接从 LLM API 响应中获取。Vercel AI SDK 的 `generateText` 返回 `usage.promptTokens`，即该次调用完整 prompt 的 token 数（system prompt + 全部 messages）。
 
-**函数签名：**
+每次 LLM 调用后记录 `promptTokens`，下一轮调用前用它判断是否需要压缩。因为 messages 只增不减，上一次的值是当前上下文大小的下界，判断方向不会错。
 
 ```javascript
-function countTokens(input) → number  // input 可以是 string 或 messages 数组
+let lastPromptTokens = 0
+
+// LLM 调用后
+const { usage } = await generateText({ ... })
+lastPromptTokens = usage.promptTokens
+
+// 下一轮调用前
+if (lastPromptTokens > TOKEN_THRESHOLD) {
+  messages = await compress(messages)
+}
 ```
 
 ### 5. 工具定义
 
-四个通用基础工具：
+三个通用基础工具：
 
 | 工具 | 描述 | 用途 |
 |------|------|------|
 | `bash` | 执行 shell 命令，返回 stdout | `ls`、`cat`、`curl` 等，返回可能很长 |
-| `read_file` | 读取文件内容 | 读大文件时 Tool Result 膨胀 |
+| `read_file` | 读取文件内容 | 读大文件时 Tool Result 自然膨胀 |
 | `write_file` | 写入文件内容 | 通用文件操作 |
-| `write_memory` | 写入记忆条目到 memory/MEMORY.md | Agent 判断某条信息值得长期记住时主动调用，与压缩时自动提取记忆互补 |
+
+记忆更新不通过工具，而是在压缩流程中自动提取关键事实写入 `memory/MEMORY.md`。
 
 ### 6. 主循环（index.js）
 
@@ -141,9 +150,10 @@ ReAct 循环，每轮 LLM 调用前执行剪枝和压缩：
 ```
 用户输入
   → messages.push(user message)
-  → prune(messages)          // 裁剪旧 Tool Result
-  → compress(messages)       // 超阈值则压缩
-  → LLM 调用（带工具）
+  → prune(messages)                          // 裁剪旧 Tool Result
+  → if (lastPromptTokens > threshold)        // 上次调用已超阈值？
+      messages = await compress(messages)    //   压缩
+  → LLM 调用（带工具）→ 记录 usage.promptTokens
   → 有工具调用？执行工具，继续循环
   → 无工具调用？输出回答
 ```
@@ -240,3 +250,66 @@ REPL 输出示例：
   }
 }
 ```
+
+## 文章设计
+
+### 元信息
+
+- **标题**：Agent 上下文工程实战：Bootstrap、剪枝与压缩
+- **tags**：ai, agent, context-engineering
+- **categories**：ai
+- **description**：围绕"上下文就是 Agent 的全部"这个核心观点，用 Vercel AI SDK 实现 Bootstrap 预加载、Tool Result 剪枝、对话压缩三个机制，附完整可运行 demo。
+
+### 文章结构
+
+**前言**
+- 引出核心论点：上下文工程 = 加法 + 减法
+- 用"员工入职"类比：Bootstrap 是发手册，剪枝是清理桌面，压缩是把旧笔记总结归档
+- 说明本文是 Phase 1，聚焦单会话内的上下文管理，后续还有记忆检索和 Skill 按需加载
+
+**一、Bootstrap：让 Agent 不再从零开始**
+- 问题：每次对话 Agent 什么都不知道
+- 解决：启动时从 workspace 文件加载身份、规则、记忆索引
+- 三个原则：只注入骨架不注入全文、XML 标签分块、硬上限保护
+- 贴 `bootstrap.js` 核心代码
+- 展示 system prompt 组装结果
+
+**二、上下文剪枝：给 Tool Result 做减法**
+- 问题：工具返回是最大的膨胀源，贴一个具体数字说明（一次 bash 调用返回多少 token）
+- 黄金规则：对话不动、Tool Result 大刀阔斧、关键信息先提取
+- 贴 `prune.js` 核心代码
+- 演示日志：截断前后的 token 对比
+
+**三、上下文压缩：该忘的就忘**
+- 问题：对话越来越长，Context Rot
+- 简要科普 Context Rot（Transformer 注意力分散 + 成本平方增长），不展开太深
+- 触发时机：30-40% 就该压，不要等到 80%
+- 关键策略：压缩前先持久化（lossless）
+- 完整流程：持久化 → 切分 → 摘要 → 替换 → 更新记忆索引
+- 贴 `compress.js` 核心代码
+- 演示日志：压缩前后的 token 骤降 + MEMORY.md 新增条目
+
+**四、串起来：完整的 ReAct 循环**
+- 贴 `index.js` 主循环代码，展示 bootstrap → prune → compress → LLM 的管道
+- 完整的 REPL 运行日志截图/文本，展示一次从启动到压缩触发的完整过程
+
+**五、延伸：Claude Code 怎么做上下文管理**
+- Claude Code 的 compact 命令对标我们的 compress
+- Claude Code 的 system prompt 结构对标我们的 bootstrap
+- 它的 Tool Result 处理策略
+- 简短对比，给读者一个"生产级实现"的参照
+
+**总结**
+- 回扣加法减法的框架
+- Phase 1 解决了单会话上下文管理
+- 预告 Phase 2：跨会话记忆检索、Skill 按需加载
+
+### 写作风格
+
+保持与系列前两篇一致：
+- 中文技术写作，术语首次出现标英文原文
+- 每个概念先说"解决什么问题"，再贴代码
+- 代码块带注释但不过度解释
+- 用实际运行日志佐证效果
+- 类比帮助理解（员工手册、清理桌面、笔记归档）
+- 文章长度控制在 300-400 行 Markdown

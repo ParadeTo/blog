@@ -1,0 +1,13 @@
+{
+  "name": "agent-memory-demo",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "ai": "^4.0.0",
+    "@ai-sdk/anthropic": "^1.0.0",
+    "zod": "^3.23.0"
+  }
+}
