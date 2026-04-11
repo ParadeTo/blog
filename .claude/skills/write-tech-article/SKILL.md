@@ -129,6 +129,7 @@ description: Use when the user wants to write a new technical blog article or ed
 - GitHub 项目：始终链接到具体的 tag 或 commit，如 `[v1](https://github.com/owner/repo/tree/v1)`
 - 代码块：始终加语言标识符（` ```typescript `、` ```bash `、` ```python `）
 - 图片：本地相对路径 `./article-slug/N.png`，仅使用 PNG 或 JPG 格式（不用 SVG、WebP 等）；需要示意图或流程图时，由 Claude 直接绘制并保存为图片文件，不要使用 bash 命令生成图片，也不要留占位符
+- 流程图/架构图规范：连接线不得穿越任何节点框体，必须沿框体外侧绕行；线上的标注文字不得覆盖任何框体，需留出间距；同一系列文章的配图应保持统一的配色、形状和排版风格（参考 `source/_posts/ai-agent-skill/flow.png` 的视觉基准）
 - SVG 转 PNG/JPG：使用 `node ~/.claude/skills/write-tech-article/svg-to-image.js <file.svg> [png|jpg] [width]`；依赖 `sharp`（优先）或 `playwright`，首次使用需安装（`npm install sharp`）
 - 先说"为什么"，再说"怎么做"——不要只堆代码，先给出背景
 - 段落和章节之间要有自然的衔接过渡，每个章节应顺势引出下一节，避免生硬跳转
