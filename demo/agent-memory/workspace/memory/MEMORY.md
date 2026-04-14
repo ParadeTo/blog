@@ -1,5 +1,7 @@
 # 记忆索引
-- [2026-04-10] 用户名小明，职业前端工程师，偏好TypeScript + VSCode，习惯早上喝美式咖啡
-- [2026-04-10] 当前项目为Node.js工具类项目，使用pnpm，核心文件包括compress.js、index.js、prune.js、server.js等
-- [2026-04-10] compress.js：对话压缩模块，备份路径sessions/raw.jsonl，记忆路径memory/MEMORY.md(上限200行)，上下文快照路径sessions/ctx.json，默认保留最近2条消息
-- [2026-04-10] 工具结果序列化超200字截断，LLM压缩输出摘要≤500字+3~5条长期记忆
+
+- 前端技术栈偏好 → memory/tech_stack.md  [created: 2025-10-20, updated: 2025-10-20]
+- 投资笔记 → memory/investment.md  [created: 2025-11-03, updated: 2025-11-03]
+- 周报格式 → memory/weekly_report.md  [created: 2026-01-15, updated: 2026-03-10]
+- 代码审查规范 → memory/code_reviwe.md  [created: 2026-02-08, updated: 2026-02-08]
+- 咖啡偏好  [created: 2026-03-01, updated: 2026-03-01]

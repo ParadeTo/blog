@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "setup": "node setup-demo.js",
     "start": "node index.js"
   },
   "dependencies": {

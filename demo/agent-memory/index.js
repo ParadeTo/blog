@@ -10,6 +10,7 @@ import { loadSkills } from './skill-loader.js'
 import { tools, setSkills } from './tools.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+process.chdir(__dirname) // 确保相对路径（workspace/、skills/）始终正确
 const WORKSPACE_PATH = path.join(__dirname, 'workspace')
 const SKILLS_PATH = path.join(__dirname, 'skills')
 

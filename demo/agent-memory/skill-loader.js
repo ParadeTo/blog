@@ -15,10 +15,25 @@ export function parseFrontmatter(raw) {
 }
 
 export function loadSkills(skillsDir) {
-  const files = fs.readdirSync(skillsDir).filter(f => f.endsWith('.md'))
-  return files.map(file => {
-    const raw = fs.readFileSync(path.join(skillsDir, file), 'utf-8')
+  const entries = fs.readdirSync(skillsDir, { withFileTypes: true })
+  const skills = []
+
+  for (const entry of entries) {
+    let filePath
+    if (entry.isFile() && entry.name.endsWith('.md')) {
+      // 单文件 skill: skills/memory-save.md
+      filePath = path.join(skillsDir, entry.name)
+    } else if (entry.isDirectory()) {
+      // 目录 skill: skills/standup-message/SKILL.md
+      const skillMd = path.join(skillsDir, entry.name, 'SKILL.md')
+      if (fs.existsSync(skillMd)) filePath = skillMd
+    }
+    if (!filePath) continue
+
+    const raw = fs.readFileSync(filePath, 'utf-8')
     const { data, body } = parseFrontmatter(raw)
-    return { name: data.name, description: data.description, prompt: body, file }
-  })
+    skills.push({ name: data.name, description: data.description, prompt: body, file: path.relative(skillsDir, filePath) })
+  }
+
+  return skills
 }
