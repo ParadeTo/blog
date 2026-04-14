@@ -397,7 +397,7 @@ memory-governance 的核心是扫描阶段的 8 类检查：
 
 ## 3.4 Demo 演示 + 代码讲解
 
-memory-governance 的完整 Skill 文件：
+memory-governance 的 Skill 文件（核心部分）：
 
 ```markdown
 ---
@@ -563,7 +563,7 @@ async function getFileIdentity(filePath: string): Promise<string | null> {
 }
 ```
 
-## 4.3 记忆治理：backgroundHousekeeping + autoDream
+## 4.3 记忆治理：autoDream 自动整合
 
 我们的 memory-governance 需要用户手动触发或达到行数阈值时提示。Claude Code 走得更远——自动化治理。
 
