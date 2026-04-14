@@ -1,17 +1,17 @@
 import readline from 'readline'
 import path from 'path'
-import fs from 'fs'
 import { fileURLToPath } from 'url'
-import { generateText, tool } from 'ai'
+import { generateText } from 'ai'
 import { createAnthropic } from '@ai-sdk/anthropic'
-import { z } from 'zod'
-import { execSync } from 'child_process'
 import { bootstrap } from './bootstrap.js'
 import { prune } from './prune.js'
 import { compress } from './compress.js'
+import { loadSkills } from './skill-loader.js'
+import { tools, setSkills } from './tools.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const WORKSPACE_PATH = path.join(__dirname, 'workspace')
+const SKILLS_PATH = path.join(__dirname, 'skills')
 
 const anthropic = createAnthropic({
   baseURL: 'http://localhost:3002',
@@ -21,54 +21,6 @@ const model = anthropic('claude-sonnet-4-6')
 
 const TOKEN_THRESHOLD = 6000
 const MAX_ITERATIONS = 10
-
-// ── 工具定义 ─────────────────────────────────────────────────────────────────
-const tools = {
-  bash: tool({
-    description: '执行 shell 命令，返回 stdout',
-    parameters: z.object({
-      command: z.string().describe('要执行的 shell 命令'),
-    }),
-    execute: async ({ command }) => {
-      try {
-        return execSync(command, { encoding: 'utf-8', timeout: 10000 }).trim()
-      } catch (e) {
-        return `执行失败: ${e.message}`
-      }
-    },
-  }),
-
-  read_file: tool({
-    description: '读取指定路径的文件内容',
-    parameters: z.object({
-      path: z.string().describe('文件路径'),
-    }),
-    execute: async ({ path: filePath }) => {
-      try {
-        return fs.readFileSync(filePath, 'utf-8')
-      } catch (e) {
-        return `读取失败: ${e.message}`
-      }
-    },
-  }),
-
-  write_file: tool({
-    description: '将内容写入指定路径的文件',
-    parameters: z.object({
-      path: z.string().describe('文件路径'),
-      content: z.string().describe('要写入的内容'),
-    }),
-    execute: async ({ path: filePath, content }) => {
-      try {
-        fs.mkdirSync(path.dirname(filePath), { recursive: true })
-        fs.writeFileSync(filePath, content)
-        return `已写入 ${filePath}`
-      } catch (e) {
-        return `写入失败: ${e.message}`
-      }
-    },
-  }),
-}
 
 // ── ReAct 循环 ───────────────────────────────────────────────────────────────
 let lastPromptTokens = 0
@@ -138,10 +90,27 @@ async function chat(messages, systemPrompt) {
 
 // ── REPL ─────────────────────────────────────────────────────────────────────
 async function main() {
-  const systemPrompt = bootstrap(WORKSPACE_PATH)
+  // 1. 加载 skills
+  const skills = loadSkills(SKILLS_PATH)
+  setSkills(skills)
+
+  // 2. 构建 system prompt = bootstrap + skill 列表
+  const basePrompt = bootstrap(WORKSPACE_PATH)
+  const skillList = skills
+    .map(s => `- ${s.name}: ${s.description}`)
+    .join('\n')
+  const systemPrompt = `${basePrompt}
+
+<available_skills>
+以下是你可以按需加载的 Skill。当用户的请求匹配某个 Skill 的描述时，用 load_skill 工具加载它，然后按照返回的指令执行。
+
+${skillList}
+</available_skills>`
+
   console.log('=== 小橙 · 个人助理 Agent ===')
-  console.log('演示上下文管理：Bootstrap + 剪枝 + 压缩')
+  console.log('演示上下文管理 + 文件系统记忆')
   console.log(`[Bootstrap] System prompt loaded`)
+  console.log(`[Skills] 已加载 ${skills.length} 个: ${skills.map(s => s.name).join('、')}`)
   console.log(`[Config] Token threshold: ${TOKEN_THRESHOLD}`)
   console.log('输入 exit 退出\n')
 
