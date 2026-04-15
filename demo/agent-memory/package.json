@@ -9,6 +9,9 @@
   "dependencies": {
     "ai": "^4.0.0",
     "@ai-sdk/anthropic": "^1.0.0",
+    "@ai-sdk/openai": "^1.0.0",
+    "pg": "^8.13.0",
+    "pgvector": "^0.2.0",
     "zod": "^3.23.0"
   }
 }
