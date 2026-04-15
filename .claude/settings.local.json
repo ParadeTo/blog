@@ -62,7 +62,9 @@
       "Bash(ls /Users/youxingzhi/ayou/blog/source/_posts/*.md)",
       "Bash(git:*)",
       "Bash(ls /Users/youxingzhi/ayou/blog/ai-mem*)",
-      "Bash(npx hexo:*)"
+      "Bash(npx hexo:*)",
+      "Bash(claude --version)",
+      "Bash(claude update *)"
     ]
   }
 }
