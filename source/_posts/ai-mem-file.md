@@ -7,7 +7,7 @@ tags:
   - context-engineering
 categories:
   - ai
-description: 介绍 AI Agent 文件系统记忆的实战方案，包括 memory-save 记忆写入、skill-creator 程序记忆沉淀、memory-governance 记忆治理，并解析 Claude Code 的记忆实现。
+description: 用文件系统给 Agent 加记忆：memory-save 写入偏好，skill-creator 沉淀操作流程，memory-governance 清理过期记忆，最后看看 Claude Code 的实现。
 ---
 
 # 前言
