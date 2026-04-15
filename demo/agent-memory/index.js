@@ -8,6 +8,7 @@ import { prune } from './prune.js'
 import { compress } from './compress.js'
 import { loadSkills } from './skill-loader.js'
 import { tools, setSkills } from './tools.js'
+import { initDB } from './db.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 process.chdir(__dirname) // 确保相对路径（workspace/、skills/）始终正确
@@ -91,6 +92,9 @@ async function chat(messages, systemPrompt) {
 
 // ── REPL ─────────────────────────────────────────────────────────────────────
 async function main() {
+  // 0. 初始化数据库
+  await initDB()
+
   // 1. 加载 skills
   const skills = loadSkills(SKILLS_PATH)
   setSkills(skills)
