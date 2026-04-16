@@ -11,12 +11,13 @@ const pool = new pg.Pool({
 export async function initDB() {
   const client = await pool.connect()
   try {
-    await pgvector.registerTypes(client)
+    // 先建 extension，再注册类型（registerTypes 需要 vector 类型已存在）
     const schema = fs.readFileSync(
       new URL('./schema.sql', import.meta.url),
       'utf-8'
     )
     await client.query(schema)
+    await pgvector.registerTypes(client)
     console.log('[DB] schema initialized')
   } finally {
     client.release()

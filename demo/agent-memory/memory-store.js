@@ -4,8 +4,8 @@ import { createOpenAI } from '@ai-sdk/openai'
 import { query } from './db.js'
 
 const openai = createOpenAI({
-  baseURL: process.env.EMBEDDING_BASE_URL || 'https://api.openai.com/v1',
-  apiKey: process.env.OPENAI_API_KEY,
+  baseURL: process.env.EMBEDDING_BASE_URL || process.env.ANTHROPIC_BASE_URL || 'http://localhost:3001',
+  apiKey: process.env.EMBEDDING_API_KEY || process.env.ANTHROPIC_API_KEY || 'no-key',
 })
 
 const embeddingModel = openai.embedding('text-embedding-3-small')

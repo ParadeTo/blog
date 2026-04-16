@@ -18,7 +18,7 @@ description: 当文件系统记忆撑不住时，用 RAG + pgvector 混合检索
 
 MEMORY.md 有 200 行硬上限，三个月的对话积累，200 行根本装不下。你可以按主题拆 topic 文件，但 topic 越来越多，每次 Bootstrap 加载的东西越来越杂，该找的找不到，不该出现的一直占着注意力。更崩溃的是，用户说"上次那个航班"——这种模糊查询在文件系统里根本没法匹配，因为没有任何文件名叫"那个航班"。
 
-说白了，文件系统记忆的瓶颈不在于单个文件——那些确实是按需读取的——**瓶颈在索引本身。** MEMORY.md 这个索引每次 Bootstrap 全量加载，200 行上限装不下越来越多的条目；而且匹配靠的是文件名和描述，没有语义理解能力，"上次那个航班"在索引里根本找不到对应的文件。
+说白了，文件系统记忆的瓶颈不在于单个文件，那些确实是按需读取的。**瓶颈在索引本身。** MEMORY.md 这个索引每次 Bootstrap 全量加载，200 行上限装不下越来越多的条目；而且匹配靠的是文件名和描述，没有语义理解能力，"上次那个航班"在索引里根本找不到对应的文件。
 
 解法是把"维护索引 → 按名查找"换成"直接搜数据库"。用户问到历史信息时，Agent 去搜，搜到了注入上下文，搜不到就说不知道——和人的长期记忆一个道理。
 
@@ -107,12 +107,14 @@ SELECT to_tsvector('simple', '用 pgvector 做向量数据库');
 -- 结果：'pgvector':2 '做':3 '向量数据库':4 '用':1
 ```
 
-冒号后面的数字是词在原文中的位置，`ts_rank` 打分时会用到。比如搜"向量数据库"，有两条记录都包含"向量"和"数据库"：
+注意这里用的是 `simple` 配置——它只按空格和标点切分，不做中文分词。所以"向量数据库"整个是一个 token，不会拆成"向量"和"数据库"。英文和拼音天然用空格分隔，`simple` 够用；中文如果需要更细粒度的分词，得装 `zhparser` 或 `pg_jieba` 之类的插件。本文用 `simple` 做演示，足够说明原理。
 
-- 记录 A：`'向量':1 '数据库':2` — 位置 1 和 2，紧挨着
-- 记录 B：`'向量':1 '其他词':2 '一堆内容':3 ... '数据库':10` — 隔了八个词
+冒号后面的数字是词在原文中的位置，`ts_rank` 打分时会用到。比如搜 `pgvector performance`，有两条记录都包含这两个词：
 
-A 的匹配词紧挨着，更可能是在讨论"向量数据库"这个完整概念，`ts_rank` 会给 A 更高的分数。
+- 记录 A：`'pgvector':1 'performance':2` — 位置 1 和 2，紧挨着
+- 记录 B：`'pgvector':1 'some':2 'other':3 ... 'performance':10` — 隔了八个词
+
+A 的匹配词紧挨着，更可能是在讨论 "pgvector performance" 这个完整概念，`ts_rank` 会给 A 更高的分数。
 
 **GIN（Generalized Inverted Index，通用倒排索引）是加速 `tsvector` 查询的索引类型。** 倒排索引的原理和书的目录类似：不是"第 3 页有哪些词"，而是反过来——"pgvector 这个词出现在第 2、5、8 条记录"。查询时直接按词条定位到记录，不用扫全表。
 
@@ -213,24 +215,7 @@ const {embedding} = await embed({model, value: '上次那个航班'})
 
 这是本文的核心。我们用 PostgreSQL + pgvector 做一个完整的混合检索记忆系统：向量语义搜索和 BM25 关键字搜索在同一条 SQL 里完成，不需要两个数据库。
 
-## 4.1 环境准备
-
-用 Docker 启动一个带 pgvector 扩展的 PostgreSQL：
-
-```bash
-docker run --name mem-pg -d \
-  -e POSTGRES_PASSWORD=postgres \
-  -p 5432:5432 \
-  pgvector/pgvector:pg17
-```
-
-npm 依赖：
-
-```bash
-npm install ai @ai-sdk/openai pg zod
-```
-
-## 4.2 Schema 设计
+## 4.1 Schema 设计
 
 先看完整的建表语句，然后逐个说设计决策：
 
@@ -276,17 +261,19 @@ CREATE INDEX IF NOT EXISTS memories_created_at_idx  ON memories (created_at DESC
 CREATE INDEX IF NOT EXISTS memories_tags_idx        ON memories USING gin (tags);
 ```
 
-三个设计决策值得展开说。
+这张表的列可以分成三类：**用于检索的**（`summary_vec`、`message_vec`、`search_tsv`、`tags`）、**用于过滤的**（`routing_key`、`created_at`）、**用于回答的**（`user_message`、`assistant_reply`、`summary`）。前两类帮 Agent 找到相关记忆，第三类是找到之后真正注入上下文的内容——Agent 拿到 `summary` 和 `assistant_reply`，组织成自然语言放进当前对话，用户感受到的就是"这个 Agent 记得之前聊过的事"。
+
+三个设计决策展开说一下。
 
 **`search_tsv` 用 `GENERATED ALWAYS AS` 自动维护。** 写入时只需要填 `search_text`（用户消息 + 摘要 + 标签拼接），PostgreSQL 自动把它分词后更新到 `search_tsv` 列。不需要手动维护全文索引，也不会出现索引和数据不一致的问题。
 
-**两个向量列：`summary_vec` 和 `message_vec`。** 为什么要两个？因为搜索意图不同。用户说"上次那个航班"，用摘要向量搜更准（摘要是提炼后的一句话）；用户说"我发过一段很长的代码"，用原始消息向量搜更准（保留了原始细节）。两个维度的语义搜索，召回更全面。
+**两个向量列：`summary_vec` 和 `message_vec`。** 为什么要两个？因为搜索意图不同。用户说"上次那个航班"，用摘要向量搜更准（摘要是提炼后的一句话）；用户说"我发过一段很长的代码"，用原始消息向量搜更准（保留了原始细节）。
 
-**向量是普通列，不是独立的向量数据库。** 这是本文最重要的设计原则。`summary_vec` 和 `message_vec` 就是表里的两个字段，和 `tags`、`created_at` 没有本质区别。一条 SQL 可以同时做向量排序、全文匹配、标量过滤，不需要两个系统之间同步数据。
+**向量是普通列，不是独立的向量数据库。** `summary_vec` 和 `message_vec` 就是表里的两个字段，和 `tags`、`created_at` 没有本质区别。一条 SQL 可以同时做向量排序、全文匹配、标量过滤，不需要两个系统之间同步数据。
 
-为什么不用专门的向量数据库（Pinecone、Milvus）？因为向量和标量分开存，混合检索就得先去向量库搜 topK，再拿 ID 回关系库做标量过滤，两次 I/O。更麻烦的是数据一致性——向量库写成功、关系库写失败怎么办？反过来呢？pgvector 把向量当普通列，一张表一条 SQL，这个问题根本不存在。Supabase、GitHub Copilot 都在用 pgvector，企业级完全扛得住。而且这个方案不绑死 pgvector——任何支持向量列的关系数据库（OceanBase、AlloyDB、Neon）都能用，混合检索的 SQL 逻辑一字不改。
+为什么不用专门的向量数据库（Pinecone、Milvus）？向量和标量分开存，混合检索就得先去向量库搜 topK，再拿 ID 回关系库做标量过滤，两次 I/O。更麻烦的是数据一致性，向量库写成功、关系库写失败怎么办？反过来呢？pgvector 把向量当普通列，一张表一条 SQL，这个问题根本不存在。Supabase、GitHub Copilot 都在用 pgvector，企业级完全扛得住。而且这个方案不绑死 pgvector，任何支持向量列的关系数据库（OceanBase、AlloyDB、Neon）都能用，混合检索的 SQL 逻辑一字不改。
 
-## 4.3 写入：对话 → embedding → 入库
+## 4.2 写入：对话 → embedding → 入库
 
 每轮对话结束后，Agent 把值得记住的内容写入记忆库。假设用户刚问了一个航班问题，Agent 回答完之后要存下来：
 
@@ -295,7 +282,7 @@ await storeMemory({
   sessionId: 'session_001',
   routingKey: 'user:xiaoming',
   userMessage: '帮我查一下 CA1234 航班的情况',
-  assistantReply: 'CA1234 航班延误了 2 小时，建议改签到 CA1235...',
+  assistantReply: 'CA1234 航班延误了 2 小时，目前预计 15:30 起飞。建议你改签到 CA1235...',
   summary: '查询 CA1234 航班延误信息并提供改签建议',
   tags: ['travel', 'flight'],
   turnTs: 1713168000000,
@@ -308,16 +295,16 @@ await storeMemory({
 // 1. 生成确定性 ID → 幂等写入
 const id = createHash('sha256')
   .update(`${sessionId}:${turnTs}`)
-  .digest('hex').slice(0, 16)
-// → 'a3b1c9f02e8d4a17'
+  .digest('hex')
+  .slice(0, 16)
+// → '5f6bbb8fba0ee3ac'
 
 // 2. 并行生成两个向量
-const [{ embedding: summaryVec }, { embedding: messageVec }] =
-  await Promise.all([
-    embed({ model: embeddingModel, value: summary }),    // 摘要 → 向量
-    embed({ model: embeddingModel, value: userMessage }), // 原始消息 → 向量
-  ])
-// summaryVec: [0.012, -0.034, 0.078, ...] (1536 维 float 数组)
+const [{embedding: summaryVec}, {embedding: messageVec}] = await Promise.all([
+  embed({model: embeddingModel, value: summary}), // 摘要 → 向量
+  embed({model: embeddingModel, value: userMessage}), // 原始消息 → 向量
+])
+// summaryVec: [-0.001, 0.015, 0.038, ...] (1536 维 float 数组)
 
 // 3. 拼接全文搜索文本，写入数据库
 const searchText = [userMessage, summary, ...tags].join(' ')
@@ -325,41 +312,55 @@ const searchText = [userMessage, summary, ...tags].join(' ')
 
 await query(
   `INSERT INTO memories (...) VALUES (...) ON CONFLICT (id) DO NOTHING`,
-  [id, sessionId, routingKey, userMessage, assistantReply,
-   summary, tags, turnTs, summaryVec, messageVec, searchText]
+  [
+    id,
+    sessionId,
+    routingKey,
+    userMessage,
+    assistantReply,
+    summary,
+    tags,
+    turnTs,
+    summaryVec,
+    messageVec,
+    searchText,
+  ],
 )
 ```
 
 写入后数据库里这条记录长这样（向量列太长，截取前几个值）：
 
-```text
-id:           a3b1c9f02e8d4a17
-summary:      查询 CA1234 航班延误信息并提供改签建议
-summary_vec:  [0.012, -0.034, 0.078, ...]  ← embedding 模型生成
-search_tsv:   'ca1234':4 '航班':5 '延误':6 ...  ← PostgreSQL 自动分词
-tags:         {travel, flight}
-```
+| 列              | 值                                                             | 说明                 |
+| --------------- | -------------------------------------------------------------- | -------------------- |
+| id              | 5f6bbb8fba0ee3ac                                               |                      |
+| user_message    | 帮我查一下 CA1234 航班的情况                                   |                      |
+| assistant_reply | CA1234 航班延误了 2 小时，目前预计 15:30 起飞...                |                      |
+| summary         | 查询 CA1234 航班延误信息并提供改签建议                         |                      |
+| tags            | {travel, flight}                                               |                      |
+| search_text     | 帮我查一下 CA1234 航班的情况 查询 CA1234 航班延误信息...       | 拼接后的全文搜索文本 |
+| summary_vec     | [-0.001, 0.015, 0.038, 0.008, ...]                             | 摘要 embedding       |
+| message_vec     | [-0.007, 0.008, 0.026, 0.008, ...]                             | 原始消息 embedding   |
+| search_tsv      | 'ca1234':2,5 'flight':8 'travel':7 '帮我查一下':1 '查询':4 ... | PostgreSQL 自动分词  |
 
 几个关键设计：
 
-**确定性哈希 → 幂等写入。** `sessionId + turnTs` 确定性地映射到一个哈希值，配合 `ON CONFLICT (id) DO NOTHING`——服务重启、网络抖动、手动重跑都不会产生重复数据。
+**确定性哈希 → 幂等写入。** `sessionId + turnTs` 确定性地映射到一个哈希值，配合 `ON CONFLICT (id) DO NOTHING`。服务重启、网络抖动、手动重跑都不会产生重复数据。
 
-**两个向量同时生成。** 摘要向量用于"上次那个航班"这类模糊搜索，原始消息向量用于"我发过一段很长的代码"这类细节搜索。`Promise.all` 并行执行，省时间。这里有个容易踩的坑：**写入和查询必须用同一个 embedding 模型。** 不同模型的向量空间不兼容，模型 A 生成的向量和模型 B 生成的，即使输入相同文本，余弦距离也没有意义。
+**两个向量同时生成。** 摘要向量用于"上次那个航班"这类模糊搜索，原始消息向量用于"我发过一段很长的代码"这类细节搜索。`Promise.all` 并行执行，省时间。有个容易踩的坑：**写入和查询必须用同一个 embedding 模型。** 不同模型的向量空间不兼容，模型 A 生成的向量和模型 B 生成的，即使输入相同文本，余弦距离也没有意义。
 
-**chunk 设计：一问一答为一个 chunk。** 为什么不只存用户消息？因为"帮我转换 PDF"这个 chunk 缺少了"转换成什么格式、结果在哪里"的上下文。只有问答合在一起，召回后才能还原完整信息。
+为什么不只存用户消息？因为"帮我转换 PDF"这个 chunk 缺少了"转换成什么格式、结果在哪里"的上下文。一问一答合在一起存，召回后才能还原完整信息。
 
-## 4.4 查询：混合检索
+## 4.3 查询：混合检索
 
 查询是重头戏。一条 SQL 同时做三件事：向量相似度排序、全文关键字匹配、标量条件过滤。
 
 假设记忆库里已经有三条记录：
 
-```text
-id  summary                                   summary_vec              search_tsv                        tags
-1   查询 CA1234 航班延误信息并提供改签建议       [0.012, -0.034, 0.078, ...] 'ca1234':4 '航班':5 '延误':6 ...  {travel,flight}
-2   讨论了 React 和 Vue 框架的优缺点            [0.091, 0.045, -0.023, ...] 'react':2 'vue':4 '框架':5 ...   {frontend}
-3   帮用户订了下周三的机票，东航 MU5100          [0.008, -0.029, 0.065, ...] '机票':5 '东航':6 'mu5100':7 ... {travel,flight}
-```
+| id  | user_message                 | assistant_reply                                  | summary                                | tags            | search_text                                                            | summary_vec                   | search_tsv                                            |
+| --- | ---------------------------- | ------------------------------------------------ | -------------------------------------- | --------------- | ---------------------------------------------------------------------- | ----------------------------- | ----------------------------------------------------- |
+| 1   | 帮我查一下 CA1234 航班的情况 | CA1234 航班延误了 2 小时，目前预计 15:30 起飞... | 查询 CA1234 航班延误信息并提供改签建议 | {travel,flight} | 帮我查一下 CA1234 航班的情况 查询 CA1234 航班延误信息... travel flight | [-0.001, 0.015, 0.038, ...]   | 'ca1234':2,5 'flight':8 'travel':7 '帮我查一下':1 ... |
+| 2   | React 和 Vue 哪个好？        | 两者各有优势。React 生态更大、社区更活跃...      | 讨论了 React 和 Vue 框架的优缺点       | {frontend}      | React 和 Vue 哪个好？ 讨论了 React 和 Vue 框架的优缺点 frontend        | [-0.031, 0.004, -0.0004, ...] | 'frontend':10 'react':1,6 'vue':3,8 '和':2,7 ...      |
+| 3   | 帮我订下周三的机票           | 已订东航 MU5100，下周三 08:30 从上海虹桥出发...  | 帮用户订了下周三的机票，东航 MU5100    | {travel,flight} | 帮我订下周三的机票 帮用户订了下周三的机票，东航 MU5100 travel flight   | [-0.021, -0.035, -0.004, ...] | 'flight':6 'mu5100':4 'travel':5 '东航':3 ...         |
 
 用户问"上次那个航班怎么回事"，Agent 调用搜索：
 
@@ -391,109 +392,71 @@ FROM scored ORDER BY score DESC LIMIT 5
 - **`ts_rank(search_tsv, plainto_tsquery(...))`**：PostgreSQL 内置的 BM25 近似评分，返回关键字匹配的相关性分数。
 - **`vec_score * 0.7 + text_score * 0.3`**：语义权重更高（0.7），关键字作为补充（0.3）。这个比例是经验值，可以根据场景调。
 
-跑一下看看三条记录各自的得分：
+跑一下看看三条记录各自的得分（query: "上次那个航班"）：
 
-```text
-query: "上次那个航班"
-
-id  vec_score  text_score  score (0.7×vec + 0.3×text)
-1   0.85       0.42        0.85×0.7 + 0.42×0.3 = 0.721
-3   0.78       0.0         0.78×0.7 + 0.0×0.3  = 0.546
-2   0.12       0.0         0.12×0.7 + 0.0×0.3  = 0.084
-```
+| id  | vec_score | text_score | score (0.7×vec + 0.3×text)  |
+| --- | --------- | ---------- | --------------------------- |
+| 3   | 0.495     | 0.0        | 0.495×0.7 + 0.0×0.3 = 0.346 |
+| 1   | 0.456     | 0.0        | 0.456×0.7 + 0.0×0.3 = 0.319 |
+| 2   | 0.159     | 0.0        | 0.159×0.7 + 0.0×0.3 = 0.112 |
 
 看看两路搜索各自在干什么：
 
-- **记录 1** 向量分最高（0.85）：因为"上次那个航班"和"航班延误信息"语义很近。关键字分也有（0.42）：因为"航班"精确匹配上了。两路都命中，总分最高。
-- **记录 3** 向量分也不低（0.78）：语义上"订机票"和"航班"相关。但关键字分为 0：因为记录里没有"航班"这个词，只有"机票"。如果只靠关键字搜索，这条会被漏掉。
+- **记录 3** 向量分最高（0.495）：语义上"订机票"和"航班"高度相关，向量搜索把它捞了出来。
+- **记录 1** 向量分也不低（0.456）："上次那个航班"和"航班延误信息"语义相近。
 - **记录 2** 两路都没命中："React 框架"和"航班"毫无关系。
 
-这就是混合检索的价值——记录 1 靠两路互补拿到最高分，记录 3 靠向量兜底不被遗漏，记录 2 被正确排除。单靠任何一路都做不到这个效果。
+这里 text_score 全是 0。前面 3.2 说过，`simple` 分词器不做中文分词，"上次那个航班"被当成一整个 token，和库里的 `'航班的情况'`、`'航班延误信息并提供改签建议'` 完全对不上。但向量搜索依然把语义相关的记录捞了回来，这正是混合检索的安全网。
 
-## 4.5 集成到 Agent
+这个例子看起来只有向量在干活，关键字搜索完全没帮上忙。换一个精确关键字试试，搜"CA1234"：
 
-把搜索能力封装成 Agent 可以调用的 tool：
+| id  | vec_score | text_score | score (0.7×vec + 0.3×text)    |
+| --- | --------- | ---------- | ----------------------------- |
+| 1   | 0.475     | 0.076      | 0.475×0.7 + 0.076×0.3 = 0.355 |
+| 3   | 0.197     | 0.0        | 0.197×0.7 + 0.0×0.3 = 0.138   |
+| 2   | 0.056     | 0.0        | 0.056×0.7 + 0.0×0.3 = 0.040   |
 
-```javascript
-import {tool} from 'ai'
-import {z} from 'zod'
-import {searchMemory} from './memory-search.js'
+这次记录 1 的 text_score 有了值（0.076），因为"CA1234"精确命中了 search_tsv 里的 `'ca1234':2,5`。两路叠加，记录 1 稳拿第一。
 
-const memorySearchTool = tool({
-  description:
-    '从长期记忆中检索历史对话。当用户提到"上次"、"之前"或需要历史上下文时使用。',
-  parameters: z.object({
-    query: z.string().describe('搜索查询，描述要找什么'),
-    routing_key: z.string().describe('用户标识'),
-    top_k: z.number().optional().default(5),
-    tags: z.array(z.string()).optional(),
-    after_date: z.string().optional().describe('ISO 格式日期'),
-  }),
-  execute: async ({query, routing_key, top_k, tags, after_date}) => {
-    const results = await searchMemory({
-      queryText: query,
-      routingKey: routing_key,
-      topK: top_k,
-      tags: tags?.length ? tags : null,
-      afterDate: after_date || null,
-    })
-    if (results.length === 0) return '未找到相关记忆'
-    return JSON.stringify(
-      results.map((r) => ({
-        summary: r.summary,
-        user_message: r.user_message,
-        assistant_reply: r.assistant_reply,
-        tags: r.tags,
-        score: Math.round(r.score * 1000) / 1000,
-      })),
-      null,
-      2,
-    )
-  },
-})
-```
-
-Agent 拿到结果后，把 `summary` 和 `assistant_reply` 提取出来，组织成自然语言注入当前对话。用户感受到的就是"这个 Agent 记得之前聊过的事"。
+模糊查询靠向量兜底不遗漏，精确查询靠关键字加分更准确，单靠任何一路都做不到这个效果。
 
 # 五、踩坑备忘
 
 前面四节把混合检索从原理到代码走通了，这里聊几个实际用起来容易翻车的地方，以及一些值得坚持的做法。
 
-**什么规模才需要 RAG？** 别一上来就搭 pgvector + embedding pipeline。几十条记忆，grep 扫一遍几毫秒的事；几百条，文件系统按主题分目录就够用。上千条、而且查询经常是模糊的（"上次那个 xxx"），这时候才值得引入搜索驱动的方案。过早上 RAG 就是拿大炮打蚊子——工程复杂度上去了，效果不见得比 grep 好多少。
+**什么规模才需要 RAG？** 别一上来就搭 pgvector + embedding pipeline。几十条记忆，grep 扫一遍几毫秒的事；几百条，文件系统按主题分目录就够用。上千条、而且查询经常是模糊的（"上次那个 xxx"），这时候才值得引入搜索驱动的方案。过早上 RAG 就是拿大炮打蚊子，工程复杂度上去了，效果不见得比 grep 好多少。
 
-**只用向量搜索，不做混合检索。** 一上来就全押向量数据库，忽略关键字搜索在精确匹配场景的优势。用户搜"错误码 ERR_500"，向量搜索可能召回一堆"服务器错误"相关的语义内容，而不是那条精确包含 `ERR_500` 的记录。第三节的对比表已经说得很清楚——单一方式都有盲区，混合检索才是生产级方案。
+**只用向量搜索，不做混合检索。** 一上来就全押向量数据库，忽略关键字搜索在精确匹配场景的优势。用户搜"错误码 ERR_500"，向量搜索可能召回一堆"服务器错误"相关的语义内容，而不是那条精确包含 `ERR_500` 的记录。第三节的对比表已经说得很清楚，单一方式都有盲区，混合检索才是生产级方案。
 
-**向量和标量数据别分开存。** 向量存 Pinecone，标量存 PostgreSQL，混合检索时两边 join。两套系统的数据一致性是噩梦——向量库写成功、关系库写失败怎么办？pgvector 把向量当普通列，一张表一条 SQL 一个事务，这个问题根本不存在。能用一张表解决的，别拆成两个系统。
+**向量和标量数据别分开存。** 向量存 Pinecone，标量存 PostgreSQL，混合检索时两边 join。两套系统的数据一致性是噩梦，向量库写成功、关系库写失败怎么办？pgvector 把向量当普通列，一张表一条 SQL 一个事务，这个问题根本不存在。能用一张表解决的，别拆成两个系统。
 
-**换了 embedding 模型要全量重跑。** 前面在 4.3 说过，写入和查询必须用同一个模型。所以一旦换模型（比如从 `text-embedding-3-small` 升级到 `text-embedding-3-large`），所有已有记忆的向量列都要重新生成。这不是 bug，是向量搜索的基本约束。建议在 schema 里加个 `embedding_model` 字段记录模型版本，换模型时可以按版本批量重跑，而不是猜"这些向量是哪个模型生成的"。
+**换了 embedding 模型要全量重跑。** 前面在 4.2 说过，写入和查询必须用同一个模型。所以一旦换模型（比如从 `text-embedding-3-small` 升级到 `text-embedding-3-large`），所有已有记忆的向量列都要重新生成。这不是 bug，是向量搜索的基本约束。建议在 schema 里加个 `embedding_model` 字段记录模型版本，换模型时可以按版本批量重跑，而不是猜"这些向量是哪个模型生成的"。
 
 **chunk 设计优先于模型选型。** 召回效果 80% 取决于 chunk 质量，20% 取决于 embedding 模型。在换模型之前，先检查 chunk 是否语义完整。我们用"一问一答为一个 chunk"，因为问题和回答合在一起才能完整表达语义。如果只存用户消息，"帮我转换 PDF"这个 chunk 缺少了"转成什么格式、结果在哪里"的上下文，召回后无法还原完整信息。
 
 **幂等写入，增量更新。** id 用内容哈希生成，`ON CONFLICT DO NOTHING` 保证幂等。每次对话后只写入新增的 chunk，不重建整个索引。服务重启、网络抖动、手动重跑都不会产生重复数据，也不会触发全量重建的性能开销。
 
-**搜不到时的降级策略写进 Skill 文档。** 用户说"之前聊过的那个东西"，搜出来 score 全低于 0.3，怎么处理？硬编码降级逻辑不是好办法——排列组合写不完。更好的做法是把降级策略写进 Skill 文档：
+**搜不到时的降级策略写进 Skill 文档。** 用户说"之前聊过的那个东西"，搜出来 score 全低于 0.3，怎么处理？硬编码降级逻辑不是好办法，排列组合写不完。更好的做法是把降级策略写进 Skill 文档：
 
 ```markdown
 ### 降级策略
+
 如果搜索结果为空或相关度太低（score < 0.3），按顺序降级重试：
+
 1. **去掉时间限制** → 重新搜索
 2. **去掉标签限制** → 只保留 query 和 routing_key
 3. **换更宽泛的 query** → 用更抽象的描述重写查询
-最多重试 2 次。
+   最多重试 2 次。
 ```
 
 Agent 读到这段文档就会自主执行降级逻辑。不用写代码，改文档就行。上一篇讲过，Skill 文件里写 why，模型才能举一反三——降级策略也是同样的道理。
 
 # 收尾
 
-三篇文章走下来，Agent 的记忆系统从无到有搭了三层：
+三篇文章走下来，Agent 的记忆系统从无到有搭了三层。
 
-[第一篇](/2026/04/10/ai-context-engineering/)解决的是**单次会话内**的问题——Bootstrap 注入身份和规则、Tool Result 剪枝、对话压缩，让 Agent 在一次对话里能持续保持状态。
+[第一篇](/2026/04/10/ai-context-engineering/)管的是单次会话内的状态——Bootstrap 注入身份和规则、Tool Result 剪枝、对话压缩。[第二篇](/2026/04/14/ai-mem-file/)把记忆拉到了跨会话——memory-save 写偏好、skill-creator 沉淀 SOP、memory-governance 清理垃圾。这一篇再往前推一步：当记忆量大到文件系统装不下时，用 RAG + pgvector 混合检索实现按需召回。
 
-[第二篇](/2026/04/14/ai-mem-file/)解决的是**跨会话**的问题——memory-save 写偏好、skill-creator 沉淀 SOP、memory-governance 清理垃圾，让 Agent 在多次对话之间不丢信息。
+会话内管好注意力，跨会话留住知识，量大了搜着用。
 
-这一篇解决的是**规模化**的问题——当记忆量大到文件系统装不下时，用 RAG + pgvector 混合检索实现按需召回，让 Agent 在海量历史数据中精准找到相关信息。
-
-三层加在一起：会话内管好注意力，跨会话留住知识，量大了搜着用。这就是一个完整的 Agent 记忆系统的基本骨架。
-
-当然，还有很多可以继续探索的方向：记忆衰减（时间越久权重越低）、多用户隔离（不同用户的记忆互不干扰）、记忆质量评估（自动检测过时或矛盾的记忆）、更精细的 chunk 策略。这些留给实际项目中去踩坑和优化吧。
+后面还有不少可以折腾的方向：记忆衰减（时间越久权重越低）、多用户隔离、记忆质量评估（自动检测过时或矛盾的记忆）、更精细的 chunk 策略。留给实际项目里去踩坑吧。
