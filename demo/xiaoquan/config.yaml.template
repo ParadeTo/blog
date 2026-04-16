@@ -1,0 +1,42 @@
+feishu:
+  app_id: "${FEISHU_APP_ID}"
+  app_secret: "${FEISHU_APP_SECRET}"
+  allowed_chats: []
+
+llm:
+  model: "claude-sonnet-4-6"
+  embedding_model: "text-embedding-3-small"
+  max_iter: 10
+  temperature: 0.3
+
+memory:
+  workspace_dir: "./workspace"
+  ctx_dir: "./data/ctx"
+  db_dsn: "postgresql://xiaoquan:xiaoquan123@localhost:5432/xiaoquan_memory"
+  token_threshold: 80000
+  prune_keep_turns: 10
+  compress_threshold: 0.45
+  fresh_keep_turns: 10
+
+sandbox:
+  image: "xiaoquan-sandbox:latest"
+  timeout_ms: 30000
+  mcp_port: 8022
+
+session:
+  data_dir: "./data/sessions"
+  max_history_turns: 20
+
+runner:
+  idle_timeout_s: 300
+
+sender:
+  max_retries: 3
+  retry_backoff: [1, 2, 4]
+
+data_dir: "./data"
+
+debug:
+  enable_test_api: false
+  test_api_port: 9090
+  test_api_host: "127.0.0.1"

@@ -82,3 +82,4 @@ Custom domain: `www.paradeto.com` (configured via `source/CNAME`).
 - Front matter: `title`, `date`, `tags` (see `scaffolds/post.md`).
 - Post filenames use kebab-case with topic prefixes (e.g., `react-optimize.md`, `algo-btree-1.md`, `go-slice1.md`).
 - Images go in the post's asset folder and are referenced by filename only.
+- Diagrams (flowcharts, architecture diagrams) must follow the `draw-diagram` skill (`.claude/skills/draw-diagram/SKILL.md`): hand-written SVG with diamond `<polygon>` for decisions, `<line>` + arrow markers for connections (never text arrows like `↓`), rendered to PNG via puppeteer-core.

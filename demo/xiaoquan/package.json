@@ -1,0 +1,21 @@
+{
+  "name": "xiaoquan",
+  "version": "1.0.0",
+  "description": "小圈 — 飞书本地工作助手（JS 版）",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test tests/**/*.test.js"
+  },
+  "dependencies": {
+    "ai": "^4.3.0",
+    "@ai-sdk/anthropic": "^1.2.0",
+    "@ai-sdk/openai": "^1.2.0",
+    "@larksuiteoapi/node-sdk": "^1.0.0",
+    "pg": "^8.13.0",
+    "pgvector": "^0.2.0",
+    "js-yaml": "^4.1.0",
+    "zod": "^3.23.0"
+  }
+}

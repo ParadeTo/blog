@@ -8,7 +8,7 @@
 
 **Tech Stack:** Node.js 20+, Vercel AI SDK (`ai`, `@ai-sdk/anthropic`, `@ai-sdk/openai`), `@larksuiteoapi/node-sdk`, PostgreSQL + pgvector, Podman, js-yaml
 
-**Code location:** `/Users/youxingzhi/ayou/xiaoquan/`
+**Code location:** `/Users/youxingzhi/ayou/blog/demo/xiaoquan/`
 **Article location:** `/Users/youxingzhi/ayou/blog/source/_posts/ai-agent-final.md`
 **Reference project:** `/Users/youxingzhi/ayou/xiaopaw-with-memory/`
 
@@ -30,8 +30,8 @@
 - [ ] **Step 1: Create project directory and initialize**
 
 ```bash
-mkdir -p /Users/youxingzhi/ayou/xiaoquan
-cd /Users/youxingzhi/ayou/xiaoquan
+mkdir -p /Users/youxingzhi/ayou/blog/demo/xiaoquan
+cd /Users/youxingzhi/ayou/blog/demo/xiaoquan
 ```
 
 - [ ] **Step 2: Create package.json**
@@ -63,7 +63,7 @@ cd /Users/youxingzhi/ayou/xiaoquan
 - [ ] **Step 3: Install dependencies**
 
 ```bash
-cd /Users/youxingzhi/ayou/xiaoquan && npm install
+cd /Users/youxingzhi/ayou/blog/demo/xiaoquan && npm install
 ```
 
 Expected: `node_modules/` created, `package-lock.json` generated.
@@ -413,7 +413,7 @@ describe('SessionManager', () => {
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd /Users/youxingzhi/ayou/xiaoquan && node --test tests/session-manager.test.js
+cd /Users/youxingzhi/ayou/blog/demo/xiaoquan && node --test tests/session-manager.test.js
 ```
 
 Expected: FAIL — module not found.
@@ -542,7 +542,7 @@ export class SessionManager {
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-cd /Users/youxingzhi/ayou/xiaoquan && node --test tests/session-manager.test.js
+cd /Users/youxingzhi/ayou/blog/demo/xiaoquan && node --test tests/session-manager.test.js
 ```
 
 Expected: All tests PASS.
@@ -1724,7 +1724,7 @@ describe('Runner', () => {
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd /Users/youxingzhi/ayou/xiaoquan && node --test tests/runner.test.js
+cd /Users/youxingzhi/ayou/blog/demo/xiaoquan && node --test tests/runner.test.js
 ```
 
 Expected: FAIL — module not found.
@@ -1908,7 +1908,7 @@ function _buildAttachmentMessage(sandboxPath, originalText) {
 - [ ] **Step 4: Run tests**
 
 ```bash
-cd /Users/youxingzhi/ayou/xiaoquan && node --test tests/runner.test.js
+cd /Users/youxingzhi/ayou/blog/demo/xiaoquan && node --test tests/runner.test.js
 ```
 
 Expected: All tests PASS.
@@ -2266,7 +2266,7 @@ description: 把前五篇的所有概念整合成一个完整的飞书 Agent 产
 
 Invoke the `write-tech-article` skill with the article structure, referencing:
 - Design spec at `docs/superpowers/specs/2026-04-16-xiaoquan-agent-design.md`
-- Code at `/Users/youxingzhi/ayou/xiaoquan/`
+- Code at `/Users/youxingzhi/ayou/blog/demo/xiaoquan/`
 - Previous articles for linking
 
 - [ ] **Step 3: Create diagrams**
