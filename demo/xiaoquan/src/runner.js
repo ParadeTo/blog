@@ -1,3 +1,5 @@
+import path from 'path'
+
 const HELP_TEXT = `小圈 可用命令：
 /new       — 创建新对话，之前历史不带入
 /verbose on|off — 开启/关闭推理过程推送
@@ -77,17 +79,27 @@ export class Runner {
     let userContent = inbound.content
     if (inbound.attachment && this._downloader) {
       const localPath = await this._downloader.download(inbound.msgId, inbound.attachment, session.id)
+      console.log(`[Runner] attachment download: ${localPath ? 'ok' : 'failed'} file=${inbound.attachment.fileName}`)
       if (localPath) {
-        const sandboxPath = `/workspace/sessions/${session.id}/uploads/${inbound.attachment.fileName}`
-        userContent = _buildAttachmentMessage(sandboxPath, userContent)
+        const absPath = path.resolve(localPath)
+        userContent = _buildAttachmentMessage(absPath, userContent)
       }
     }
 
+    if (!userContent || !userContent.trim()) {
+      console.log(`[Runner] empty content after processing, skipping`)
+      return
+    }
+
+    console.log(`[Runner] session=${session.id} userContent=${JSON.stringify(userContent).slice(0, 200)}`)
+
     const history = await this._sessionMgr.loadHistory(session.id)
+    console.log(`[Runner] history turns=${history.length}`)
 
     const cardMsgId = await this._sender.sendThinking(routingKey, rootId)
 
     const reply = await this._agentFn(userContent, history, session.id, routingKey, rootId, session.verbose)
+    console.log(`[Runner] reply length=${reply.length}`)
 
     await this._sessionMgr.append(session.id, {
       user: userContent,

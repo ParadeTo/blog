@@ -18,14 +18,23 @@ export class FeishuDownloader {
         params: {type: attachment.msgType},
       })
 
+      if (resp?.writeFile) {
+        await resp.writeFile(destPath)
+        console.log(`[FeishuDownloader] saved via writeFile: ${destPath}`)
+        return destPath
+      }
+
       if (resp?.data) {
         const buffer = Buffer.isBuffer(resp.data) ? resp.data : Buffer.from(resp.data)
         fs.writeFileSync(destPath, buffer)
+        console.log(`[FeishuDownloader] saved via data buffer: ${destPath}`)
         return destPath
       }
+
+      console.error(`[FeishuDownloader] unexpected resp format: keys=${resp ? Object.keys(resp) : 'null'}`)
       return null
     } catch (e) {
-      console.error('[FeishuDownloader] download failed:', e.message)
+      console.error('[FeishuDownloader] download failed:', e.message, e.response?.data || '')
       return null
     }
   }

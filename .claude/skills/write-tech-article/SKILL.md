@@ -133,6 +133,9 @@ description: Use when the user wants to write a new technical blog article or ed
 - SVG 转 PNG/JPG：使用 `node ~/.claude/skills/write-tech-article/svg-to-image.js <file.svg> [png|jpg] [width]`；依赖 `sharp`（优先）或 `playwright`，首次使用需安装（`npm install sharp`）
 - 先说"为什么"，再说"怎么做"——不要只堆代码，先给出背景
 - 段落和章节之间要有自然的衔接过渡，每个章节应顺势引出下一节，避免生硬跳转
+- **概念引入必须有铺垫**：新概念（变量名、术语、模块名）第一次出现时，必须从读者已知的问题或场景切入，再自然引出概念作为解答。禁止直接抛出一个读者没见过的名词然后再解释它是什么。正确做法：先提出问题（如"消息来了，怎么知道属于哪个对话？"），再引出概念（如 routingKey）作为解决方案
+- **事实必须可验证**：不要为了叙事效果虚构"最初的做法""早期版本"等历史。如果确实经历过某个阶段，应能在 git 历史或代码中找到依据。如果没有，直接阐述设计要解决的问题，不要编造演化过程
+- **章节顺序遵循依赖关系**：如果 B 概念依赖 A 概念，A 必须先于 B 出现。写完后检查：每个概念第一次被使用时，读者是否已经知道它是什么
 
 ### Frontmatter 模板
 

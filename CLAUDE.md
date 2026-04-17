@@ -78,6 +78,7 @@ Custom domain: `www.paradeto.com` (configured via `source/CNAME`).
 
 ## Writing Conventions
 
+- **写文章或修改文章时，必须使用 `write-tech-article` skill（`.claude/skills/write-tech-article/SKILL.md`）。**
 - Blog language: Chinese (zh-CN).
 - Front matter: `title`, `date`, `tags` (see `scaffolds/post.md`).
 - Post filenames use kebab-case with topic prefixes (e.g., `react-optimize.md`, `algo-btree-1.md`, `go-slice1.md`).

@@ -8,20 +8,21 @@ export class FeishuListener {
     this._allowedChats = new Set(allowedChats)
     this._client = new lark.Client({appId, appSecret})
 
+    this._eventDispatcher = new lark.EventDispatcher({}).register({
+      'im.message.receive_v1': async (data) => {
+        await this._handleMessage(data)
+      },
+    })
+
     this._wsClient = new lark.WSClient({
       appId,
       appSecret,
-      eventDispatcher: new lark.EventDispatcher({}).register({
-        'im.message.receive_v1': async (data) => {
-          await this._handleMessage(data)
-        },
-      }),
       loggerLevel: lark.LoggerLevel.WARN,
     })
   }
 
   async start() {
-    await this._wsClient.start()
+    await this._wsClient.start({eventDispatcher: this._eventDispatcher})
   }
 
   _isChatAllowed(chatId, chatType) {
@@ -43,6 +44,8 @@ export class FeishuListener {
 
       const routingKey = resolveRoutingKey(chatType, senderId, chatId, threadId)
       const {content, attachment} = this._extractContent(message.message_type, message.content)
+
+      console.log(`[FeishuListener] msgType=${message.message_type} chatType=${chatType} routingKey=${routingKey} content=${JSON.stringify(content).slice(0, 100)} attachment=${attachment ? attachment.msgType : 'none'}`)
 
       const inbound = createInboundMessage({
         routingKey,
@@ -99,12 +102,8 @@ export class FeishuListener {
 }
 
 export async function runForever(listener) {
-  while (true) {
-    try {
-      await listener.start()
-    } catch (e) {
-      console.error('[FeishuListener] connection error, retrying in 5s:', e.message)
-      await new Promise(r => setTimeout(r, 5000))
-    }
-  }
+  await listener.start()
+  // SDK v1.60+ 内部自带 autoReconnect，start() 不再阻塞
+  // 用一个永不 resolve 的 promise 保持进程运行
+  await new Promise(() => {})
 }

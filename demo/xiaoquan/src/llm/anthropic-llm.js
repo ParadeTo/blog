@@ -1,5 +1,9 @@
 import {generateText} from 'ai'
-import {anthropic} from '@ai-sdk/anthropic'
+import {createAnthropic} from '@ai-sdk/anthropic'
+
+const anthropic = createAnthropic({
+  baseURL: 'http://localhost:3002',
+})
 import {createOpenAI} from '@ai-sdk/openai'
 import {embed} from 'ai'
 
