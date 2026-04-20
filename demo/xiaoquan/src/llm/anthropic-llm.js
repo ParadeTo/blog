@@ -7,6 +7,11 @@ const anthropic = createAnthropic({
 import {createOpenAI} from '@ai-sdk/openai'
 import {embed} from 'ai'
 
+const embeddingOpenai = createOpenAI({
+  baseURL: process.env.EMBEDDING_BASE_URL || 'http://localhost:3002',
+  apiKey: process.env.EMBEDDING_API_KEY || process.env.ANTHROPIC_API_KEY || 'no-key',
+})
+
 let _embeddingModel = null
 
 export function getModel(modelId) {
@@ -15,8 +20,7 @@ export function getModel(modelId) {
 
 export function getEmbeddingModel(modelId) {
   if (_embeddingModel) return _embeddingModel
-  const openai = createOpenAI({apiKey: process.env.OPENAI_API_KEY})
-  _embeddingModel = openai.embedding(modelId || 'text-embedding-3-small')
+  _embeddingModel = embeddingOpenai.embedding(modelId || 'text-embedding-3-small')
   return _embeddingModel
 }
 

@@ -6,7 +6,7 @@ tags:
   - agent
 categories:
   - ai
-description: 把前五篇的所有概念整合成一个完整的飞书 Agent 产品：Session 会话管理、Podman 沙箱执行、飞书接入，附完整可运行代码。
+description: 把前五篇的所有概念整合成一个完整的飞书 Agent 产品：Session 会话管理、记忆系统、Podman 沙箱执行、飞书接入，附完整可运行代码。
 ---
 
 ## 前言
@@ -18,11 +18,12 @@ description: 把前五篇的所有概念整合成一个完整的飞书 Agent 产
 整合的方式不是把代码堆在一起，而是围绕几个核心问题展开：
 
 - 多个人同时发消息，Agent 怎么保证各自的会话不串？
+- 之前讲的文件记忆和 RAG 记忆，怎么接进来？
 - Skill 里有数据库操作、API 调用，怎么安全地执行？
 - 飞书消息的长连接怎么接？附件怎么下载？
 - Loading 效果怎么做？
 
-这四个问题对应了本篇最重要的四个模块：Session 系统、沙箱执行、飞书接入、以及把前面所有东西串起来的 Runner。
+这几个问题对应了本篇最重要的五个模块：Session 系统、记忆系统、沙箱执行、飞书接入、以及把前面所有东西串起来的 Runner。
 
 ---
 
@@ -266,7 +267,39 @@ async _workerLoop(routingKey) {
 
 ---
 
-## 三、沙箱执行
+## 三、记忆系统
+
+文件记忆、上下文管理、RAG 长期记忆的原理在前几篇已经讲过，这里只说它们在小圈里是怎么串到一起的。
+
+### 三层怎么接入
+
+**文件记忆**在 `runAgent` 入口处加载——每次调用都从 `workspace/` 读取 `soul.md`、`user.md`、`agent.md`、`memory.md`，拼进系统提示词。Agent 运行中可以通过 `write_file` 修改这些文件，下次对话自动生效。
+
+**上下文管理**在 ReAct 循环的每一轮迭代中执行。先调 `pruneToolResults` 裁剪早期工具返回，再检查 token 数，超过阈值就调 `maybeCompress` 压缩旧对话为摘要。压缩后的上下文存到 `data/ctx/{sessionId}_ctx.json`，下次用户发消息时直接恢复。
+
+**RAG 记忆**的接入分两个点。写入在 Runner 里——每次 Agent 回复后，异步调用 `storeMemory` 把对话存入 PostgreSQL + pgvector：
+
+```js
+// runner.js — Agent 回复后
+storeMemory({
+  sessionId: session.id,
+  routingKey,
+  userMessage: userTextForLog,
+  assistantReply: reply,
+  turnTs: Date.now(),
+  dbDsn: this._dbDsn,
+}).catch(e => console.error('[Runner] storeMemory error:', e.message))
+```
+
+异步执行、失败不影响主流程。存储过程会用 LLM 提取摘要，用 embedding 模型生成向量，写入数据库。
+
+检索则是通过 `memory_search` 工具暴露给 Agent，按 `routingKey` 隔离，每个用户只能搜到自己的历史。关键设计是 **Agent 自主决定什么时候搜**——我们没有每次都自动检索（那样浪费 token），而是让 Agent 判断用户的问题是否需要历史信息，需要时再主动调用。
+
+三层各管一个时间尺度：文件记忆管"我是谁、用户是谁"，上下文管理管"这轮对话聊了什么"，RAG 管"以前聊过什么"。
+
+---
+
+## 四、沙箱执行
 
 ### 为什么需要沙箱
 
@@ -395,7 +428,7 @@ async execute(scriptPath, args = '', {sessionDir = null} = {}) {
 
 ---
 
-## 四、飞书接入
+## 五、飞书接入
 
 ![飞书消息处理流程](./ai-agent-final/feishu.png)
 
@@ -646,44 +679,9 @@ export async function runForever(listener) {
 
 ---
 
-## 五、已有模块整合
+## 六、运行示例
 
-前四篇讲的内容在小圈里是这样整合的：
-
-**Skill 系统**（[第一篇](/2026/04/07/ai-agent-skill/)、[第二篇](/2026/04/09/ai-agent-skill-2/)）
-
-Skill 脚本放在 `skills/` 目录，每个 Skill 一个子目录，包含 `SKILL.md`（行为指令）和 Python 执行脚本。`loadSkillRegistry()` 在 Agent 启动时扫描这个目录，注册成 `list_skills` 和 `get_skill` 两个工具。Agent 看到用户需求后，先调 `list_skills` 了解有哪些能力，再调 `get_skill` 获取详细指令，最后按指令调用沙箱执行。整个过程是标准的 ReAct 循环，详见[第二篇](/2026/04/09/ai-agent-skill-2/)。
-
-**上下文管理**（[第三篇](/2026/04/11/ai-context-engineering/)）
-
-`react-loop.js` 里集成了三个上下文管理策略：
-
-- `pruneToolResults()`：在每次 LLM 调用前，把旧的 Tool Result 截断，只保留最近 N 轮，防止工具调用结果堆积撑爆窗口
-- `maybeCompress()`：当 prompt token 数超过阈值（默认 80000），把历史对话压缩为摘要
-- `loadSessionCtx()` / `saveSessionCtx()`：把压缩后的对话上下文持久化到磁盘，进程重启后可以恢复
-
-这些机制对用户完全透明，详见[第三篇](/2026/04/11/ai-context-engineering/)。
-
-**文件系统记忆**（[第四篇](/2026/04/14/ai-mem-file/)）
-
-`buildBootstrapPrompt()` 在系统提示里注入 `workspace/` 目录下的四个文件：`soul.md`（Agent 人格）、`user.md`（用户画像）、`agent.md`（行为规则）、`memory.md`（记忆索引）。这些文件由 `memory-governance` Skill 负责维护，Agent 在对话中自动更新。详见[第四篇](/2026/04/14/ai-mem-file/)。
-
-```js
-const bootstrapPrompt = buildBootstrapPrompt(workspaceDir)
-const systemPrompt = `${bootstrapPrompt}
-
-你是小圈，一个飞书上的私人工作助手。
-你拥有一组 Skill（专项能力），需要时用 list_skills 查看可用列表，用 get_skill 获取详细指令。
-根据用户需求，自主决定每一步该做什么。`
-```
-
-**RAG 长期记忆**（[第五篇](/2026/04/15/ai-mem-rag/)）
-
-Agent 有一个 `memory_search` 工具，通过 pgvector 做混合检索（向量 + BM25），在需要回忆历史的时候调用。记忆的写入由 `memory-save` Skill 负责，在重要对话结束后触发。详见[第五篇](/2026/04/15/ai-mem-rag/)。
-
----
-
-## 六、把它跑起来
+### 启动
 
 配置文件 `config.yaml` 从模板复制并填入你的飞书应用凭证：
 
@@ -699,7 +697,7 @@ llm:
 
 memory:
   workspace_dir: './workspace'
-  db_dsn: 'postgresql://xiaoquan:xiaoquan123@localhost:5432/xiaoquan_memory'
+  db_dsn: 'postgresql://postgres:postgres@localhost:5432/agent_memory'
   token_threshold: 80000
 
 sandbox:
@@ -726,21 +724,47 @@ node src/index.js
 [Feishu] WebSocket connecting...
 ```
 
-调试时可以开 `debug.enable_test_api: true`，会在本地起一个 HTTP 接口，不需要真实飞书消息就能测试 Agent 响应。
+### 普通对话
+
+最基本的场景——私聊发一条文本消息，Agent 直接回复：
+
+![普通对话](./ai-agent-final/1.jpg)
+
+![普通对话](./ai-agent-final/2.jpg)
+
+### Skill 调用
+
+当用户的需求涉及具体操作（查数据、调 API），Agent 会自动走 Skill 流程：先 `list_skills` 查看有哪些能力，再 `get_skill` 获取指令，最后调用沙箱执行脚本。
+
+![Skill 调用](./ai-agent-final/3.jpg)
+
+![Skill 调用](./ai-agent-final/4.jpg)
+
+
+### 图片理解
+
+私聊发送小姐姐图片，Runner 下载附件后将图片转为 multimodal 内容直接注入 Agent 的用户消息，Agent 凭自身的视觉能力准确分析图片：
+
+![图片消息](./ai-agent-final/5.jpg)
+
+### 会话管理
+
+发送 `/new` 开启新对话，之前的历史不带入。发送 `/status` 查看当前会话信息：
+
+![会话管理](./ai-agent-final/6.jpg)
+
+### 跨会话记忆
+
+先聊一条"我喜欢打篮球"，然后 `/new` 开启新对话，再问"我有什么爱好"。Agent 通过 `memory_search` 从记忆库中检索到之前的对话：
+
+![跨会话记忆](./ai-agent-final/7.jpg)
 
 ---
 
-## 总结
+## 收尾
 
-这个系列写了六篇，走了一条从概念到产品的路：
+本篇做的事情可以用一句话概括：把之前分散的概念串成一个能跑的产品。
 
-- 第一、二篇：如何让 Agent 有专项能力（Skill + ReAct）
-- 第三篇：如何在长对话中管理有限的上下文窗口
-- 第四、五篇：如何让 Agent 有记忆（文件记忆 + RAG）
-- 本篇：如何把这些能力整合成一个真实可用的产品
+Skill、ReAct、上下文管理、记忆系统，单独拎出来都能跑通 demo，但要真正上线还差很多胶水——消息怎么路由、附件怎么下载、两条消息同时来了会不会串、进程崩了数据会不会丢。这些工程问题不难，但不解决就跑不起来。
 
-小圈的定位是一个**私人工作助手**，不是通用的大模型应用。它的核心价值在于：能用飞书里积累的数据（通讯录、日历、文件）做事，而不只是聊天。这也是 Skill 系统存在的意义——每个 Skill 都是对一类飞书能力的封装，Agent 按需调用。
-
-整个项目的代码量不大（核心模块不到 600 行），但每一块都有清晰的职责边界。Session 管会话，沙箱管执行，飞书模块管 IO，Runner 管调度，Agent 管推理。这种模块化让你可以按需替换——比如把飞书换成微信，只需要重写 `feishu/` 目录下的几个文件，其他模块不用动。
-
-如果你跟着这个系列一路看下来，应该能把小圈跑起来，也能根据自己的需求改造它。代码在 `/Users/youxingzhi/ayou/blog/demo/xiaoquan/`，祝玩得开心。
+小圈的模块划分：**Runner 管调度，Session 管状态，沙箱管执行，记忆管上下文，飞书管 IO**。每个模块的职责边界清楚，替换任何一个都不影响其他——把飞书换成微信，只需要重写 `feishu/` 目录，Runner 和 Agent 不用动。

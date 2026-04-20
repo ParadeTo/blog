@@ -51,12 +51,14 @@ async function main() {
       routingKey,
       config,
       onStep,
+      sandbox,
     })
   }
 
   const runner = new Runner(sessionMgr, sender, agentFn, {
     idleTimeoutS: config.runner?.idle_timeout_s,
     downloader,
+    dbDsn: config.memory?.db_dsn,
   })
 
   const listener = new FeishuListener({

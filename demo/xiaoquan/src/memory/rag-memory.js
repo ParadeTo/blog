@@ -29,8 +29,10 @@ async function extractSummaryAndTags(userMessage, assistantReply) {
       messages: [{role: 'user', content: prompt}],
       maxTokens: 200,
     })
-    return JSON.parse(text)
-  } catch {
+    const json = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim()
+    return JSON.parse(json)
+  } catch (e) {
+    console.error('[Memory] extractSummaryAndTags failed:', e.message)
     return {summary: userMessage.slice(0, 100), tags: []}
   }
 }

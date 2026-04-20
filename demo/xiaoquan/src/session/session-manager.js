@@ -66,8 +66,19 @@ export class SessionManager {
 
   async updateVerbose(routingKey, verbose) {
     const index = this._readIndex()
-    const entry = index[routingKey]
-    if (!entry) return
+    let entry = index[routingKey]
+    if (!entry) {
+      await this.getOrCreate(routingKey)
+      const updatedIndex = this._readIndex()
+      entry = updatedIndex[routingKey]
+      if (!entry) return
+      const session = entry.sessions.find(s => s.id === entry.activeSessionId)
+      if (session) {
+        session.verbose = verbose
+        this._writeIndex(updatedIndex)
+      }
+      return
+    }
     const session = entry.sessions.find(s => s.id === entry.activeSessionId)
     if (session) {
       session.verbose = verbose

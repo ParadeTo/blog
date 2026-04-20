@@ -12,7 +12,7 @@ llm:
 memory:
   workspace_dir: "./workspace"
   ctx_dir: "./data/ctx"
-  db_dsn: "postgresql://xiaoquan:xiaoquan123@localhost:5432/xiaoquan_memory"
+  db_dsn: "postgresql://postgres:postgres@localhost:5432/agent_memory"
   token_threshold: 80000
   prune_keep_turns: 10
   compress_threshold: 0.45

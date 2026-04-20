@@ -1,4 +1,6 @@
 import path from 'path'
+import fs from 'fs'
+import {storeMemory} from './memory/rag-memory.js'
 
 const HELP_TEXT = `小圈 可用命令：
 /new       — 创建新对话，之前历史不带入
@@ -9,12 +11,13 @@ const HELP_TEXT = `小圈 可用命令：
 const SLASH_COMMANDS = new Set(['/new', '/verbose', '/help', '/status'])
 
 export class Runner {
-  constructor(sessionMgr, sender, agentFn, {idleTimeoutS = 300, downloader = null} = {}) {
+  constructor(sessionMgr, sender, agentFn, {idleTimeoutS = 300, downloader = null, dbDsn = null} = {}) {
     this._sessionMgr = sessionMgr
     this._sender = sender
     this._agentFn = agentFn
     this._idleTimeoutS = idleTimeoutS
     this._downloader = downloader
+    this._dbDsn = dbDsn
     this._queues = new Map()
     this._workers = new Map()
   }
@@ -82,11 +85,22 @@ export class Runner {
       console.log(`[Runner] attachment download: ${localPath ? 'ok' : 'failed'} file=${inbound.attachment.fileName}`)
       if (localPath) {
         const absPath = path.resolve(localPath)
-        userContent = _buildAttachmentMessage(absPath, userContent)
+        const ext = path.extname(absPath).toLowerCase()
+        if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext)) {
+          const buf = fs.readFileSync(absPath)
+          const b64 = buf.toString('base64')
+          const mime = ext === '.png' ? 'image/png' : ext === '.gif' ? 'image/gif' : ext === '.webp' ? 'image/webp' : 'image/jpeg'
+          userContent = [
+            {type: 'image', image: `data:${mime};base64,${b64}`},
+            {type: 'text', text: userContent || '请描述这张图片的内容'},
+          ]
+        } else {
+          userContent = _buildAttachmentMessage(absPath, userContent)
+        }
       }
     }
 
-    if (!userContent || !userContent.trim()) {
+    if (!userContent || (typeof userContent === 'string' && !userContent.trim())) {
       console.log(`[Runner] empty content after processing, skipping`)
       return
     }
@@ -101,11 +115,21 @@ export class Runner {
     const reply = await this._agentFn(userContent, history, session.id, routingKey, rootId, session.verbose)
     console.log(`[Runner] reply length=${reply.length}`)
 
+    const userTextForLog = Array.isArray(userContent) ? '[图片消息]' : userContent
     await this._sessionMgr.append(session.id, {
-      user: userContent,
+      user: userTextForLog,
       feishuMsgId: inbound.msgId,
       assistant: reply,
     })
+
+    storeMemory({
+      sessionId: session.id,
+      routingKey,
+      userMessage: userTextForLog,
+      assistantReply: reply,
+      turnTs: Date.now(),
+      dbDsn: this._dbDsn,
+    }).catch(e => console.error('[Runner] storeMemory error:', e.message))
 
     if (cardMsgId) {
       await this._sender.updateCard(cardMsgId, reply)

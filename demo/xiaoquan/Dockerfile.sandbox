@@ -1,0 +1,11 @@
+FROM python:3.11-slim
+
+RUN pip install --no-cache-dir \
+    openpyxl \
+    requests \
+    python-pptx \
+    python-docx \
+    PyPDF2 \
+    beautifulsoup4
+
+WORKDIR /workspace
