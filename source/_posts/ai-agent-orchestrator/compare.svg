@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="480" viewBox="0 0 880 480">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#555"/>
+    </marker>
+    <marker id="arrow-dashed" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#aaa"/>
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#00000020"/>
+    </filter>
+  </defs>
+  <rect width="880" height="480" fill="#f8f9fa" rx="12"/>
+
+  <!-- ============ Column 1: Pipeline ============ -->
+  <rect x="20" y="16" width="270" height="448" rx="10" fill="#fff" stroke="#ddd" stroke-width="1"/>
+  <!-- Title -->
+  <text x="155" y="46" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="14" font-weight="600" fill="#333">顺序工作流</text>
+  <!-- Tag: 流程僵化 -->
+  <rect x="112" y="54" width="86" height="22" rx="11" fill="#fff3cd" stroke="#f0c040" stroke-width="1"/>
+  <text x="155" y="69" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#a67c00">流程僵化</text>
+
+  <!-- Step 1 -->
+  <rect x="75" y="94" width="160" height="38" rx="8" fill="#fff" stroke="#4361ee" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="155" y="118" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="13" fill="#333">步骤 1</text>
+  <!-- Arrow 1->2 -->
+  <line x1="155" y1="132" x2="155" y2="158" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 2 -->
+  <rect x="75" y="166" width="160" height="38" rx="8" fill="#fff" stroke="#4361ee" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="155" y="190" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="13" fill="#333">步骤 2</text>
+  <!-- Arrow 2->3 -->
+  <line x1="155" y1="204" x2="155" y2="230" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 3 -->
+  <rect x="75" y="238" width="160" height="38" rx="8" fill="#fff" stroke="#4361ee" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="155" y="262" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="13" fill="#333">步骤 3</text>
+  <!-- Arrow 3->4 -->
+  <line x1="155" y1="276" x2="155" y2="302" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 4 -->
+  <rect x="75" y="310" width="160" height="38" rx="8" fill="#fff" stroke="#4361ee" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="155" y="334" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="13" fill="#333">步骤 4</text>
+
+  <!-- Left side annotation -->
+  <text x="62" y="230" text-anchor="end" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#aaa" transform="rotate(-90, 48, 230)">工程师预先写死</text>
+
+  <!-- Bottom warning box -->
+  <rect x="40" y="370" width="230" height="78" rx="6" fill="#fff3cd" stroke="#f0c040" stroke-width="1"/>
+  <text x="155" y="400" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="12" fill="#a67c00">子任务全部提前编排</text>
+  <text x="155" y="424" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="12" fill="#a67c00">无法动态调整</text>
+
+  <!-- ============ Column 2: Swarm ============ -->
+  <rect x="305" y="16" width="270" height="448" rx="10" fill="#fff" stroke="#ddd" stroke-width="1"/>
+  <!-- Title -->
+  <text x="440" y="46" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="14" font-weight="600" fill="#333">Swarm 去中心化</text>
+  <!-- Tag: 难以收敛 -->
+  <rect x="397" y="54" width="86" height="22" rx="11" fill="#fff3cd" stroke="#f0c040" stroke-width="1"/>
+  <text x="440" y="69" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#a67c00">难以收敛</text>
+
+  <!-- 5 Agent nodes in pentagon arrangement -->
+  <!-- Agent 1 (top center) -->
+  <rect x="403" y="96" width="74" height="34" rx="8" fill="#fff" stroke="#f0a500" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="440" y="118" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="12" fill="#333">Agent 1</text>
+  <!-- Agent 2 (upper right) -->
+  <rect x="498" y="168" width="74" height="34" rx="8" fill="#fff" stroke="#f0a500" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="535" y="190" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="12" fill="#333">Agent 2</text>
+  <!-- Agent 3 (lower right) -->
+  <rect x="478" y="262" width="74" height="34" rx="8" fill="#fff" stroke="#f0a500" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="515" y="284" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="12" fill="#333">Agent 3</text>
+  <!-- Agent 4 (lower left) -->
+  <rect x="328" y="262" width="74" height="34" rx="8" fill="#fff" stroke="#f0a500" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="365" y="284" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="12" fill="#333">Agent 4</text>
+  <!-- Agent 5 (upper left) -->
+  <rect x="308" y="168" width="74" height="34" rx="8" fill="#fff" stroke="#f0a500" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="345" y="190" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="12" fill="#333">Agent 5</text>
+
+  <!-- Mesh connections (dashed lines between agents) -->
+  <!-- 1-2 -->
+  <line x1="477" y1="120" x2="498" y2="170" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <!-- 2-3 -->
+  <line x1="535" y1="202" x2="525" y2="262" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <!-- 3-4 -->
+  <line x1="478" y1="279" x2="402" y2="279" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <!-- 4-5 -->
+  <line x1="355" y1="262" x2="350" y2="202" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <!-- 5-1 -->
+  <line x1="365" y1="168" x2="410" y2="130" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <!-- Cross connections with some arrows -->
+  <!-- 1-3 -->
+  <line x1="455" y1="130" x2="500" y2="262" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow-dashed)"/>
+  <!-- 1-4 -->
+  <line x1="425" y1="130" x2="380" y2="262" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow-dashed)"/>
+  <!-- 2-4 -->
+  <line x1="498" y1="195" x2="402" y2="272" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <!-- 2-5 -->
+  <line x1="498" y1="185" x2="382" y2="185" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+  <!-- 3-5 -->
+  <line x1="478" y1="272" x2="370" y2="202" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- Bottom warning box -->
+  <rect x="325" y="370" width="230" height="78" rx="6" fill="#fff3cd" stroke="#f0c040" stroke-width="1"/>
+  <text x="440" y="400" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="12" fill="#a67c00">无协调中心，误差叠加</text>
+  <text x="440" y="424" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="12" fill="#a67c00">验收困难</text>
+
+  <!-- ============ Column 3: Orchestrator ============ -->
+  <rect x="590" y="16" width="270" height="448" rx="10" fill="#fff" stroke="#ddd" stroke-width="1"/>
+  <!-- Title -->
+  <text x="725" y="46" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="14" font-weight="600" fill="#333">Orchestrator 有层级</text>
+  <!-- Tag: 行业收敛 -->
+  <rect x="682" y="54" width="86" height="22" rx="11" fill="#e0fff9" stroke="#2ec4b6" stroke-width="1"/>
+  <text x="725" y="69" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#0d7a6e">行业收敛</text>
+
+  <!-- Main Agent (pill shape) -->
+  <rect x="665" y="100" width="120" height="42" rx="21" fill="#4361ee" filter="url(#shadow)"/>
+  <text x="725" y="126" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="14" font-weight="600" fill="#fff">主 Agent</text>
+
+  <!-- Annotation below main agent, offset right to avoid center arrow -->
+  <text x="793" y="155" text-anchor="start" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#888">运行时决策</text>
+
+  <!-- Dispatch arrows from Main Agent to sub-agents -->
+  <!-- Main -> Sub A (left side of main pill down-left to top of Sub A) -->
+  <line x1="688" y1="142" x2="651" y2="210" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <!-- Main -> Sub B (right side of main pill down-right to top of Sub B) -->
+  <line x1="762" y1="142" x2="757" y2="210" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <!-- Main -> Sub C (center bottom of main pill, route down to Sub C) -->
+  <path d="M725,142 L725,172 L707,282" fill="none" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Sub Agent A (left) -->
+  <rect x="604" y="218" width="94" height="38" rx="8" fill="#fff" stroke="#2ec4b6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="651" y="242" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="12" fill="#333">子 Agent A</text>
+
+  <!-- Sub Agent B (center) -->
+  <rect x="710" y="218" width="94" height="38" rx="8" fill="#fff" stroke="#2ec4b6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="757" y="242" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="12" fill="#333">子 Agent B</text>
+
+  <!-- Sub Agent C (bottom center) -->
+  <rect x="660" y="290" width="94" height="38" rx="8" fill="#fff" stroke="#2ec4b6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="707" y="314" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="12" fill="#333">子 Agent C</text>
+
+  <!-- Return arrows (dashed) from sub-agents back to Main -->
+  <!-- Sub A -> Main (right side of Sub A to left side of main, offset to avoid overlap with dispatch arrow) -->
+  <line x1="635" y1="218" x2="677" y2="142" stroke="#aaa" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow-dashed)"/>
+  <!-- Sub B -> Main (left side of Sub B to right side of main, offset) -->
+  <line x1="773" y1="218" x2="752" y2="142" stroke="#aaa" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow-dashed)"/>
+  <!-- Sub C -> Main (top of Sub C up through gap between A and B, then to main) -->
+  <path d="M704,290 L704,176 L720,142" fill="none" stroke="#aaa" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow-dashed)"/>
+
+  <!-- Bottom success box -->
+  <rect x="610" y="370" width="230" height="78" rx="6" fill="#e0fff9" stroke="#2ec4b6" stroke-width="1"/>
+  <text x="725" y="400" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="12" fill="#0d7a6e">动态调度，上下文隔离</text>
+  <text x="725" y="424" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="12" fill="#0d7a6e">独立验收</text>
+</svg>
