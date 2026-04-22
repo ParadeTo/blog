@@ -1,0 +1,199 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="460" viewBox="0 0 880 460">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#555"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#2ec4b6"/>
+    </marker>
+    <marker id="arrow-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#f72585"/>
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#00000020"/>
+    </filter>
+  </defs>
+  <rect width="880" height="460" fill="#f8f9fa" rx="12"/>
+
+  <!-- ============ Column 1: 上下文隔离 ============ -->
+  <rect x="20" y="16" width="270" height="428" rx="10" fill="#fff" stroke="#ddd" stroke-width="1"/>
+  <!-- Title -->
+  <text x="155" y="46" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="14" font-weight="600" fill="#333">&#9312; &#19978;&#19979;&#25991;&#38548;&#31163;</text>
+
+  <!-- Main Agent pill -->
+  <rect x="95" y="68" width="120" height="42" rx="21" fill="#4361ee" filter="url(#shadow)"/>
+  <text x="155" y="89" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="14" font-weight="600" fill="#fff">&#20027; Agent</text>
+  <text x="155" y="103" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#c8d3ff">&#20840;&#23616;&#35270;&#35282;</text>
+
+  <!-- Dashed separator line (scissors / split metaphor) -->
+  <line x1="50" y1="148" x2="260" y2="148" stroke="#aaa" stroke-width="1.2" stroke-dasharray="6,4"/>
+  <rect x="127" y="137" width="56" height="22" rx="11" fill="#f8f9fa" stroke="#aaa" stroke-width="1"/>
+  <text x="155" y="152" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#888">&#20998;&#21106;</text>
+
+  <!-- Arrows from main agent down through separator to sub-agents -->
+  <line x1="90" y1="110" x2="68" y2="180" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="155" y1="110" x2="155" y2="180" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="220" y1="110" x2="242" y2="180" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Sub-agent A -->
+  <rect x="35" y="188" width="68" height="56" rx="8" fill="#f0f4ff" stroke="#4361ee" stroke-width="1" filter="url(#shadow)"/>
+  <text x="69" y="214" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="13" fill="#333">&#23376; A</text>
+  <text x="69" y="232" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#888">&#31934;&#20934;&#19978;&#19979;&#25991;</text>
+
+  <!-- Sub-agent B -->
+  <rect x="121" y="188" width="68" height="56" rx="8" fill="#f0f4ff" stroke="#4361ee" stroke-width="1" filter="url(#shadow)"/>
+  <text x="155" y="214" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="13" fill="#333">&#23376; B</text>
+  <text x="155" y="232" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#888">&#31934;&#20934;&#19978;&#19979;&#25991;</text>
+
+  <!-- Sub-agent C -->
+  <rect x="207" y="188" width="68" height="56" rx="8" fill="#f0f4ff" stroke="#4361ee" stroke-width="1" filter="url(#shadow)"/>
+  <text x="241" y="214" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="13" fill="#333">&#23376; C</text>
+  <text x="241" y="232" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#888">&#31934;&#20934;&#19978;&#19979;&#25991;</text>
+
+  <!-- Context visualization: full vs precise -->
+  <!-- Full context block (left, red-ish) -->
+  <rect x="40" y="276" width="100" height="60" rx="6" fill="#fff0f5" stroke="#f72585" stroke-width="1"/>
+  <text x="90" y="296" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#f72585">&#20840;&#37327;&#19978;&#19979;&#25991;</text>
+  <!-- Noise bars inside -->
+  <rect x="50" y="302" width="80" height="5" rx="2" fill="#f7258533"/>
+  <rect x="50" y="311" width="80" height="5" rx="2" fill="#f7258533"/>
+  <rect x="50" y="320" width="80" height="5" rx="2" fill="#f7258533"/>
+
+  <!-- Precise context block (right, green) -->
+  <rect x="168" y="276" width="100" height="60" rx="6" fill="#e0fff9" stroke="#2ec4b6" stroke-width="1"/>
+  <text x="218" y="296" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#2ec4b6">&#31934;&#20934;&#19978;&#19979;&#25991;</text>
+  <!-- Clean bars inside -->
+  <rect x="178" y="302" width="40" height="5" rx="2" fill="#2ec4b633"/>
+  <rect x="178" y="311" width="55" height="5" rx="2" fill="#2ec4b633"/>
+
+  <!-- Bottom comparison -->
+  <text x="90" y="360" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="12" fill="#f72585">&#10007; &#21333; Agent&#65306;&#22122;&#38899;&#22810;</text>
+  <text x="218" y="360" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="12" fill="#2ec4b6">&#10003; &#23376; Agent&#65306;&#31934;&#20934;</text>
+
+  <!-- Additional note at bottom -->
+  <rect x="40" y="380" width="230" height="48" rx="6" fill="#f0f4ff" stroke="#4361ee" stroke-width="0.8"/>
+  <text x="155" y="402" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#4361ee">&#27599;&#20010;&#23376; Agent &#21482;&#33719;&#21462;</text>
+  <text x="155" y="418" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#4361ee">&#23436;&#25104;&#20219;&#21153;&#25152;&#38656;&#30340;&#26368;&#23567;&#19978;&#19979;&#25991;</text>
+
+
+  <!-- ============ Column 2: 并发执行 ============ -->
+  <rect x="305" y="16" width="270" height="428" rx="10" fill="#fff" stroke="#ddd" stroke-width="1"/>
+  <!-- Title -->
+  <text x="440" y="46" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="14" font-weight="600" fill="#333">&#9313; &#24182;&#21457;&#25191;&#34892;</text>
+
+  <!-- Orchestrator pill -->
+  <rect x="380" y="68" width="120" height="42" rx="21" fill="#4361ee" filter="url(#shadow)"/>
+  <text x="440" y="94" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="14" font-weight="600" fill="#fff">&#32534;&#25490;&#22120;</text>
+
+  <!-- Dispatch arrows -->
+  <line x1="410" y1="110" x2="370" y2="148" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="440" y1="110" x2="440" y2="148" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="470" y1="110" x2="510" y2="148" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Gantt chart area -->
+  <!-- Labels -->
+  <text x="325" y="170" font-family="PingFang SC, Arial, sans-serif" font-size="12" fill="#333">Agent A</text>
+  <text x="325" y="200" font-family="PingFang SC, Arial, sans-serif" font-size="12" fill="#333">Agent B</text>
+  <text x="325" y="230" font-family="PingFang SC, Arial, sans-serif" font-size="12" fill="#333">Agent C</text>
+
+  <!-- Gantt bars (parallel, all starting near same x) -->
+  <rect x="385" y="158" width="140" height="18" rx="4" fill="#4361ee" opacity="0.85"/>
+  <text x="455" y="171" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#fff">&#20219;&#21153; A</text>
+
+  <rect x="385" y="188" width="110" height="18" rx="4" fill="#2ec4b6" opacity="0.85"/>
+  <text x="440" y="201" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#fff">&#20219;&#21153; B</text>
+
+  <rect x="385" y="218" width="160" height="18" rx="4" fill="#7b2d8b" opacity="0.85"/>
+  <text x="465" y="231" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#fff">&#20219;&#21153; C</text>
+
+  <!-- Time arrow -->
+  <line x1="385" y1="250" x2="555" y2="250" stroke="#888" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <text x="560" y="254" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#888">t</text>
+
+  <!-- Vertical start-line showing same start time -->
+  <line x1="385" y1="155" x2="385" y2="245" stroke="#4361ee" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>
+
+  <!-- VS section: serial vs concurrent -->
+  <rect x="320" y="272" width="240" height="90" rx="8" fill="#fafafa" stroke="#eee" stroke-width="1"/>
+
+  <!-- Serial (top half) -->
+  <text x="340" y="296" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#f72585">&#10007; &#20018;&#34892;</text>
+  <rect x="390" y="284" width="40" height="14" rx="3" fill="#4361ee" opacity="0.4"/>
+  <rect x="432" y="284" width="35" height="14" rx="3" fill="#2ec4b6" opacity="0.4"/>
+  <rect x="469" y="284" width="50" height="14" rx="3" fill="#7b2d8b" opacity="0.4"/>
+  <line x1="390" y1="304" x2="519" y2="304" stroke="#f72585" stroke-width="0.8"/>
+  <text x="524" y="298" font-family="PingFang SC, Arial, sans-serif" font-size="9" fill="#f72585">T&#8321;+T&#8322;+T&#8323;</text>
+
+  <!-- Concurrent (bottom half) -->
+  <text x="340" y="336" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#2ec4b6">&#10003; &#24182;&#21457;</text>
+  <rect x="390" y="322" width="50" height="10" rx="3" fill="#4361ee" opacity="0.5"/>
+  <rect x="390" y="334" width="40" height="10" rx="3" fill="#2ec4b6" opacity="0.5"/>
+  <rect x="390" y="346" width="55" height="10" rx="3" fill="#7b2d8b" opacity="0.5"/>
+  <line x1="390" y1="360" x2="445" y2="360" stroke="#2ec4b6" stroke-width="0.8"/>
+  <text x="450" y="352" font-family="PingFang SC, Arial, sans-serif" font-size="9" fill="#2ec4b6">max(T&#8321;,T&#8322;,T&#8323;)</text>
+
+  <!-- Bottom note -->
+  <rect x="325" y="380" width="230" height="48" rx="6" fill="#f0f4ff" stroke="#4361ee" stroke-width="0.8"/>
+  <text x="440" y="402" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#4361ee">&#24635;&#26102;&#38388; = &#26368;&#24930;&#23376;&#20219;&#21153;&#32791;&#26102;</text>
+  <text x="440" y="418" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#4361ee">&#32780;&#38750;&#32047;&#21152;&#32791;&#26102;</text>
+
+
+  <!-- ============ Column 3: 验收机制 ============ -->
+  <rect x="590" y="16" width="270" height="428" rx="10" fill="#fff" stroke="#ddd" stroke-width="1"/>
+  <!-- Title -->
+  <text x="725" y="46" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="14" font-weight="600" fill="#333">&#9314; &#39564;&#25910;&#26426;&#21046;</text>
+
+  <!-- Main Agent pill (reviewer) -->
+  <rect x="665" y="68" width="120" height="42" rx="21" fill="#4361ee" filter="url(#shadow)"/>
+  <text x="725" y="89" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="14" font-weight="600" fill="#fff">&#20027; Agent</text>
+  <text x="725" y="103" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#c8d3ff">&#35780;&#23457;&#26041;</text>
+
+  <!-- Arrow down to sub-agent output -->
+  <line x1="725" y1="110" x2="725" y2="140" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Sub-agent output node -->
+  <rect x="665" y="148" width="120" height="38" rx="8" fill="#fff" stroke="#4361ee" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="725" y="172" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="13" fill="#333">&#23376; Agent &#36755;&#20986;</text>
+
+  <!-- Arrow down to diamond -->
+  <line x1="725" y1="186" x2="725" y2="218" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Diamond decision node -->
+  <polygon points="725,220 770,248 725,276 680,248" fill="#fff" stroke="#f72585" stroke-width="1.5"/>
+  <text x="725" y="252" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="13" fill="#333">&#36890;&#36807;&#65311;</text>
+
+  <!-- Right branch: ACCEPT -> 交付 -->
+  <line x1="770" y1="248" x2="816" y2="248" stroke="#2ec4b6" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+  <text x="793" y="240" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#2ec4b6">ACCEPT</text>
+  <!-- 交付 pill -->
+  <rect x="824" y="232" width="26" height="32" rx="8" fill="#2ec4b6"/>
+  <!-- Use vertical text for 交付 -->
+  <text x="837" y="244" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="11" font-weight="600" fill="#fff">&#20132;</text>
+  <text x="837" y="258" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="11" font-weight="600" fill="#fff">&#20184;</text>
+
+  <!-- Left/bottom branch: REJECT -> 重试/修复 -->
+  <line x1="680" y1="248" x2="636" y2="248" stroke="#f72585" stroke-width="1.5" marker-end="url(#arrow-red)"/>
+  <text x="658" y="240" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#f72585">REJECT</text>
+
+  <!-- 重试/修复 node -->
+  <rect x="604" y="232" width="28" height="50" rx="8" fill="#fff0f5" stroke="#f72585" stroke-width="1"/>
+  <text x="618" y="250" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#f72585">&#37325;</text>
+  <text x="618" y="262" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#f72585">&#35797;</text>
+  <text x="618" y="274" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#f72585">&#20462;</text>
+
+  <!-- Retry loop arrow: from 重试 node back up to sub-agent output -->
+  <path d="M618,232 L618,167 L665,167" fill="none" stroke="#f72585" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrow-red)"/>
+
+  <!-- Loop label -->
+  <text x="612" y="196" text-anchor="end" font-family="PingFang SC, Arial, sans-serif" font-size="10" fill="#f72585">&#37325;&#26032;&#25191;&#34892;</text>
+
+  <!-- Bottom comparison area -->
+  <rect x="610" y="304" width="230" height="56" rx="6" fill="#fafafa" stroke="#eee" stroke-width="1"/>
+  <text x="725" y="326" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="12" fill="#f72585">&#10007; &#26080;&#39564;&#25910;&#65306;&#36136;&#37327;&#38543;&#26426;</text>
+  <text x="725" y="348" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="12" fill="#2ec4b6">&#10003; &#26377;&#39564;&#25910;&#65306;&#36136;&#37327;&#25910;&#25947;</text>
+
+  <!-- Bottom note -->
+  <rect x="610" y="380" width="230" height="48" rx="6" fill="#f0f4ff" stroke="#4361ee" stroke-width="0.8"/>
+  <text x="725" y="402" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#4361ee">&#20027; Agent &#26816;&#26597;&#36755;&#20986;&#36136;&#37327;</text>
+  <text x="725" y="418" text-anchor="middle" font-family="PingFang SC, Arial, sans-serif" font-size="11" fill="#4361ee">&#19981;&#36890;&#36807;&#21017;&#37325;&#35797;&#25110;&#20462;&#22797;</text>
+</svg>
