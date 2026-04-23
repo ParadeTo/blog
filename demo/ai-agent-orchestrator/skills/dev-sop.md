@@ -32,27 +32,15 @@ spawn 1 个子 Agent：
 
 ```
 role:    "架构设计师"
-task:    1. 写 design/architecture.md（模块、技术栈、目录结构）
-         2. 写 design/api_spec.md（RESTful：路径/方法/请求/响应/错误码）
+task:    1. 写 design/architecture.md（模块划分、技术栈、目录结构）
+         2. 写 design/api_spec.md（RESTful 接口：路径/方法/请求体/响应体/错误码）
 context: requirements.md 的完整内容
 output:  design/architecture.md
 ```
 
 验收：用 readFile 分别读取 architecture.md 与 api_spec.md，确认与需求一致。
 
-### 阶段 2：测试基础设施（串行）
-
-spawn 1 个子 Agent：
-
-```
-role:    "Mock 工程师"
-task:    1. 创建接口 mock server
-         2. 为每个接口写至少 1 条测试骨架
-context: api_spec.md 的完整内容
-output:  mock/ 和 tests/
-```
-
-### 阶段 3：前后端开发（并发）
+### 阶段 2：前后端开发（并发）
 
 前端和后端互相独立，用 spawnParallel 同时开 2 个子 Agent：
 
@@ -72,12 +60,12 @@ output:  mock/ 和 tests/
 
 并发前提：输出目录不重叠，不互相依赖。
 
-### 阶段 4：验收（串行）
+### 阶段 3：验收（串行）
 
 用 readFile 读取前后端代码和测试，检查是否符合接口规范。
-发现问题记录下来，进入阶段 5。
+发现问题记录下来，进入阶段 4。
 
-### 阶段 5：修复循环
+### 阶段 4：修复循环
 
 对验收未通过的部分，spawn 修复子 Agent，context 中包含：
 - 失败报告摘要
@@ -86,7 +74,7 @@ output:  mock/ 和 tests/
 
 修复后重新验收，最多重试 2 次。
 
-### 阶段 6：交付
+### 阶段 5：交付
 
 spawn 1 个子 Agent 写 delivery_report.md：
 - 需求摘要
