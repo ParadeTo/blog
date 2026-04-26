@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>员工休假记录管理系统</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===== 顶部标题栏 ===== -->
+  <header class="header">
+    <div class="header-inner">
+      <span class="header-icon">📅</span>
+      <h1>员工休假记录管理系统</h1>
+    </div>
+  </header>
+
+  <main class="main-container">
+
+    <!-- ===== 筛选区域 ===== -->
+    <section class="filter-section">
+      <div class="filter-row">
+        <div class="filter-item">
+          <label for="filter-name">员工姓名</label>
+          <input type="text" id="filter-name" placeholder="请输入员工姓名" />
+        </div>
+        <div class="filter-item">
+          <label for="filter-type">休假类型</label>
+          <select id="filter-type">
+            <option value="">全部</option>
+            <option value="年假">年假</option>
+            <option value="病假">病假</option>
+            <option value="事假">事假</option>
+            <option value="婚假">婚假</option>
+            <option value="产假">产假</option>
+            <option value="陪产假">陪产假</option>
+            <option value="丧假">丧假</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label for="filter-status">状态</label>
+          <select id="filter-status">
+            <option value="">全部</option>
+            <option value="待审批">待审批</option>
+            <option value="已批准">已批准</option>
+            <option value="已拒绝">已拒绝</option>
+          </select>
+        </div>
+        <div class="filter-actions">
+          <button class="btn btn-primary" id="btn-search">🔍 查询</button>
+          <button class="btn btn-default" id="btn-reset">↺ 重置</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 操作区域 ===== -->
+    <section class="toolbar">
+      <button class="btn btn-success" id="btn-create">＋ 新建休假申请</button>
+      <span class="total-info" id="total-info"></span>
+    </section>
+
+    <!-- ===== 列表区域 ===== -->
+    <section class="table-section">
+      <div class="table-wrapper">
+        <table id="leave-table">
+          <thead>
+            <tr>
+              <th>员工工号</th>
+              <th>员工姓名</th>
+              <th>休假类型</th>
+              <th>开始日期</th>
+              <th>结束日期</th>
+              <th>天数</th>
+              <th>状态</th>
+              <th>申请时间</th>
+              <th class="col-actions">操作</th>
+            </tr>
+          </thead>
+          <tbody id="leave-tbody">
+            <tr>
+              <td colspan="9" class="empty-tip">加载中...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== 新建 / 编辑弹窗 ===== -->
+  <div class="modal-overlay" id="form-modal-overlay">
+    <div class="modal-card" id="form-modal">
+      <div class="modal-header">
+        <h2 id="form-modal-title">新建休假申请</h2>
+        <button class="modal-close" id="form-modal-close" title="关闭">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="leave-form" novalidate>
+          <input type="hidden" id="form-id" />
+          <div class="form-grid">
+            <!-- 员工工号 -->
+            <div class="form-group">
+              <label for="form-employee-id">员工工号 <span class="required">*</span></label>
+              <input type="text" id="form-employee-id" placeholder="请输入员工工号" maxlength="50" />
+              <span class="field-error" id="err-employee-id"></span>
+            </div>
+            <!-- 员工姓名 -->
+            <div class="form-group">
+              <label for="form-employee-name">员工姓名 <span class="required">*</span></label>
+              <input type="text" id="form-employee-name" placeholder="请输入员工姓名" maxlength="50" />
+              <span class="field-error" id="err-employee-name"></span>
+            </div>
+            <!-- 休假类型 -->
+            <div class="form-group">
+              <label for="form-leave-type">休假类型 <span class="required">*</span></label>
+              <select id="form-leave-type">
+                <option value="">请选择休假类型</option>
+                <option value="年假">年假</option>
+                <option value="病假">病假</option>
+                <option value="事假">事假</option>
+                <option value="婚假">婚假</option>
+                <option value="产假">产假</option>
+                <option value="陪产假">陪产假</option>
+                <option value="丧假">丧假</option>
+              </select>
+              <span class="field-error" id="err-leave-type"></span>
+            </div>
+            <!-- 审批人（可选） -->
+            <div class="form-group">
+              <label for="form-approver">审批人</label>
+              <input type="text" id="form-approver" placeholder="请输入审批人姓名（可选）" maxlength="50" />
+            </div>
+            <!-- 开始日期 -->
+            <div class="form-group">
+              <label for="form-start-date">开始日期 <span class="required">*</span></label>
+              <input type="date" id="form-start-date" />
+              <span class="field-error" id="err-start-date"></span>
+            </div>
+            <!-- 结束日期 -->
+            <div class="form-group">
+              <label for="form-end-date">结束日期 <span class="required">*</span></label>
+              <input type="date" id="form-end-date" />
+              <span class="field-error" id="err-end-date"></span>
+            </div>
+            <!-- 天数（只读） -->
+            <div class="form-group">
+              <label for="form-days">天数（自动计算）</label>
+              <input type="text" id="form-days" readonly placeholder="根据日期自动计算" class="input-readonly" />
+            </div>
+            <!-- 占位 -->
+            <div class="form-group form-group-placeholder"></div>
+            <!-- 请假原因（跨两列） -->
+            <div class="form-group form-group-full">
+              <label for="form-reason">请假原因 <span class="required">*</span></label>
+              <textarea id="form-reason" rows="4" placeholder="请输入请假原因（最多200字）" maxlength="200"></textarea>
+              <div class="reason-footer">
+                <span class="field-error" id="err-reason"></span>
+                <span class="char-count" id="reason-count">0 / 200</span>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" id="form-cancel-btn">取消</button>
+        <button class="btn btn-primary" id="form-submit-btn">提交</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 审批弹窗 ===== -->
+  <div class="modal-overlay" id="approve-modal-overlay">
+    <div class="modal-card modal-card-sm" id="approve-modal">
+      <div class="modal-header">
+        <h2>审批休假申请</h2>
+        <button class="modal-close" id="approve-modal-close" title="关闭">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="approve-info" id="approve-info"></div>
+        <div class="form-group" style="margin-top:16px;">
+          <label for="approve-approver">审批人 <span class="required">*</span></label>
+          <input type="text" id="approve-approver" placeholder="请输入审批人姓名" maxlength="50" />
+          <span class="field-error" id="err-approve-approver"></span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" id="approve-cancel-btn">取消</button>
+        <button class="btn btn-danger" id="approve-reject-btn">✕ 拒绝</button>
+        <button class="btn btn-success" id="approve-confirm-btn">✓ 批准</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 删除确认弹窗 ===== -->
+  <div class="modal-overlay" id="delete-modal-overlay">
+    <div class="modal-card modal-card-xs" id="delete-modal">
+      <div class="modal-header">
+        <h2>删除确认</h2>
+        <button class="modal-close" id="delete-modal-close" title="关闭">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="confirm-icon">🗑️</div>
+        <p class="confirm-text">确定要删除该休假申请记录吗？</p>
+        <p class="confirm-sub" id="delete-info"></p>
+        <p class="confirm-warn">此操作不可撤销，请谨慎操作。</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" id="delete-cancel-btn">取消</button>
+        <button class="btn btn-danger" id="delete-confirm-btn">确认删除</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

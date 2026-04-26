@@ -1,0 +1,7 @@
+{
+  "name": "leave-management-tests",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "node leaves.test.js"
+  }
+}

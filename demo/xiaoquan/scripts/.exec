@@ -1,0 +1,1 @@
+execute_python: scripts/create_name_age.py

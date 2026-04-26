@@ -1,0 +1,14 @@
+{
+  "name": "leave-management",
+  "version": "1.0.0",
+  "description": "员工休假记录管理系统后端服务",
+  "type": "module",
+  "scripts": {
+    "start": "node server/app.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "uuid": "^9.0.0"
+  }
+}
