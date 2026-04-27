@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="340" viewBox="0 0 680 340" font-family="'PingFang SC', 'Microsoft YaHei', Arial, sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="3.5" orient="auto">
+      <polygon points="0 0, 8 3.5, 0 7" fill="#555"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="340" y="30" text-anchor="middle" font-size="16" font-weight="bold" fill="#333">workspace 四件套 → system prompt</text>
+
+  <!-- File boxes -->
+  <!-- soul.md -->
+  <rect x="30" y="60" width="140" height="80" rx="8" fill="#FFF3E0" stroke="#F9A825" stroke-width="2"/>
+  <text x="100" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#E65100">soul.md</text>
+  <text x="100" y="110" text-anchor="middle" font-size="12" fill="#555">身份 + 使命</text>
+  <text x="100" y="128" text-anchor="middle" font-size="12" fill="#555">NEVER 清单</text>
+
+  <!-- agent.md -->
+  <rect x="190" y="60" width="140" height="80" rx="8" fill="#E8F5E9" stroke="#388E3C" stroke-width="2"/>
+  <text x="260" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#1B5E20">agent.md</text>
+  <text x="260" y="110" text-anchor="middle" font-size="12" fill="#555">工作流程</text>
+  <text x="260" y="128" text-anchor="middle" font-size="12" fill="#555">工具用法</text>
+
+  <!-- user.md -->
+  <rect x="350" y="60" width="140" height="80" rx="8" fill="#E3F2FD" stroke="#1976D2" stroke-width="2"/>
+  <text x="420" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#0D47A1">user.md</text>
+  <text x="420" y="110" text-anchor="middle" font-size="12" fill="#555">服务对象</text>
+  <text x="420" y="128" text-anchor="middle" font-size="12" fill="#555">用户画像</text>
+
+  <!-- memory.md -->
+  <rect x="510" y="60" width="140" height="80" rx="8" fill="#F3E5F5" stroke="#8E24AA" stroke-width="2"/>
+  <text x="580" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#4A148C">memory.md</text>
+  <text x="580" y="110" text-anchor="middle" font-size="12" fill="#555">历史记忆</text>
+  <text x="580" y="128" text-anchor="middle" font-size="12" fill="#555">初始为空</text>
+
+  <!-- Arrows down to loadWorkspaceContext -->
+  <line x1="100" y1="140" x2="100" y2="185" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="260" y1="140" x2="260" y2="185" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="420" y1="140" x2="420" y2="185" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="580" y1="140" x2="580" y2="185" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- loadWorkspaceContext box -->
+  <rect x="60" y="185" width="560" height="50" rx="8" fill="#ECEFF1" stroke="#607D8B" stroke-width="2"/>
+  <text x="340" y="208" text-anchor="middle" font-size="13" font-weight="bold" fill="#37474F">loadWorkspaceContext(workspaceDir)</text>
+  <text x="340" y="226" text-anchor="middle" font-size="12" fill="#555">读取四件套，拼接成 system prompt 文本</text>
+
+  <!-- Arrow down to system prompt -->
+  <line x1="340" y1="235" x2="340" y2="270" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- System prompt box -->
+  <rect x="120" y="270" width="440" height="50" rx="8" fill="#1A237E" stroke="#1A237E" stroke-width="2"/>
+  <text x="340" y="293" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFF">system prompt</text>
+  <text x="340" y="311" text-anchor="middle" font-size="12" fill="#C5CAE9">「你是一名数字员工。以下是你的身份、工作规范和记忆：...」</text>
+</svg>
