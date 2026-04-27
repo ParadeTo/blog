@@ -83,7 +83,9 @@ ai-agent-digital-team/
 
 ### 沙盒设计
 
-博客 demo 系列的一贯做法（agent-react、agent-skill、orchestrator）都直接用 `fs`，没有真正运行的沙盒。xiaoquan 用 Podman 是因为要执行用户上传的不可信 Python 代码，属于不同场景。原 Python 版（m4l25/m4l26）用 Docker+MCP 是 CrewAI 框架的架构要求，不是安全需要。
+原 Python 版（m4l25/m4l26）用 Docker 的真实原因：Agent 通过沙盒 Bash 工具在容器内执行 Python 脚本（`mailbox_cli.py`、`init_workspace.py`），这和 xiaoquan 用 Podman 跑 Python 脚本是同一模式——脚本执行隔离。
+
+JS 重写把这些 Python 脚本替换为 host 上的 JS 函数（`mailbox.js`），"在容器内执行脚本"的需求消失，沙盒也就不再需要了。
 
 **本项目做法**：Agent 工具直接用 `fs` 读写 `workspace/` 下的本地路径，不启动任何容器。
 
