@@ -51,106 +51,131 @@
 ```
 ai-agent-digital-team/
 ├── package.json
-├── docker-compose.yaml        # 展示 volume 挂载与工作区隔离（教学用）
-├── digital-worker.js          # 通用 Agent 运行器
-├── mailbox.js                 # 三态邮箱状态机
-├── run-manager.js             # Manager 入口（自动判断分配/验收模式）
-├── run-pm.js                  # PM 入口（读邮箱 + 执行任务）
+├── Dockerfile.sandbox             # Node.js Alpine 镜像
+├── sandbox.js                     # DockerSandbox 类（参照 xiaoquan/podman-sandbox.js）
+├── digital-worker.js              # 通用 Agent 运行器
+├── run-manager.js                 # Manager 入口（自动判断分配/验收模式）
+├── run-pm.js                      # PM 入口（读邮箱 + 执行任务）
 ├── demo-input/
 │   └── project_requirement.md
 └── workspace/
     ├── manager/
-    │   ├── soul.md            # 身份 + NEVER 清单
-    │   ├── agent.md           # 工作流 + 团队名册
-    │   ├── user.md            # 服务对象
-    │   └── memory.md          # 初始记忆
+    │   ├── soul.md                # 身份 + NEVER 清单
+    │   ├── agent.md               # 工作流 + 团队名册
+    │   ├── user.md                # 服务对象
+    │   ├── memory.md              # 初始记忆
+    │   └── skills/
+    │       ├── mailbox/
+    │       │   └── scripts/
+    │       │       └── mailbox_cli.js    # 在容器内执行
+    │       └── init_project/
+    │           └── scripts/
+    │               └── init_workspace.js # 在容器内执行
     ├── pm/
-    │   ├── soul.md
-    │   ├── agent.md
-    │   ├── user.md
-    │   └── memory.md
-    └── shared/                # 运行时生成
-        ├── needs/             # Manager 写入需求文档
-        ├── design/            # PM 写入产品文档
-        └── mailboxes/         # manager.json / pm.json
+    │   ├── soul.md / agent.md / user.md / memory.md
+    │   └── skills/
+    │       └── mailbox/
+    │           └── scripts/
+    │               └── mailbox_cli.js
+    └── shared/                    # 运行时生成
+        ├── needs/                 # Manager 写入需求文档
+        ├── design/                # PM 写入产品文档
+        └── mailboxes/             # manager.json / pm.json
 ```
 
 ### 技术栈
 
 - `ai` (Vercel AI SDK) + `@ai-sdk/anthropic`
 - `generateText` + `tool` —— 与系列前作完全一致
-- 纯 Node.js，ESM，无额外框架
+- 纯 Node.js，ESM
+- Docker 用于脚本执行隔离（与 xiaoquan 用 Podman 的模式一致）
 
 ### 沙盒设计
 
-原 Python 版（m4l25/m4l26）用 Docker 的真实原因：Agent 通过沙盒 Bash 工具在容器内执行 Python 脚本（`mailbox_cli.py`、`init_workspace.py`），这和 xiaoquan 用 Podman 跑 Python 脚本是同一模式——脚本执行隔离。
+与 xiaoquan 完全相同的模式：`sandbox.js` 封装 `docker run --rm`，每次 `run_script` 调用启动一个临时容器执行脚本，脚本跑完容器自动销毁。
 
-JS 重写把这些 Python 脚本替换为 host 上的 JS 函数（`mailbox.js`），"在容器内执行脚本"的需求消失，沙盒也就不再需要了。
-
-**本项目做法**：Agent 工具直接用 `fs` 读写 `workspace/` 下的本地路径，不启动任何容器。
-
-`docker-compose.yaml` 保留，作用是在文章里充当「架构图」——比文字更直观地展示两个 Agent 各有私有 workspace、共享同一个 `/mnt/shared` 的隔离设计：
-
-```yaml
-services:
-  manager-sandbox:
-    volumes:
-      - ./workspace/manager:/workspace    # 私有工作区
-      - ./workspace/shared:/mnt/shared    # 共享工作区
-  pm-sandbox:
-    volumes:
-      - ./workspace/pm:/workspace
-      - ./workspace/shared:/mnt/shared
+**挂载结构**（以 Manager 为例）：
 ```
+workspace/manager/skills/ → /mnt/skills:ro   （脚本，只读）
+workspace/manager/        → /workspace:rw    （私有工作区，可读写）
+workspace/shared/         → /mnt/shared:rw   （共享工作区，可读写）
+```
+
+PM 沙盒挂载 `workspace/pm/skills/` 和 `workspace/pm/`，共享同一个 `workspace/shared/`。
+
+**`sandbox.js` 核心**：
+```js
+async execute(scriptPath, args = '') {
+  const skillsDir = path.join(this._workspaceDir, 'skills')
+  const containerScript = `/mnt/skills/${path.relative(skillsDir, scriptPath)}`
+  const cmd = [
+    'run', '--rm',
+    '-v', `${skillsDir}:/mnt/skills:ro`,
+    '-v', `${this._workspaceDir}:/workspace:rw`,
+    '-v', `${this._sharedDir}:/mnt/shared:rw`,
+    'digital-team-sandbox',
+    'node', containerScript, ...args,
+  ]
+  const {stdout} = await execFileAsync('docker', cmd, {timeout: this._timeoutMs})
+  return stdout.trim()
+}
+```
+
+**`readFile`/`writeFile` 工具**：直接用 `fs`（与 xiaoquan 一致，沙盒只用于跑脚本，读文件走 host）。
 
 ---
 
 ### 核心模块设计
 
+#### `sandbox.js`
+
+`DockerSandbox` 类，参照 `xiaoquan/src/sandbox/podman-sandbox.js`：
+- `constructor({workspaceDir, sharedDir, timeoutMs})`
+- `async execute(scriptPath, args)` — `docker run --rm` 执行 Node.js 脚本
+
 #### `digital-worker.js`
 
-```js
-// createDigitalWorker(workspaceDir) 的职责：
-// 1. 读取 soul.md + agent.md + user.md + memory.md，拼成 system prompt
-// 2. 提供 readFile / writeFile 工具，路径限定在 workspaceDir 和 workspace/shared/
-// 3. 调用 generateText 跑 ReAct 循环
-// 4. 返回最终文本结果
-```
+`createDigitalWorker(workspaceDir, sharedDir)` 的职责：
+1. 读取 soul.md + agent.md + user.md + memory.md，拼成 system prompt
+2. 创建 `DockerSandbox` 实例
+3. 提供工具：`readFile`（fs）、`writeFile`（fs）、`run_script`（sandbox.execute）
+4. 调用 `generateText` 跑 ReAct 循环
 
-关键设计：`role`/`goal` 来自 soul.md 内容，代码里没有任何角色特异性字段。
+关键设计：代码里没有任何角色特异性字段，角色身份完全来自 workspace 文件内容。
 
-#### `mailbox.js`
+#### `workspace/*/skills/mailbox/scripts/mailbox_cli.js`
 
-四个纯函数，操作 `workspace/shared/mailboxes/{role}.json`：
+命令行脚本，在容器内执行，操作 `/mnt/shared/mailboxes/{role}.json`：
 
-| 函数 | 行为 |
-|------|------|
-| `sendMail(to, from, type, subject, content)` | 追加消息，状态 `unread` |
-| `readInbox(role)` | 读取并**原子**标记为 `in_progress`（读写在同一个 JSON 操作里） |
-| `markDone(role, msgId)` | 标记为 `done` |
-| `resetStale(role, timeoutMs)` | 将超时的 `in_progress` 重置为 `unread`（崩溃恢复） |
+| 子命令 | 行为 |
+|--------|------|
+| `send --to --from --type --subject --content` | 追加消息，状态 `unread` |
+| `read --role` | 读取并原子标记为 `in_progress` |
+| `done --role --msg-id` | 标记为 `done` |
+| `reset-stale --role --timeout-minutes` | 超时 `in_progress` → `unread`（崩溃恢复）|
 
-三态状态机：`unread → in_progress → done`，`resetStale` 提供 `in_progress → unread` 回退路径。
+#### `workspace/manager/skills/init_project/scripts/init_workspace.js`
+
+命令行脚本，在容器内执行，创建 `/mnt/shared/needs/`、`/mnt/shared/design/`、`/mnt/shared/mailboxes/` 目录结构（幂等）。
 
 #### `run-manager.js`
 
-启动时检查 `mailboxes/manager.json` 是否有未处理的 `task_done` 消息：
-- **有**：验收模式——读 PM 产出文件，写验收报告
-- **无**：分配模式——初始化共享工作区，写需求文档，发 `task_assign` 给 PM
+启动时在 host 侧检查 `workspace/shared/mailboxes/manager.json` 是否有未处理的 `task_done` 消息：
+- **有**：验收模式
+- **无**：分配模式
 
 模式切换依据文件系统状态，不靠 LLM 判断。
 
 #### `run-pm.js`
 
-读取 PM 邮箱，处理 `task_assign`：读需求文档 → 写产品规格文档 → 发 `task_done` → `markDone`。
+启动 PM Agent，Agent 通过 `run_script` 调用 `mailbox_cli.js read` 取任务，执行后写产品文档，再调用 `mailbox_cli.js send` 回报。
 
 ---
 
 ## 四、不在范围内
 
 - 不实现 QA 角色（留给后续文章）
-- 不实现 Skills 动态加载（soul.md + agent.md 直接注入 system prompt，不走 skill_loader）
-- 不实现真正的容器隔离（docker-compose.yaml 仅供教学展示）
+- 不实现 Skills 动态加载（soul.md + agent.md 直接注入 system prompt）
 - 不实现并发多 PM（单条任务链，Manager → PM → Manager）
 
 ---
