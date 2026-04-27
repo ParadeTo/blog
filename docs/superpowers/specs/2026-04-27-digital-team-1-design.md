@@ -83,7 +83,11 @@ ai-agent-digital-team/
 
 ### 沙盒设计
 
-`docker-compose.yaml` 展示两个容器的挂载配置：
+博客 demo 系列的一贯做法（agent-react、agent-skill、orchestrator）都直接用 `fs`，没有真正运行的沙盒。xiaoquan 用 Podman 是因为要执行用户上传的不可信 Python 代码，属于不同场景。原 Python 版（m4l25/m4l26）用 Docker+MCP 是 CrewAI 框架的架构要求，不是安全需要。
+
+**本项目做法**：Agent 工具直接用 `fs` 读写 `workspace/` 下的本地路径，不启动任何容器。
+
+`docker-compose.yaml` 保留，作用是在文章里充当「架构图」——比文字更直观地展示两个 Agent 各有私有 workspace、共享同一个 `/mnt/shared` 的隔离设计：
 
 ```yaml
 services:
@@ -96,8 +100,6 @@ services:
       - ./workspace/pm:/workspace
       - ./workspace/shared:/mnt/shared
 ```
-
-**实际运行**：Agent 工具直接读写 `workspace/` 下的本地路径（`fs` 模块），不需要进入容器。Docker 配置作为「架构文档」存在，说明隔离边界，演示时无需真正启动沙盒。
 
 ---
 
