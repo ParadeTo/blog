@@ -6,7 +6,7 @@ import {fileURLToPath} from 'url'
 const execFileAsync = promisify(execFile)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-export class DockerSandbox {
+export class PodmanSandbox {
   constructor({workspaceDir, sharedDir, timeoutMs = 30000} = {}) {
     this._workspaceDir = path.resolve(workspaceDir)
     this._sharedDir = path.resolve(sharedDir)
@@ -19,6 +19,7 @@ export class DockerSandbox {
 
     const cmd = [
       'run', '--rm',
+      `--timeout=${Math.ceil(this._timeoutMs / 1000)}`,
       '-v', `${skillsDir}:/mnt/skills:ro`,
       '-v', `${this._workspaceDir}:/workspace:rw`,
       '-v', `${this._sharedDir}:/mnt/shared:rw`,
@@ -28,7 +29,7 @@ export class DockerSandbox {
     ]
 
     try {
-      const {stdout, stderr} = await execFileAsync('docker', cmd, {timeout: this._timeoutMs})
+      const {stdout, stderr} = await execFileAsync('podman', cmd, {timeout: this._timeoutMs})
       if (stderr) console.error('[Sandbox stderr]', stderr)
       return stdout.trim()
     } catch (e) {

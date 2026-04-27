@@ -5,7 +5,7 @@
   "scripts": {
     "manager": "node run-manager.js",
     "pm": "node run-pm.js",
-    "build": "docker build -f Dockerfile.sandbox -t digital-team-sandbox ."
+    "build": "podman build -f Dockerfile.sandbox -t digital-team-sandbox ."
   },
   "dependencies": {
     "ai": "^4.0.0",

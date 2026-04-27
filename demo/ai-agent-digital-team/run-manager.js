@@ -16,6 +16,8 @@ function hasPendingTaskDone() {
 }
 
 async function main() {
+  fs.mkdirSync(SHARED_DIR, {recursive: true})
+
   const worker = await createDigitalWorker({
     workspaceDir: WORKSPACE_DIR,
     sharedDir: SHARED_DIR,

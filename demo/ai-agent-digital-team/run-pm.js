@@ -1,5 +1,6 @@
 import path from 'path'
 import {fileURLToPath} from 'url'
+import fs from 'fs'
 import {createDigitalWorker} from './digital-worker.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -7,6 +8,7 @@ const WORKSPACE_DIR = path.join(__dirname, 'workspace', 'pm')
 const SHARED_DIR = path.join(__dirname, 'workspace', 'shared')
 
 async function main() {
+  fs.mkdirSync(SHARED_DIR, {recursive: true})
   const worker = await createDigitalWorker({
     workspaceDir: WORKSPACE_DIR,
     sharedDir: SHARED_DIR,

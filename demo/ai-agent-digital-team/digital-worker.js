@@ -3,7 +3,7 @@ import {createAnthropic} from '@ai-sdk/anthropic'
 import {z} from 'zod'
 import fs from 'fs'
 import path from 'path'
-import {DockerSandbox} from './sandbox.js'
+import {PodmanSandbox} from './sandbox.js'
 
 const anthropic = createAnthropic({
   baseURL: process.env.ANTHROPIC_BASE_URL || 'http://localhost:3003',
@@ -24,7 +24,7 @@ function loadWorkspaceContext(workspaceDir) {
 
 export async function createDigitalWorker({workspaceDir, sharedDir, model = 'claude-sonnet-4-6'}) {
   const context = loadWorkspaceContext(workspaceDir)
-  const sandbox = new DockerSandbox({workspaceDir, sharedDir})
+  const sandbox = new PodmanSandbox({workspaceDir, sharedDir})
 
   const tools = {
     readFile: tool({
@@ -78,7 +78,7 @@ export async function createDigitalWorker({workspaceDir, sharedDir, model = 'cla
       console.log(`[DigitalWorker] workspace=${path.basename(workspaceDir)}`)
       const {text} = await generateText({
         model: anthropic(model),
-        system: `你是一名数字员工。以下是你的身份、工作规范和记忆：\n\n${context}`,
+        system: `你是一名数字员工。以下是你的身份、工作规范和记忆：\n\n${context}\n\n---\n\n## 路径说明\n\n**readFile / writeFile** 使用宿主机绝对路径：\n- 你的私有工作区：${workspaceDir}（容器内对应 /workspace）\n- 共享工作区：${sharedDir}（容器内对应 /mnt/shared）\n\n**run_script 的参数**使用容器内路径（/mnt/shared/...）`,
         prompt: userRequest,
         tools,
         maxSteps: 20,
