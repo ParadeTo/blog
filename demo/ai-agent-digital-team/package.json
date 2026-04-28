@@ -5,11 +5,14 @@
   "scripts": {
     "manager": "node run-manager.js",
     "pm": "node run-pm.js",
+    "sop-setup": "node sop-setup.js",
+    "human": "node human-cli.js",
     "build": "podman build -f Dockerfile.sandbox -t digital-team-sandbox ."
   },
   "dependencies": {
     "ai": "^4.0.0",
     "@ai-sdk/anthropic": "^1.0.0",
-    "zod": "^3.23.0"
+    "zod": "^3.23.0",
+    "enquirer": "^2.4.1"
   }
 }
