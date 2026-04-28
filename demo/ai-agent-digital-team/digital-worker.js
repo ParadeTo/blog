@@ -19,6 +19,24 @@ function loadWorkspaceContext(workspaceDir) {
       parts.push(`## ${file}\n\n${fs.readFileSync(filePath, 'utf-8')}`)
     }
   }
+
+  const skillsDir = path.join(workspaceDir, 'skills')
+  if (fs.existsSync(skillsDir)) {
+    const skillFiles = []
+    function findSkills(dir) {
+      for (const entry of fs.readdirSync(dir, {withFileTypes: true})) {
+        const fullPath = path.join(dir, entry.name)
+        if (entry.isDirectory()) findSkills(fullPath)
+        else if (entry.name === 'SKILL.md') skillFiles.push(fullPath)
+      }
+    }
+    findSkills(skillsDir)
+    for (const skillFile of skillFiles.sort()) {
+      const skillName = path.basename(path.dirname(skillFile))
+      parts.push(`## Skill: ${skillName}\n\n${fs.readFileSync(skillFile, 'utf-8')}`)
+    }
+  }
+
   return parts.join('\n\n---\n\n')
 }
 
@@ -58,6 +76,21 @@ export async function createDigitalWorker({workspaceDir, sharedDir, model = 'cla
       },
     }),
 
+    listDir: tool({
+      description: '列出目录中的文件名（使用宿主机绝对路径）',
+      parameters: z.object({
+        dirPath: z.string().describe('目录的绝对路径（宿主机路径）'),
+      }),
+      execute: async ({dirPath}) => {
+        try {
+          if (!fs.existsSync(dirPath)) return JSON.stringify([])
+          return JSON.stringify(fs.readdirSync(dirPath))
+        } catch (e) {
+          return `读取目录失败: ${e.message}`
+        }
+      },
+    }),
+
     run_script: tool({
       description: '在 Docker 沙盒中执行脚本（mailbox_cli.js、init_workspace.js 等）。scriptPath 是相对于 workspace/skills/ 的路径，如 "mailbox/scripts/mailbox_cli.js"',
       parameters: z.object({
@@ -78,7 +111,7 @@ export async function createDigitalWorker({workspaceDir, sharedDir, model = 'cla
       console.log(`[DigitalWorker] workspace=${path.basename(workspaceDir)}`)
       const {text} = await generateText({
         model: anthropic(model),
-        system: `你是一名数字员工。以下是你的身份、工作规范和记忆：\n\n${context}\n\n---\n\n## 路径说明\n\n**readFile / writeFile** 使用宿主机绝对路径：\n- 你的私有工作区：${workspaceDir}（容器内对应 /workspace）\n- 共享工作区：${sharedDir}（容器内对应 /mnt/shared）\n\n**run_script 的参数**使用容器内路径（/mnt/shared/...）`,
+        system: `你是一名数字员工。以下是你的身份、工作规范和记忆：\n\n${context}\n\n---\n\n## 路径说明\n\n**readFile / writeFile / listDir** 使用宿主机绝对路径：\n- 你的私有工作区：${workspaceDir}（容器内对应 /workspace）\n- 共享工作区：${sharedDir}（容器内对应 /mnt/shared）\n\n**run_script 的参数**使用容器内路径（/mnt/shared/...）`,
         prompt: userRequest,
         tools,
         maxSteps: 20,
