@@ -1,5 +1,5 @@
 ---
-title: 数字团队（一）：角色体系与任务链
+title: 简单实战一下 Multi-Agent 数字员工（一）
 date: 2026-04-27 20:00:00
 tags:
   - ai
@@ -374,9 +374,9 @@ run_script("mailbox/scripts/mailbox_cli.js", [
 
 Manager 和 PM 的 `/mnt/shared` 指向同一个宿主机目录，脚本对 `/mnt/shared/mailboxes/pm.json` 的写入，PM 容器里立刻可见。
 
-## 5.2 运行三步走
+## 5.2 运行
 
-这个 demo 的协作是**人工串联**的——你依次敲三条命令，每条命令跑一个 Agent，Agent 跑完退出，下一个再启动：
+按照下面方式，我们暂时先人工串联一下这个流程：
 
 ```bash
 # Step 1：Manager 分配任务
@@ -399,11 +399,7 @@ node run-manager.js
 # → 写入 review_result.md
 ```
 
-Agent 之间没有直接调用，中间的"驱动"是你。这是有意为之的简化——把协议本身讲清楚，不在这里引入调度层的复杂度。自动轮转（Manager 完成后自动启动 PM，PM 完成后自动通知 Manager）是调度器的职责，下一篇会讲。
-
-## 5.3 实际运行输出
-
-跑了一遍，记录一下实际发生了什么。
+下面是运行记录：
 
 **Step 1 — Manager 分配任务：**
 
