@@ -350,6 +350,20 @@ run_script("mailbox/scripts/mailbox_cli.js", [
 
 邮件内容只有路径，实际文档在共享工作区里，任何人都能读到最新版本。
 
+## 4.5 沙盒：共享目录的物理实现
+
+上面说的 `workspace/shared/` 在物理上是怎么实现的？
+
+脚本（`mailbox_cli.js`、`init_workspace.js`）跑在容器里，每次 `run_script` 调用都启动一个临时容器执行，跑完自动销毁。容器挂载三个目录：
+
+| 挂载点 | 宿主机路径 | 读写 |
+|--------|-----------|------|
+| `/mnt/skills` | `workspace/{role}/skills/` | 只读 |
+| `/workspace` | `workspace/{role}/` | 读写 |
+| `/mnt/shared` | `workspace/shared/` | 读写 |
+
+Manager 和 PM 的 `/mnt/shared` 指向同一个宿主机目录，脚本对 `/mnt/shared/mailboxes/pm.json` 的写入，PM 容器里立刻可见。
+
 ---
 
 # 五、端到端演示
@@ -360,21 +374,7 @@ run_script("mailbox/scripts/mailbox_cli.js", [
 
 ![](./ai-agent-digital-team-1/e2e-flow.png)
 
-## 5.1 沙盒设计
-
-脚本（`mailbox_cli.js`、`init_workspace.js`）跑在容器里，每次 `run_script` 调用都启动一个临时容器执行，跑完自动销毁。
-
-容器挂载三个目录：
-
-| 挂载点 | 宿主机路径 | 读写 |
-|--------|-----------|------|
-| `/mnt/skills` | `workspace/{role}/skills/` | 只读 |
-| `/workspace` | `workspace/{role}/` | 读写 |
-| `/mnt/shared` | `workspace/shared/` | 读写 |
-
-Manager 和 PM 的 `/mnt/shared` 指向同一个宿主机目录，脚本对 `/mnt/shared/mailboxes/pm.json` 的写入，PM 容器里立刻可见。
-
-## 5.2 运行
+## 5.1 运行
 
 按照下面方式，我们暂时先人工串联一下这个流程：
 
