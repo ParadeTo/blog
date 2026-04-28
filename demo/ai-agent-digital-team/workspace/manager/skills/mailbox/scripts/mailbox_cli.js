@@ -110,11 +110,34 @@ function resetStale({mailboxesDir, role, timeoutMinutes = 15}) {
   console.log(JSON.stringify({ok: true, reset}))
 }
 
+function checkHuman({mailboxesDir, type}) {
+  const filePath = path.join(mailboxesDir, 'human.json')
+  if (!fs.existsSync(filePath)) {
+    console.log(JSON.stringify({confirmed: false, reason: 'no_file'}))
+    return
+  }
+  const messages = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+  const msg = messages.filter(m => m.type === type).pop()
+  if (!msg) {
+    console.log(JSON.stringify({confirmed: false, reason: 'no_message'}))
+  } else if (!msg.read) {
+    console.log(JSON.stringify({confirmed: false, reason: 'not_read'}))
+  } else if (msg.rejected) {
+    console.log(JSON.stringify({confirmed: false, reason: 'rejected', human_feedback: msg.human_feedback || null}))
+  } else {
+    console.log(JSON.stringify({confirmed: true}))
+  }
+}
+
 const [,, command, ...rest] = process.argv
 const args = parseArgs(rest)
 
 switch (command) {
-  case 'send':
+  case 'send': {
+    if (args.to === 'human' && args.from !== 'manager') {
+      console.log(JSON.stringify({errcode: 1, errmsg: '权限拒绝：只有 manager 可以向 human 发消息'}))
+      process.exit(1)
+    }
     send({
       mailboxesDir: args['mailboxes-dir'],
       from: args.from,
@@ -124,6 +147,7 @@ switch (command) {
       content: args.content,
     })
     break
+  }
   case 'read':
     read({mailboxesDir: args['mailboxes-dir'], role: args.role})
     break
@@ -136,6 +160,9 @@ switch (command) {
       role: args.role,
       timeoutMinutes: args['timeout-minutes'] ?? 15,
     })
+    break
+  case 'check-human':
+    checkHuman({mailboxesDir: args['mailboxes-dir'], type: args.type})
     break
   default:
     console.error(`Unknown command: ${command}`)
