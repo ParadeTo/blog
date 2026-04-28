@@ -100,7 +100,11 @@
       "Bash(pkill -9 -f \"node src/index.js\")",
       "Bash(podman start *)",
       "Bash(grep -v \"^$\")",
-      "Bash(podman inspect *)"
+      "Bash(podman inspect *)",
+      "Bash(xargs cat *)",
+      "Bash(docker build *)",
+      "Bash(docker info *)",
+      "Bash(docker context *)"
     ]
   }
 }

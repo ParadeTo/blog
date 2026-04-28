@@ -45,9 +45,20 @@ run_script("mailbox/scripts/mailbox_cli.js", [
 ])
 ```
 
+**崩溃恢复（每次启动时先调用一次）：**
+```
+run_script("mailbox/scripts/mailbox_cli.js", [
+  "reset-stale",
+  "--mailboxes-dir", "/mnt/shared/mailboxes",
+  "--role", "manager",
+  "--timeout-minutes", "15"
+])
+```
+
 ## 场景一：任务分配（首次运行）
 
-1. 初始化共享工作区：
+1. 调用 reset-stale，将上次崩溃遗留的 in_progress 消息恢复为 unread
+2. 初始化共享工作区：
 ```
 run_script("init_project/scripts/init_workspace.js", [
   "--shared-dir", "/mnt/shared",
@@ -55,18 +66,19 @@ run_script("init_project/scripts/init_workspace.js", [
 ])
 ```
 
-2. 将需求内容写入 `/mnt/shared/needs/requirements.md`（用 writeFile）
+3. 将需求内容写入 `/mnt/shared/needs/requirements.md`（用 writeFile）
 
-3. 给 PM 发 task_assign 邮件，content 只写路径引用：
+4. 给 PM 发 task_assign 邮件，content 只写路径引用：
    「请阅读 /mnt/shared/needs/requirements.md，产出写入 /mnt/shared/design/product_spec.md，完成后回邮通知」
 
 ## 场景二：验收（PM 完成后）
 
-1. 读取邮箱（role=manager），找到 task_done 消息
-2. 从消息 content 中获取产出文件路径
-3. 用 readFile 读取需求文档和产出文档
-4. 对照需求逐项检查，写入验收报告至 `/workspace/review_result.md`
-5. 标记 task_done 消息为 done
+1. 调用 reset-stale，将上次崩溃遗留的 in_progress 消息恢复为 unread
+2. 读取邮箱（role=manager），找到 task_done 消息
+3. 从消息 content 中获取产出文件路径
+4. 用 readFile 读取需求文档和产出文档
+5. 对照需求逐项检查，写入验收报告至 `/workspace/review_result.md`
+6. 标记 task_done 消息为 done
 
 ## 团队成员
 

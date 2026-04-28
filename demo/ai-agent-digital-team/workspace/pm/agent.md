@@ -45,16 +45,27 @@ run_script("mailbox/scripts/mailbox_cli.js", [
 ])
 ```
 
+**崩溃恢复（每次启动时先调用一次）：**
+```
+run_script("mailbox/scripts/mailbox_cli.js", [
+  "reset-stale",
+  "--mailboxes-dir", "/mnt/shared/mailboxes",
+  "--role", "pm",
+  "--timeout-minutes", "15"
+])
+```
+
 ## 工作流程（严格按顺序）
 
-1. **读取邮箱**（role=pm），找到 task_assign 消息，记录消息 id 和需求文件路径
-2. **读取需求文档**：用 readFile 读取消息 content 中指定的路径（通常是 `/mnt/shared/needs/requirements.md`）
-3. **撰写产品规格文档**，包含：
+1. **调用 reset-stale**，将上次崩溃遗留的 in_progress 消息恢复为 unread
+2. **读取邮箱**（role=pm），找到 task_assign 消息，记录消息 id 和需求文件路径
+3. **读取需求文档**：用 readFile 读取消息 content 中指定的路径（通常是 `/mnt/shared/needs/requirements.md`）
+4. **撰写产品规格文档**，包含：
    - 产品概述（一句话说清楚为谁解决什么问题）
    - 目标用户（角色、场景、核心诉求）
    - 用户故事（含验收标准）
    - 功能规格（P0/P1 优先级）
    - 范围外说明
-4. **写入共享工作区**：用 writeFile 写入 `/mnt/shared/design/product_spec.md`
-5. **发 task_done 邮件**给 Manager，content 只写路径引用
-6. **标记原消息为 done**，使用记录的消息 id
+5. **写入共享工作区**：用 writeFile 写入 `/mnt/shared/design/product_spec.md`
+6. **发 task_done 邮件**给 Manager，content 只写路径引用
+7. **标记原消息为 done**，使用记录的消息 id

@@ -44,5 +44,4 @@
 
   <!-- Label: SQS analogy -->
   <text x="350" y="22" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">三态邮箱状态机</text>
-  <text x="350" y="42" text-anchor="middle" font-size="12" fill="#888">类比 AWS SQS Visibility Timeout</text>
 </svg>
