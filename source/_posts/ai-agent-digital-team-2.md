@@ -285,29 +285,154 @@ function detectPhase() {
 
 完整 demo 代码在 [GitHub](https://github.com/ParadeTo/blog/tree/master/demo/ai-agent-digital-team)。
 
-运行步骤分两部分：先创建 SOP 模板，再跑正式项目。
+运行步骤分两部分：先创建 SOP 模板，再跑正式项目。Human 的确认用 `respond` 子命令来模拟（实际场景下打开交互式 `node human-cli.js` 操作）。
 
-**SOP 共创（只需一次）：**
+**SOP 共创（只需运行一次）**
 
-```bash
-node sop-setup.js   # Manager 生成 SOP 草稿 → 发 sop_draft_confirm → 退出
-node human-cli.js   # Human 打开消息中心，确认草稿
-node sop-setup.js   # 检测到已确认 → 重命名为正式模板
+第1次运行，Manager 生成草稿并通知 Human：
+
+```
+$ node sop-setup.js
+
+[SOP Setup] 开始创建产品设计 SOP 模板...
+[DigitalWorker] workspace=manager
+  [sandbox] mailbox/scripts/mailbox_cli.js → {"ok":true,"id":"msg-edd7bf8e"}
+
+[SOP Setup] SOP 草稿已生成
+
+| 步骤 | 状态 |
+| 生成 SOP 草稿 | ✅ 写入 draft_product_design_sop.md |
+| 通知 Human 审阅 | ✅ 发送 sop_draft_confirm，ID: msg-edd7bf8e |
 ```
 
-**正式项目（五步）：**
+Human 确认，第2次运行完成重命名：
 
-```bash
-node run-manager.js  # 阶段1：初始化工作区 + 需求澄清 → 发 needs_confirm
-node human-cli.js    # Human 确认需求文档
-node run-manager.js  # 阶段2：从 SOP 库选模板 → 写 active_sop.md → 发 sop_confirm
-node human-cli.js    # Human 确认 SOP
-node run-manager.js  # 阶段3：给 PM 发 task_assign
-node run-pm.js       # PM 执行：读需求 → 写产品文档 → 回邮 Manager
-node run-manager.js  # 阶段5：验收 PM 产出 → 写 review_result.md
+```
+$ node human-cli.js respond msg-edd7bf8e y
+{"errcode":0,"msg_id":"msg-edd7bf8e","confirmed":true,"feedback":null}
+
+$ node sop-setup.js
+
+[SOP Setup] 草稿已确认，正在重命名为正式模板...
+| draft_product_design_sop.md | product_design_sop.md | ✅ 已写入 |
 ```
 
-每次 `node run-manager.js` 都是无状态重启，检测到当前阶段，执行对应动作，完成后退出。阶段4（等待 PM）会直接打印提示然后退出，不会阻塞。
+**正式项目**
+
+阶段1 — 需求澄清：
+
+```
+$ node run-manager.js
+
+[Manager] 当前阶段: 1
+[DigitalWorker] workspace=manager
+  [sandbox] init_project/scripts/init_workspace.js → {"ok":true,"created":[]}
+  [sandbox] mailbox/scripts/mailbox_cli.js → {"ok":true,"reset":0}
+  [sandbox] mailbox/scripts/mailbox_cli.js → {"ok":true,"id":"msg-dc2aa76b"}
+
+四维分析结果：
+  🎯 目标：30秒录入、按优先级排序、100任务不卡顿
+  📐 边界：4项功能范围内，GUI/数据库/多人协作范围外
+  ⚙️ 约束：Node.js + 本地文件 + 单人 + 2周
+  ⚠️ 风险：NLP解析准确率、提醒触发机制、工期风险
+
+识别出 4 个待澄清项并写入 requirements.md，已发 needs_confirm → 等待 Human 确认
+```
+
+Manager 用 `requirements_discovery` Skill 的四维框架主动识别了4处歧义（NLP 失败兜底、提醒触发机制、优先级设定方式、"并发任务"定义），没有自行猜测填充，全部标注到文档的"待澄清"栏。
+
+Human 确认后进入阶段2 — SOP 选择：
+
+```
+$ node human-cli.js respond msg-dc2aa76b y
+{"errcode":0,"msg_id":"msg-dc2aa76b","confirmed":true,"feedback":null}
+
+$ node run-manager.js
+
+[Manager] 当前阶段: 2
+  [sandbox] mailbox/scripts/mailbox_cli.js → {"ok":true,"id":"msg-a7118f05"}
+
+| product_design_sop.md | 9.5/10 | 流程完全覆盖，角色分工和 Checkpoint 高度匹配 |
+| draft_product_design_sop.md | 过滤 | draft_ 前缀，不参与选择 |
+
+active_sop.md 写入成功，已发 sop_confirm → 等待 Human 确认
+```
+
+阶段3 — 分配任务：
+
+```
+$ node human-cli.js respond msg-a7118f05 y
+
+$ node run-manager.js
+
+[Manager] 当前阶段: 3
+  [sandbox] mailbox/scripts/mailbox_cli.js → {"ok":true,"reset":0}
+  [sandbox] mailbox/scripts/mailbox_cli.js → {"ok":true,"id":"msg-c6272d60"}
+
+task_assign 已发给 PM：
+  需求文档：/mnt/shared/needs/requirements.md
+  产出写入：/mnt/shared/design/product_spec.md
+  SOP 参考：/mnt/shared/sop/active_sop.md
+```
+
+阶段4 — Manager 检测到 PM 未完成，直接退出：
+
+```
+$ node run-manager.js
+
+[Manager] 当前阶段: 4
+[Manager] 等待 PM 完成任务，请运行：node run-pm.js
+```
+
+PM 执行：
+
+```
+$ node run-pm.js
+
+[PM] 启动，检查邮箱...
+  [sandbox] mailbox/scripts/mailbox_cli.js → [{"id":"msg-c6272d60","type":"task_assign",...}]
+  [sandbox] mailbox/scripts/mailbox_cli.js → {"ok":true,"reset":0}
+  [sandbox] mailbox/scripts/mailbox_cli.js → {"ok":true,"id":"msg-6534b9e6"}
+  [sandbox] mailbox/scripts/mailbox_cli.js → {"ok":true}
+
+4 个待澄清项全部给出设计决策：
+  解析失败 → 提示手动输入截止时间，允许跳过
+  提醒机制 → 每次运行时检查，无需 cron
+  优先级   → 用户手动指定 high/medium/low，默认 medium
+  并发任务 → 同时存在 100 条未完成任务作为性能基准
+
+product_spec.md 写入（4147字），task_done 回邮 Manager
+```
+
+PM 在拿到带待澄清项的需求文档后，逐一做出设计决策并标注理由——这正是"落文档才算数"的意义：口头说的不算，写进文档、经过 Human 确认的需求才是有效输入。
+
+阶段5 — Manager 验收：
+
+```
+$ node run-manager.js
+
+[Manager] 当前阶段: 5
+  [sandbox] mailbox/scripts/mailbox_cli.js → {"ok":true,"reset":0}
+  [sandbox] mailbox/scripts/mailbox_cli.js → [{"id":"msg-6534b9e6","type":"task_done",...}]
+  [sandbox] mailbox/scripts/mailbox_cli.js → {"ok":true}
+
+验收结论：✅ 通过
+  目标（4项）        全部覆盖 ✅
+  范围内功能（4项）  全部覆盖 ✅
+  范围外功能（4项）  全部正确排除 ✅
+  约束（4项）        全部覆盖 ✅
+  风险（3项）        全部覆盖且有应对策略 ✅
+  待澄清项（4项）    全部给出合理设计决策 ✅
+
+待跟进（不阻塞开发）：
+  --priority 默认值建议在 --help 中明确标注
+  自然语言解析边界场景建议补充测试用例
+  存储路径是否可配置，可在 P1 阶段评估
+
+验收报告写入 workspace/manager/review_result.md
+```
+
+整条链路跑下来，每次 `node run-manager.js` 都是无参数重启，`detectPhase()` 完全靠读邮箱文件判断——1→2→3→4（直接退出）→5，没有一次误判。
 
 ---
 
