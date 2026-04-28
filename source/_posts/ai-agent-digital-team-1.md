@@ -354,6 +354,8 @@ run_script("mailbox/scripts/mailbox_cli.js", [
 
 # 五、端到端演示
 
+本文 demo 代码在 [GitHub](https://github.com/ParadeTo/blog/tree/master/demo/ai-agent-digital-team)。
+
 把所有东西接起来，整条任务链是这样的：
 
 ![](./ai-agent-digital-team-1/e2e-flow.png)
