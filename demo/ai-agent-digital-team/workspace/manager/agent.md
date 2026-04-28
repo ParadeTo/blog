@@ -4,15 +4,16 @@
 
 | 工具 | 用途 |
 |------|------|
-| `readFile(filePath)` | 读取文件内容（绝对路径） |
-| `writeFile(filePath, content)` | 写入文件（绝对路径） |
-| `run_script(scriptPath, args)` | 在沙盒中执行脚本 |
+| `readFile(filePath)` | 读取文件内容（宿主机绝对路径） |
+| `writeFile(filePath, content)` | 写入文件（宿主机绝对路径） |
+| `listDir(dirPath)` | 列出目录中的文件名（宿主机绝对路径） |
+| `run_script(scriptPath, args)` | 在沙盒中执行脚本（容器内路径） |
 
 ## 邮箱操作（通过 run_script）
 
 脚本路径（相对于 workspace/skills/）：`mailbox/scripts/mailbox_cli.js`
 
-**发送邮件：**
+**发送邮件（Agent 之间）：**
 ```
 run_script("mailbox/scripts/mailbox_cli.js", [
   "send",
@@ -25,6 +26,29 @@ run_script("mailbox/scripts/mailbox_cli.js", [
 ])
 ```
 
+**发送消息给 Human（只有 Manager 可以）：**
+```
+run_script("mailbox/scripts/mailbox_cli.js", [
+  "send",
+  "--mailboxes-dir", "/mnt/shared/mailboxes",
+  "--from", "manager",
+  "--to", "human",
+  "--type", "needs_confirm",
+  "--subject", "需求文档待确认",
+  "--content", "/mnt/shared/needs/requirements.md"
+])
+```
+
+**检查 Human 是否已确认：**
+```
+run_script("mailbox/scripts/mailbox_cli.js", [
+  "check-human",
+  "--mailboxes-dir", "/mnt/shared/mailboxes",
+  "--type", "needs_confirm"
+])
+```
+返回 `{"confirmed": true}` 表示已确认。
+
 **读取邮箱：**
 ```
 run_script("mailbox/scripts/mailbox_cli.js", [
@@ -33,7 +57,6 @@ run_script("mailbox/scripts/mailbox_cli.js", [
   "--role", "manager"
 ])
 ```
-返回 JSON 数组，每条消息含 `id`、`type`、`content` 字段。
 
 **标记完成：**
 ```
@@ -45,7 +68,7 @@ run_script("mailbox/scripts/mailbox_cli.js", [
 ])
 ```
 
-**崩溃恢复（每次启动时先调用一次）：**
+**崩溃恢复（每次启动先调用一次）：**
 ```
 run_script("mailbox/scripts/mailbox_cli.js", [
   "reset-stale",
@@ -55,30 +78,16 @@ run_script("mailbox/scripts/mailbox_cli.js", [
 ])
 ```
 
-## 场景一：任务分配（首次运行）
+## 技能（Skills）
 
-1. 调用 reset-stale，将上次崩溃遗留的 in_progress 消息恢复为 unread
-2. 初始化共享工作区：
-```
-run_script("init_project/scripts/init_workspace.js", [
-  "--shared-dir", "/mnt/shared",
-  "--roles", "manager,pm"
-])
-```
+以下 Skill 已自动加载，按需调用：
 
-3. 将需求内容写入 `/mnt/shared/needs/requirements.md`（用 writeFile）
-
-4. 给 PM 发 task_assign 邮件，content 只写路径引用：
-   「请阅读 /mnt/shared/needs/requirements.md，产出写入 /mnt/shared/design/product_spec.md，完成后回邮通知」
-
-## 场景二：验收（PM 完成后）
-
-1. 调用 reset-stale，将上次崩溃遗留的 in_progress 消息恢复为 unread
-2. 读取邮箱（role=manager），找到 task_done 消息
-3. 从消息 content 中获取产出文件路径
-4. 用 readFile 读取需求文档和产出文档
-5. 对照需求逐项检查，写入验收报告至 `/workspace/review_result.md`
-6. 标记 task_done 消息为 done
+| Skill | 用途 |
+|-------|------|
+| notify_human | 向 Human 发通知、检查 Human 是否已确认 |
+| requirements_discovery | 四维需求澄清 → 写 requirements.md → 通知 Human |
+| sop_selector | 从模板库选 SOP → 写 active_sop.md → 通知 Human |
+| sop_creator | 生成 SOP 草稿 → 通知 Human 审阅 |
 
 ## 团队成员
 

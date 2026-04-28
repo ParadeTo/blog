@@ -19,7 +19,7 @@ for (let i = 0; i < argv.length; i++) {
 }
 
 const sharedDir = args['shared-dir']
-const roles = (args.roles || 'manager,pm').split(',')
+const roles = (args.roles || 'manager,pm').split(',').filter(r => r !== 'human')
 const created = []
 
 function mkdirIfAbsent(dir) {
@@ -39,10 +39,12 @@ function writeIfAbsent(filePath, content) {
 
 mkdirIfAbsent(path.join(sharedDir, 'needs'))
 mkdirIfAbsent(path.join(sharedDir, 'design'))
+mkdirIfAbsent(path.join(sharedDir, 'sop'))
 mkdirIfAbsent(path.join(sharedDir, 'mailboxes'))
 
 for (const role of roles) {
   writeIfAbsent(path.join(sharedDir, 'mailboxes', `${role}.json`), '[]')
 }
+writeIfAbsent(path.join(sharedDir, 'mailboxes', 'human.json'), '[]')
 
 console.log(JSON.stringify({ok: true, created}))
