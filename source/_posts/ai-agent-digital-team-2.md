@@ -10,7 +10,7 @@ categories:
 description: 数字团队系列第二篇。在第一篇的 Manager + PM 协作基础上，加入 Human 介入机制：单一接口原则、三个工程化介入点、human.json 二态邮箱与五阶段状态机的 JS 实现。
 ---
 
-## 前言
+# 前言
 
 [上一篇](/2026/04/27/ai-agent-digital-team-1/)搭好了数字员工团队的骨架——Manager 和 PM 各有固定身份，通过三态邮箱可靠地传递消息，整条任务链可以自动流转。
 
