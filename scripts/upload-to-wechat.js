@@ -79,16 +79,25 @@ function extractContent(htmlFile) {
 
   let content = contentMatch[1].trim();
 
-  // 提取标题（第一个 h1，需要处理新格式中的 span）
-  let titleMatch = content.match(/<h1[^>]*>[\s\S]*?<span class="content"[^>]*>(.*?)<\/span>[\s\S]*?<\/h1>/);
-  if (!titleMatch) {
-    titleMatch = content.match(/<h1[^>]*>(.*?)<\/h1>/);
+  // 提取标题：优先用 data-title 属性，其次 <title> 标签
+  let title = '';
+  const dataTitleMatch = html.match(/data-title="([^"]+)"/);
+  if (dataTitleMatch) {
+    title = dataTitleMatch[1];
+  } else {
+    const htmlTitleMatch = html.match(/<title>([^<]+)<\/title>/);
+    title = htmlTitleMatch ? htmlTitleMatch[1] : path.basename(htmlFile, '-wechat.html');
   }
-  const title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '') : path.basename(htmlFile, '-wechat.html');
 
-  // 提取摘要（第一个段落）
-  const digestMatch = content.match(/<p[^>]*>(.*?)<\/p>/);
-  const digest = digestMatch ? digestMatch[1].replace(/<[^>]+>/g, '').substring(0, 120) : '';
+  // 优先用 data-description，其次取第一段文字
+  let digest = '';
+  const dataDescMatch = html.match(/data-description="([^"]*)"/);
+  if (dataDescMatch && dataDescMatch[1]) {
+    digest = dataDescMatch[1].substring(0, 120);
+  } else {
+    const digestMatch = content.match(/<p[^>]*>(.*?)<\/p>/);
+    digest = digestMatch ? digestMatch[1].replace(/<[^>]+>/g, '').substring(0, 120) : '';
+  }
 
   // 内容已经包含内联样式，直接返回整个 section
   const sectionMatch = html.match(/<section id="nice"[^>]*>[\s\S]*?<\/section>/);
@@ -154,6 +163,8 @@ async function main() {
   }
 
   const htmlFile = args[0];
+  const thumbArg = args.find(a => a.startsWith('--thumb='));
+  const thumbMediaId = thumbArg ? thumbArg.split('=')[1] : null;
 
   if (!fs.existsSync(htmlFile)) {
     console.error(`❌ 文件不存在: ${htmlFile}`);
@@ -190,8 +201,10 @@ async function main() {
       only_fans_can_comment: config.only_fans_can_comment || 0 // 是否只有粉丝可以评论
     };
 
-    // 如果配置了封面图片 media_id，则添加
-    if (config.thumb_media_id) {
+    // 如果命令行传了 --thumb 则优先，否则用配置文件里的
+    if (thumbMediaId) {
+      article.thumb_media_id = thumbMediaId;
+    } else if (config.thumb_media_id) {
       article.thumb_media_id = config.thumb_media_id;
     }
 

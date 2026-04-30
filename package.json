@@ -27,5 +27,8 @@
     "hexo-server": "^0.2.0",
     "playwright": "^1.59.1",
     "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "highlight.js": "^11.11.1"
   }
 }
