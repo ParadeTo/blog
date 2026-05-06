@@ -54,7 +54,7 @@ PM 在第一周忘了检查移动端适配，Human 退回了设计文档并留�
 
 **三层里最值钱的是 L1。** Agent 自己觉得任务完成得挺好——质量 0.85，没有报错。但 Human 说"不对，移动端方案呢"——这条纠正比 Agent 自己做的 10 次分析都有价值。L1 不是 Agent 的自评，是人类给出的地面真相。
 
-**为什么不合并成一层？** 三层的生命周期完全不同。L1 稀缺宝贵，每条都可能揭示一个系统性问题，永久保留。L3 量最大，三个月前的单步推理对今天的复盘毫无用处。合并就意味着要给它们设同一个保留策略——要么永久保留一堆废数据，要么删掉本来不该删的 L1。
+**为什么不合并成一层？** 三层的生命周期完全不同。L1 稀缺宝贵，每条都可能揭示一个系统性问题，永久保留。L3 量最大，一个月前的单步推理对今天的复盘毫无用处。合并就意味着要给它们设同一个保留策略——要么永久保留一堆废数据，要么删掉本来不该删的 L1。
 
 ## 2.1 L1 的 AOP 写入
 
@@ -230,7 +230,7 @@ PM 输出结构化提案，发 `retro_report` 给 Manager：
     "findings": [{
       "pattern": "3/8 任务被退回，全是设计文档类",
       "evidence_task_ids": ["t001", "t003", "t006"],
-      "l1_corroboration": "3条 L1 纠正记录均指向移动端适配缺失"
+      "l1_corroboration": "2条 L1 纠正记录均指向移动端适配缺失"
     }]
   },
   "improvement_proposals": [{
@@ -278,7 +278,7 @@ PM 的自我复盘精度高——能下钻到具体哪个 ReAct 步骤失败—�
 
 ## 5.2 邮箱闭环路由
 
-复盘走的还是[第二篇](/2026/04/28/ai-agent-digital-team-2/)建好的邮箱系统，新增四个消息类型：
+复盘走的还是[第二篇](/2026/04/28/ai-agent-digital-team-2/)建好的邮箱系统，新增五个消息类型：
 
 ```
 PM → Manager       : retro_report（提案 JSON）
@@ -331,7 +331,7 @@ $ node run-scheduler.js
 $ node run-pm.js
 ```
 
-PM 收到 `retro_trigger`，加载 `self_retrospective` Skill，调用 `log-query` CLI 分析，输出 RetroOutput JSON，发 `retro_report` 给 Manager。
+`run-pm.js` 和 `run-manager.js` 一样，靠扫邮箱判断当前任务：收到 `retro_trigger` 就做复盘，收到 `retro_approved` 就落地改进。这次邮箱里是 `retro_trigger`，PM 加载 `self_retrospective` Skill，调用 `log-query` CLI 分析，输出 RetroOutput JSON，发 `retro_report` 给 Manager。
 
 **Step 4：Manager 审批提案**
 
@@ -350,6 +350,8 @@ $ node run-pm.js
 PM 收到 `retro_approved`，读取提案里的 `before_text` / `after_text`，在 `product_design/SKILL.md` 里找到对应位置做字符串替换，发 `retro_applied` 确认，闭环完成。
 
 从此以后，PM 做产品设计文档时，Skill 里多了"多端检查"这一步，不再遗漏移动端适配。这条改进经历了：数据记录 → PM 发现 → Manager 预审 → Human 确认 → PM 落地——完整的人机协作改进链路。
+
+**验证**：下次 `run-scheduler.js` 触发时，重新统计 L2 质量分。如果 `product_design` 类任务的通过率回升，说明改进有效；若无改善，进入下一轮复盘。五步闭环的第五步，就在下一个调度周期里自动完成。
 
 ---
 
