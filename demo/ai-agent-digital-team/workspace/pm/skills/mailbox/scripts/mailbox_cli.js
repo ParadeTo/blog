@@ -46,6 +46,19 @@ function saveMailbox(filePath, messages) {
   fs.writeFileSync(filePath, JSON.stringify(messages, null, 2), 'utf-8')
 }
 
+function _writeL1Log(mailboxesDir, msg) {
+  try {
+    const logsDir = path.join(path.dirname(mailboxesDir), 'logs', 'l1_human')
+    fs.mkdirSync(logsDir, {recursive: true})
+    const record = {
+      id: msg.id, from: msg.from, to: msg.to,
+      type: msg.type, subject: msg.subject, content: msg.content,
+      timestamp: msg.timestamp, read: false,
+    }
+    fs.writeFileSync(path.join(logsDir, `${msg.id}.json`), JSON.stringify(record, null, 2))
+  } catch {}
+}
+
 function send({mailboxesDir, from, to, type, subject, content}) {
   const filePath = path.join(mailboxesDir, `${to}.json`)
   const messages = loadMailbox(filePath)
@@ -62,6 +75,9 @@ function send({mailboxesDir, from, to, type, subject, content}) {
   }
   messages.push(msg)
   saveMailbox(filePath, messages)
+  if (to === 'human') {
+    _writeL1Log(mailboxesDir, msg)
+  }
   console.log(JSON.stringify({ok: true, id: msg.id}))
 }
 
