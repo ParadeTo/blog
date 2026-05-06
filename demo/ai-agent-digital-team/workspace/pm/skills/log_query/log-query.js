@@ -14,8 +14,10 @@ function parseArgs(argv) {
   const args = {_: []}
   for (let i = 0; i < argv.length; i++) {
     if (argv[i].startsWith('--')) {
-      args[argv[i].slice(2)] = argv[i + 1] ?? true
-      i++
+      const next = argv[i + 1]
+      const hasValue = next !== undefined && !next.startsWith('--')
+      args[argv[i].slice(2)] = hasValue ? next : true
+      if (hasValue) i++
     } else {
       args._.push(argv[i])
     }
