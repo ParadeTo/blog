@@ -1,0 +1,9 @@
+{
+  "agent_id": "manager",
+  "task_id": "m003",
+  "task_desc": "验收：用户注册产品文档",
+  "result_quality": 0.85,
+  "duration_sec": 75,
+  "error_type": null,
+  "timestamp": "2026-05-02T04:26:18.859Z"
+}

@@ -1,0 +1,10 @@
+{
+  "id": "l1_003",
+  "from": "manager",
+  "to": "human",
+  "type": "checkpoint_rejected",
+  "subject": "设计文档退回：t006",
+  "content": "未考虑桌面端/移动端差异，需补充多端设计",
+  "timestamp": "2026-05-05T04:26:18.864Z",
+  "read": true
+}

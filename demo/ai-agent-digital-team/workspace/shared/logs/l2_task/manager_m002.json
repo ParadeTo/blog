@@ -1,0 +1,9 @@
+{
+  "agent_id": "manager",
+  "task_id": "m002",
+  "task_desc": "任务分配：产品设计文档",
+  "result_quality": 0.88,
+  "duration_sec": 60,
+  "error_type": null,
+  "timestamp": "2026-05-01T04:26:18.858Z"
+}

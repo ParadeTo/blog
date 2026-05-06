@@ -1,0 +1,9 @@
+{
+  "agent_id": "manager",
+  "task_id": "m001",
+  "task_desc": "需求澄清：用户注册功能",
+  "result_quality": 0.92,
+  "duration_sec": 90,
+  "error_type": null,
+  "timestamp": "2026-04-30T04:26:18.858Z"
+}

@@ -1,0 +1,9 @@
+{
+  "agent_id": "pm",
+  "task_id": "t004",
+  "task_desc": "支付流程产品规格说明",
+  "result_quality": 0.9,
+  "duration_sec": 150,
+  "error_type": null,
+  "timestamp": "2026-05-02T04:26:18.852Z"
+}

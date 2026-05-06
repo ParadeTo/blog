@@ -1,0 +1,9 @@
+{
+  "agent_id": "pm",
+  "task_id": "t006",
+  "task_desc": "用户注册设计迭代（移动端）",
+  "result_quality": 0.38,
+  "duration_sec": 220,
+  "error_type": "checkpoint_rejected",
+  "timestamp": "2026-05-04T04:26:18.853Z"
+}

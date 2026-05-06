@@ -1,0 +1,10 @@
+{
+  "id": "l1_002",
+  "from": "manager",
+  "to": "human",
+  "type": "checkpoint_rejected",
+  "subject": "设计文档退回：t003",
+  "content": "交互细节不足，表单验证逻辑缺失",
+  "timestamp": "2026-05-02T04:26:18.864Z",
+  "read": true
+}
