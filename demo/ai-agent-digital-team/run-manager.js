@@ -29,6 +29,9 @@ function detectPhase() {
   const taskDone = managerInbox.find(m => m.type === 'task_done' && m.status !== 'done')
   if (taskDone) return 5
 
+  const retroReport = managerInbox.find(m => m.type === 'retro_report' && m.status !== 'done')
+  if (retroReport) return 6
+
   const taskAssign = pmInbox.find(m => m.type === 'task_assign' && m.status !== 'done')
   if (taskAssign) return 4
 
@@ -86,6 +89,16 @@ async function main() {
         `请检查邮箱（role=manager），找到 task_done 消息，读取 PM 的产出文件，` +
         `对照原始需求文档（/mnt/shared/needs/requirements.md）逐项验收，` +
         `将验收报告写入宿主机路径 ${WORKSPACE_DIR}/review_result.md，然后标记消息为 done。`
+      break
+    case 6:
+      userRequest =
+        `你收到了一份复盘报告（type=retro_report 邮件）。请加载 review_proposal Skill，` +
+        `读取提案文件（路径在邮件 content 中，是宿主机绝对路径），` +
+        `按档位分类后处理审批流程：` +
+        `档 1（memory）自动批准并发 retro_approved 给 PM；` +
+        `档 2（skills/agent）和档 3（soul）发给 Human 确认（type=retro_review），` +
+        `等 Human 确认后再发 retro_approved 或 retro_rejected 给 PM。` +
+        `全部处理完后标记 retro_report 邮件为 done。`
       break
   }
 

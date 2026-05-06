@@ -7,7 +7,9 @@
     "pm": "node run-pm.js",
     "sop-setup": "node sop-setup.js",
     "human": "node human-cli.js",
-    "build": "podman build -f Dockerfile.sandbox -t digital-team-sandbox ."
+    "build": "podman build -f Dockerfile.sandbox -t digital-team-sandbox .",
+    "seed": "node seed-logs.js",
+    "scheduler": "node run-scheduler.js"
   },
   "dependencies": {
     "ai": "^4.0.0",
