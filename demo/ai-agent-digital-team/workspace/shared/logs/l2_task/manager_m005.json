@@ -1,0 +1,9 @@
+{
+  "agent_id": "manager",
+  "task_id": "m005",
+  "task_desc": "验收：支付流程产品文档",
+  "result_quality": 0.87,
+  "duration_sec": 80,
+  "error_type": null,
+  "timestamp": "2026-05-05T07:20:46.313Z"
+}

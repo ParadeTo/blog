@@ -1,0 +1,9 @@
+{
+  "agent_id": "manager",
+  "task_id": "m004",
+  "task_desc": "任务分配：搜索功能设计",
+  "result_quality": 0.9,
+  "duration_sec": 65,
+  "error_type": null,
+  "timestamp": "2026-05-04T07:20:46.313Z"
+}

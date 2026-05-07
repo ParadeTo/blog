@@ -1,1 +1,13 @@
-[]
+[
+  {
+    "id": "msg-f870db46",
+    "from": "manager",
+    "to": "manager",
+    "type": "team_retro_trigger",
+    "subject": "请执行复盘（条件满足）",
+    "content": "{\"reason\":\"threshold_met\",\"at\":\"2026-05-07T07:20:51.356Z\"}",
+    "timestamp": "2026-05-07T07:20:51.367Z",
+    "status": "done",
+    "processingSince": "2026-05-07T07:21:14.534Z"
+  }
+]

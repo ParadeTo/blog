@@ -176,11 +176,7 @@ PM 走一遍完整的复盘链路如下所示：
 
 ## 3.1 Skill vs Script
 
-复盘用的 `self_retrospective/SKILL.md` 不是操作手册——最直接的替代方案是写一个脚本（Script）：先跑 stats，再过滤低质量任务，再查 L3，最后生成报告，顺序固定。但 SKILL.md 不这样，它不规定"先查什么再查什么"，只给 Agent 提供思考框架：
-
-> 你现在要做一次自我复盘。用以下五个递进问题引导分析，但顺序可以根据实际情况调整。目标是产出一份 RetroOutput JSON，包含发现和具体改进提案。
-
-Skill 只给约束，不规定顺序。如果 L1 纠正记录很突出，先看 L1 更高效；如果 L2 质量分很均匀，先做 stats 全局扫描。让 Agent 自己判断从哪里切入，不是偷懒，是它在这件事上比固定脚本好使。
+Skill 只给约束，不规定顺序。如果 L1 纠正记录很突出，先看 L1 更高效；如果 L2 质量分很均匀，先做 stats 全局扫描。脚本写死了顺序，遇到"L1 只有 1 条但 L2 质量分极端"这种情况，它还是按原顺序跑，不会自己换策略。Skill 让 Agent 自己判断从哪里切入——这正是 LLM 擅长的地方：读懂当前数据的形态，决定下一步做什么，而不是照着列表打勾。
 
 ## 3.2 log-query CLI
 
@@ -266,7 +262,7 @@ Human 只和 Manager 沟通，单一接口原则不变。PM 收到 `retro_approv
 # 五、跑一遍
 
 
-完整 demo 代码在 [GitHub](https://github.com/ParadeTo/blog/tree/master/demo/ai-agent-digital-team)。我们用几个脚本人为串起整个流程：
+完整 demo 代码在 [GitHub](https://github.com/ParadeTo/blog/tree/master/demo/ai-agent-digital-team)。我们用几个脚本人为串起整个流程演示一下 PM 复盘的流程：
 
 **Step 1：生成历史数据**
 

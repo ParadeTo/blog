@@ -20,5 +20,27 @@
     "timestamp": "2026-05-06T09:06:04.685Z",
     "status": "done",
     "processingSince": "2026-05-07T01:10:44.614Z"
+  },
+  {
+    "id": "msg-1b1f3491",
+    "from": "manager",
+    "to": "pm",
+    "type": "retro_trigger",
+    "subject": "请执行复盘（条件满足）",
+    "content": "{\"reason\":\"threshold_met\",\"at\":\"2026-05-07T07:20:51.356Z\"}",
+    "timestamp": "2026-05-07T07:20:51.365Z",
+    "status": "unread",
+    "processingSince": null
+  },
+  {
+    "id": "msg-cdc00c21",
+    "from": "manager",
+    "to": "pm",
+    "type": "retro_trigger",
+    "subject": "请执行自我复盘",
+    "content": "Manager 团队复盘发现 PM 为当前质量瓶颈（avg_quality=0.68，failure_count=3，共8任务）。请执行自我复盘，分析失败原因，产出改进提案（proposals JSON），并回邮 retro_report 给 Manager。",
+    "timestamp": "2026-05-07T07:21:20.667Z",
+    "status": "unread",
+    "processingSince": null
   }
 ]
