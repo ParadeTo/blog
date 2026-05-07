@@ -1,0 +1,4 @@
+[Scheduler] pm: 条件满足
+[Scheduler] 已发送 retro_trigger 给 pm
+[Scheduler] manager: 任务量不足（3 < 5）
+[Scheduler] 触发完成：pm

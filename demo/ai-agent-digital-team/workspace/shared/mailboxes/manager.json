@@ -1,13 +1,1 @@
-[
-  {
-    "id": "msg-6534b9e6",
-    "from": "pm",
-    "to": "manager",
-    "type": "task_done",
-    "subject": "产品文档已完成",
-    "content": "产品规格文档已写入 /mnt/shared/design/product_spec.md，请验收。",
-    "timestamp": "2026-04-28T12:40:01.650Z",
-    "status": "done",
-    "processingSince": "2026-04-28T12:40:36.896Z"
-  }
-]
+[]

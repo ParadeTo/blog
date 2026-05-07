@@ -1,0 +1,1 @@
+用法：node human-cli.js respond <msg_id> y/n [feedback]

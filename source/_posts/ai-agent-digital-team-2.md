@@ -92,7 +92,7 @@ description: 数字团队系列第二篇。在第一篇的 Manager + PM 协作�
 
 ## 运行记录
 
-完整 demo 代码在 [GitHub](https://github.com/ParadeTo/blog/tree/master/demo/ai-agent-digital-team)，下面是实际跑通的完整过程。
+完整 demo 代码在 [GitHub](https://github.com/ParadeTo/blog/tree/master/demo/ai-agent-digital-team)，下面是实际跑通的完整过程，包括每个阶段产出的关键文件。
 
 ---
 
@@ -111,6 +111,10 @@ $ node sop-setup.js
 
 ```
 $ node human-cli.js list
+
+[msg-edd7bf8e] sop_draft_confirm  未读
+  内容：已为"产品设计"场景生成 SOP 草稿，请查看 sop/draft_product_design_sop.md 并确认。
+
 $ node human-cli.js respond msg-edd7bf8e y
 ```
 
@@ -124,11 +128,45 @@ $ node sop-setup.js
 → draft_product_design_sop.md 重命名为 product_design_sop.md，SOP 入库
 ```
 
+入库后的 `product_design_sop.md` 长这样——角色分工、执行步骤、Checkpoint 都在里面：
+
+```markdown
+# 产品设计 标准操作流程（SOP）
+
+## 角色分工
+
+| 角色    | 职责 |
+|---------|------|
+| Manager | 初始化工作区，澄清需求，分配任务给 PM，验收 PM 产出 |
+| PM      | 读取需求文档，产出产品规格文档，完成后回邮通知 Manager |
+| Human   | 确认需求文档，审阅关键交付物（SOP / 产品规格文档） |
+
+## 执行步骤
+
+| 步骤 | 执行者  | 操作 | 输出 |
+|------|---------|------|------|
+| 1    | Manager | 接收并澄清原始需求，写入需求文档 | requirements.md |
+| 2    | Human   | 审阅并确认需求文档 | 确认 / 拒绝 |
+| 3    | Manager | 从 SOP 库选定流程模板 | active_sop.md |
+| 4    | Human   | 审阅并确认 SOP 选择 | 确认 / 拒绝 |
+| 5    | Manager | 向 PM 发送 task_assign | task_assign 邮件 |
+| 6    | PM      | 产出产品规格文档，回邮 Manager | product_spec.md |
+| 7    | Manager | 验收 PM 产出，写入验收结果 | review_result.md |
+
+## Checkpoint
+
+| Checkpoint | 触发时机 | 未通过时的处理 |
+|------------|---------|--------------|
+| CP1 | 需求文档写好后 | Manager 根据反馈修改，重新发起确认 |
+| CP2 | SOP 选定后 | 重新选模板或触发 sop_creator 创建新模板 |
+| CP3 | 验收结果出炉后 | Manager 将问题清单回邮 PM，要求修订 |
+```
+
 ---
 
 **[Phase 1] Human 提出需求，启动 run-manager.js**
 
-Manager 用四维框架分析需求，把歧义项整理出来，等 Human 确认，退出。
+需求是：做一个命令行版智能待办事项助手。Manager 用四维框架分析，把歧义项整理出来，等 Human 确认，退出。
 
 ```
 $ node run-manager.js
@@ -142,11 +180,64 @@ $ node run-manager.js
 → 写入 requirements.md，发 needs_confirm，退出
 ```
 
+写入的 `requirements.md` 把目标、边界、约束、风险都梳理了一遍，末尾列出待澄清项：
+
+```markdown
+# 项目需求文档
+
+## 目标
+
+- 用户可在 30 秒内完成一个任务的录入
+- 任务列表按截止时间和优先级排序展示
+- 支持至少 100 个并发任务不卡顿
+- 命令行界面，无需 GUI
+
+## 边界
+
+### 范围内
+- 添加任务：用自然语言描述，系统自动提取标题和截止时间
+- 查看列表：按优先级展示未完成任务
+- 标记完成：将任务标记为已完成状态
+- 智能提醒：任务临近截止时提示用户
+
+### 范围外
+- 图形界面（GUI）
+- 外部数据库集成（仅本地文件存储）
+- 多人协作 / 团队共享
+
+## 待澄清（需 Human 确认）
+
+1. 自然语言解析失败时的兜底方案：报错提示手动补充，还是允许无截止时间任务存在？
+2. 智能提醒的触发机制：每次运行命令时检查，还是后台常驻进程/cron？
+3. 优先级的设定方式：用户手动指定，还是系统根据截止时间自动计算？
+4. "并发任务"的含义：同时存在 100 条未完成任务，还是其他含义？
+```
+
+同时，`human.json` 里多了一条待确认消息：
+
+```json
+[
+  {
+    "id": "msg-dc2aa76b",
+    "from": "manager",
+    "to": "human",
+    "type": "needs_confirm",
+    "content": "需求文档已完成，请查看 needs/requirements.md 并确认。",
+    "read": false,
+    "rejected": false
+  }
+]
+```
+
 **[Human] 确认需求**
 
 ```
 $ node human-cli.js respond msg-dc2aa76b y
 ```
+
+`read` 翻成 `true`，Manager 下次启动时读到这个状态就知道可以进入阶段二了。
+
+---
 
 **[Phase 2] Human 启动 run-manager.js**
 
@@ -167,6 +258,8 @@ $ node run-manager.js
 $ node human-cli.js respond msg-sop-xxx y
 ```
 
+---
+
 **[Phase 3] Human 启动 run-manager.js**
 
 SOP 已确认，给 PM 分配任务，退出。
@@ -178,6 +271,23 @@ $ node run-manager.js
   [sandbox] mailbox_cli.js → {"ok":true,"id":"msg-task-assign"}
 → 已分配任务给 PM，退出
 ```
+
+此时 `pm.json` 里多了一条任务：
+
+```json
+[
+  {
+    "id": "msg-task-assign",
+    "from": "manager",
+    "to": "pm",
+    "type": "task_assign",
+    "content": "请阅读需求文档 /mnt/shared/needs/requirements.md，产出产品规格文档 /mnt/shared/design/product_spec.md，完成后回邮通知我。",
+    "status": "unread"
+  }
+]
+```
+
+---
 
 **[Phase 4] Human 启动 run-manager.js（PM 还没完成）**
 
@@ -192,7 +302,7 @@ $ node run-manager.js
 
 **[Human] 启动 run-pm.js**
 
-PM 拿到需求文档，对4个待澄清项逐一决策，写入产品规格文档，回邮通知 Manager。
+PM 拿到需求文档，对 4 个待澄清项逐一决策，写入产品规格文档，回邮通知 Manager。
 
 ```
 $ node run-pm.js
@@ -205,6 +315,30 @@ $ node run-pm.js
 → 写入 product_spec.md（4147字），回邮 task_done
 ```
 
+`product_spec.md` 按用户故事结构写，每个功能都有可量化的验收标准（AC）。截一段看看：
+
+```markdown
+# 产品规格文档（Product Spec）
+
+## 3. 用户故事与验收标准
+
+### US-01 快速录入任务
+
+> As 一个正在工作的用户，
+> I want 用自然语言描述一条待办事项，
+> So that 我不需要打开额外界面，30 秒内完成录入并继续工作。
+
+| #       | 验收条件 |
+|---------|---------|
+| AC-01-1 | 执行 `todo add "下周五前提交季度报告"` 后，标题为"提交季度报告"，截止时间解析为下周五 23:59 |
+| AC-01-2 | 从命令执行到返回成功提示，耗时 ≤ 3 秒 |
+| AC-01-3 | 自然语言解析失败时，提示用户手动输入截止时间（YYYY-MM-DD），允许跳过 |
+
+> 设计决策（对应待澄清项 #1）：解析失败时提示手动补充，允许跳过。
+```
+
+---
+
 **[Phase 5] Human 最后启动 run-manager.js**
 
 Manager 收到 task_done，逐项验收，通过，附跟进建议，写入结论文件。
@@ -216,6 +350,38 @@ $ node run-manager.js
 验收结论：✅ 通过（目标/范围/约束/风险/待澄清项全部覆盖）
 待跟进：--priority 默认值建议在 --help 标注 / 边界场景补测试用例 / 存储路径是否可配置
 → 写入 review_result.md
+```
+
+`review_result.md` 是逐条对照需求的验收表，最后给出明确结论：
+
+```markdown
+# 验收报告（Review Result）
+
+## 一、逐项验收明细
+
+### 1. 目标对照
+
+| 需求目标 | 产品文档覆盖情况 | 结论 |
+|---------|----------------|------|
+| 30 秒内完成任务录入 | US-01 / AC-01-2：命令执行到返回 ≤ 3 秒 | ✅ 覆盖 |
+| 任务按截止时间和优先级排序 | US-02 / AC-02-1：截止时间升序 + 优先级降序 | ✅ 覆盖 |
+| 支持 100 个并发任务不卡顿 | AC-02-3：100 条未完成任务下响应 ≤ 2 秒 | ✅ 覆盖 |
+| 命令行界面，无需 GUI | CLI 接口完整定义；范围外明确排除 GUI | ✅ 覆盖 |
+
+### 5. 待澄清项处理情况
+
+| 待澄清项 | 产品文档决策 | 评估 |
+|---------|------------|------|
+| #1 解析失败兜底方案 | 提示手动输入，允许跳过 | ✅ 合理 |
+| #2 提醒触发机制 | 每次运行命令时检查，无需后台进程 | ✅ 合理 |
+| #3 优先级设定方式 | 手动指定 high/medium/low，默认 medium | ✅ 合理 |
+| #4 "并发任务"含义 | 同时存在 100 条未完成任务 | ✅ 合理 |
+
+## 四、验收结论
+
+**✅ 验收通过**
+
+产品规格文档完整覆盖了需求文档中的全部目标、功能边界、约束和风险，4 个待澄清项均已给出合理设计决策。待跟进事项 3 条，均为细节完善建议，不阻塞开发启动。
 ```
 
 整条链路，Human 共手动触发了 8 次命令，`detectPhase()` 五次判断全部正确。

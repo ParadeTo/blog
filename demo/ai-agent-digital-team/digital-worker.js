@@ -6,7 +6,7 @@ import path from 'path'
 import {PodmanSandbox} from './sandbox.js'
 
 const anthropic = createAnthropic({
-  baseURL: process.env.ANTHROPIC_BASE_URL || 'http://localhost:3003',
+  baseURL: 'http://localhost:3002',
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
 
@@ -33,14 +33,20 @@ function loadWorkspaceContext(workspaceDir) {
     findSkills(skillsDir)
     for (const skillFile of skillFiles.sort()) {
       const skillName = path.basename(path.dirname(skillFile))
-      parts.push(`## Skill: ${skillName}\n\n${fs.readFileSync(skillFile, 'utf-8')}`)
+      parts.push(
+        `## Skill: ${skillName}\n\n${fs.readFileSync(skillFile, 'utf-8')}`,
+      )
     }
   }
 
   return parts.join('\n\n---\n\n')
 }
 
-export async function createDigitalWorker({workspaceDir, sharedDir, model = 'claude-sonnet-4-6'}) {
+export async function createDigitalWorker({
+  workspaceDir,
+  sharedDir,
+  model = 'claude-sonnet-4-6',
+}) {
   const context = loadWorkspaceContext(workspaceDir)
   const sandbox = new PodmanSandbox({workspaceDir, sharedDir})
 
@@ -92,9 +98,12 @@ export async function createDigitalWorker({workspaceDir, sharedDir, model = 'cla
     }),
 
     run_script: tool({
-      description: '在 Docker 沙盒中执行脚本（mailbox_cli.js、init_workspace.js 等）。scriptPath 是相对于 workspace/skills/ 的路径，如 "mailbox/scripts/mailbox_cli.js"',
+      description:
+        '在 Docker 沙盒中执行脚本（mailbox_cli.js、init_workspace.js 等）。scriptPath 是相对于 workspace/skills/ 的路径，如 "mailbox/scripts/mailbox_cli.js"',
       parameters: z.object({
-        scriptPath: z.string().describe('脚本路径，相对于 workspace/skills/ 目录'),
+        scriptPath: z
+          .string()
+          .describe('脚本路径，相对于 workspace/skills/ 目录'),
         args: z.array(z.string()).describe('传给脚本的命令行参数列表'),
       }),
       execute: async ({scriptPath, args}) => {

@@ -6,18 +6,41 @@ import {writeL2, writeL3Step, writeL1, appendSessionMessages} from './log-ops.js
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const WORKSPACE = path.join(__dirname, 'workspace')
-const LOGS_DIR = path.join(WORKSPACE, 'shared', 'logs')
+const SHARED_DIR = path.join(WORKSPACE, 'shared')
+const LOGS_DIR = path.join(SHARED_DIR, 'logs')
 const PM_SESSIONS_DIR = path.join(WORKSPACE, 'pm', 'sessions')
+const LAST_RETRO_FILE = path.join(SHARED_DIR, '.last_retro.json')
 
 function daysAgo(n) {
   return new Date(Date.now() - n * 86400_000)
 }
+
+const MAILBOXES_DIR = path.join(SHARED_DIR, 'mailboxes')
+const PM_MAILBOX = path.join(MAILBOXES_DIR, 'pm.json')
+const MANAGER_MAILBOX = path.join(MAILBOXES_DIR, 'manager.json')
+const HUMAN_MAILBOX = path.join(MAILBOXES_DIR, 'human.json')
 
 // 清空旧数据
 ;[LOGS_DIR, PM_SESSIONS_DIR].forEach(dir => {
   if (fs.existsSync(dir)) fs.rmSync(dir, {recursive: true})
   fs.mkdirSync(dir, {recursive: true})
 })
+if (fs.existsSync(LAST_RETRO_FILE)) fs.rmSync(LAST_RETRO_FILE)
+
+// 清空 PM/Manager 邮箱中的复盘相关消息（保留 task_assign done）
+for (const mailbox of [PM_MAILBOX, MANAGER_MAILBOX]) {
+  if (!fs.existsSync(mailbox)) continue
+  const msgs = JSON.parse(fs.readFileSync(mailbox, 'utf-8'))
+  const cleaned = msgs.filter(m => m.type === 'task_assign' && m.status === 'done')
+  fs.writeFileSync(mailbox, JSON.stringify(cleaned, null, 2))
+}
+
+// 清空 Human 邮箱中的 retro_review 消息（防止上轮 read=true 的记录干扰 Manager 阶段检测）
+if (fs.existsSync(HUMAN_MAILBOX)) {
+  const msgs = JSON.parse(fs.readFileSync(HUMAN_MAILBOX, 'utf-8'))
+  const cleaned = msgs.filter(m => m.type !== 'retro_review')
+  fs.writeFileSync(HUMAN_MAILBOX, JSON.stringify(cleaned, null, 2))
+}
 
 // ── L2 日志：PM 8 条任务（3 条低质量）───────────────────────────────────────
 const pmTasks = [

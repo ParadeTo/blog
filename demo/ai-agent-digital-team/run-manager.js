@@ -2,10 +2,12 @@ import path from 'path'
 import {fileURLToPath} from 'url'
 import fs from 'fs'
 import {createDigitalWorker} from './digital-worker.js'
+import {writeL2} from './log-ops.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const WORKSPACE_DIR = path.join(__dirname, 'workspace', 'manager')
 const SHARED_DIR = path.join(__dirname, 'workspace', 'shared')
+const LOGS_DIR = path.join(SHARED_DIR, 'logs')
 const DEMO_INPUT = path.join(__dirname, 'demo-input', 'project_requirement.md')
 
 function readJson(filePath) {
@@ -30,7 +32,13 @@ function detectPhase() {
   if (taskDone) return 5
 
   const retroReport = managerInbox.find(m => m.type === 'retro_report' && m.status !== 'done')
-  if (retroReport) return 6
+  if (retroReport) {
+    // phase 7：Human 已批准 retro_review → 直接发 retro_approved/rejected 给 PM
+    const humanInbox = readJson(path.join(SHARED_DIR, 'mailboxes', 'human.json'))
+    const retroReview = humanInbox.filter(m => m.type === 'retro_review' && m.read).pop()
+    if (retroReview) return 7
+    return 6
+  }
 
   const taskAssign = pmInbox.find(m => m.type === 'task_assign' && m.status !== 'done')
   if (taskAssign) return 4
@@ -49,6 +57,13 @@ async function main() {
 
   const phase = detectPhase()
   console.log(`\n[Manager] 当前阶段: ${phase}`)
+
+  // phase 5 验收前记录待处理任务，验收后写 L2
+  let pendingTaskMsg = null
+  if (phase === 5) {
+    const managerInbox = readJson(path.join(SHARED_DIR, 'mailboxes', 'manager.json'))
+    pendingTaskMsg = managerInbox.find(m => m.type === 'task_done' && m.status !== 'done')
+  }
 
   let userRequest
 
@@ -97,14 +112,37 @@ async function main() {
         `按档位分类后处理审批流程：` +
         `档 1（memory）自动批准并发 retro_approved 给 PM；` +
         `档 2（skills/agent）和档 3（soul）发给 Human 确认（type=retro_review），` +
-        `等 Human 确认后再发 retro_approved 或 retro_rejected 给 PM。` +
-        `全部处理完后标记 retro_report 邮件为 done。`
+        `不要自动批准，等待 Human 回复。发完后结束本轮。`
+      break
+    case 7:
+      userRequest =
+        `Human 已批准你之前发送的 retro_review 消息（human.json 中有 read=true 的 retro_review 记录）。` +
+        `请读取 manager 邮箱中未完成的 retro_report 邮件，获取提案文件路径，` +
+        `读取提案文件，将所有已批准的提案打包成 retro_approved 邮件发给 PM（附 before_text/after_text 改动清单），` +
+        `然后标记 retro_report 邮件为 done。`
       break
   }
 
+  const startTime = Date.now()
   const worker = await createDigitalWorker({workspaceDir: WORKSPACE_DIR, sharedDir: SHARED_DIR})
   const result = await worker.kickoff(userRequest)
   console.log('\n[Manager] 完成\n', result)
+
+  if (phase === 5 && pendingTaskMsg) {
+    const durationSec = Math.round((Date.now() - startTime) / 1000)
+    const resultStr = String(result).toLowerCase()
+    const rejected = resultStr.includes('不通过') || resultStr.includes('退回') || resultStr.includes('reject')
+    writeL2(LOGS_DIR, {
+      agentId: 'pm',
+      taskId: pendingTaskMsg.id,
+      taskDesc: pendingTaskMsg.subject || '产品设计任务',
+      resultQuality: rejected ? 0.4 : 0.85,
+      durationSec,
+      errorType: rejected ? 'checkpoint_rejected' : null,
+      timestamp: new Date().toISOString(),
+    })
+    console.log(`[Manager] L2 日志已写入 (quality: ${rejected ? 0.4 : 0.85})`)
+  }
 }
 
 main().catch(e => {console.error(e); process.exit(1)})

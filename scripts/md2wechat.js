@@ -218,12 +218,11 @@ function parseMarkdown(md, imageUrlMap = new Map()) {
            `<img src="${resolvedSrc}" alt="${alt}" style="display:block;margin:0 auto;max-width:100%;" /></figure>`
   })
 
-  // 链接（相对路径转绝对路径，WeChat 不接受相对 URL）
+  // 链接：微信不支持外链，转为「关键字(url)」纯文本格式
   const BLOG_BASE = 'https://www.paradeto.com'
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, text, href) => {
     const absHref = href.startsWith('http') ? href : `${BLOG_BASE}${href.startsWith('/') ? '' : '/'}${href}`
-    return `<a href="${absHref}" style="text-decoration:none;color:${PURPLE};word-wrap:break-word;` +
-           `font-weight:bold;border-bottom:1px solid ${PURPLE};">${text}</a>`
+    return `${text}(${absHref})`
   })
 
   // 粗体 / 斜体

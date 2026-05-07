@@ -1,1 +1,38 @@
-[]
+[
+  {
+    "id": "msg-edd7bf8e",
+    "from": "manager",
+    "to": "human",
+    "type": "sop_draft_confirm",
+    "subject": "SOP 草稿待审阅",
+    "content": "草稿路径：/mnt/shared/sop/draft_product_design_sop.md\n\n已为「产品设计」场景生成 SOP 草稿，覆盖「接收需求 → PM 完成产品规格文档 → Manager 验收」全流程，包含 3 个 Checkpoint 和完整质量标准，请审阅确认。",
+    "timestamp": "2026-04-28T12:35:26.464Z",
+    "status": "unread",
+    "processingSince": null,
+    "read": true
+  },
+  {
+    "id": "msg-dc2aa76b",
+    "from": "manager",
+    "to": "human",
+    "type": "needs_confirm",
+    "subject": "需求文档待确认",
+    "content": "/mnt/shared/needs/requirements.md\n\n需求文档已完成四维分析（目标/边界/约束/风险），识别出 4 个待澄清项，请审阅并确认是否可以推进。",
+    "timestamp": "2026-04-28T12:37:05.551Z",
+    "status": "unread",
+    "processingSince": null,
+    "read": true
+  },
+  {
+    "id": "msg-a7118f05",
+    "from": "manager",
+    "to": "human",
+    "type": "sop_confirm",
+    "subject": "SOP 已选定，请确认",
+    "content": "已选定模板：product_design_sop.md\n选择理由：该模板覆盖「需求澄清 → PM 产出产品规格文档 → Manager 验收」全流程，与本次命令行待办助手项目高度匹配（评分 9.5/10）。\n文件路径：/mnt/shared/sop/active_sop.md",
+    "timestamp": "2026-04-28T12:38:09.067Z",
+    "status": "unread",
+    "processingSince": null,
+    "read": true
+  }
+]
