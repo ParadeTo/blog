@@ -54,7 +54,15 @@ description: 数字团队系列终篇。把角色定义、邮箱通信、Human �
 
 用户在飞书发了一条消息："帮我做一个 URL 短链服务，输入长链接生成短码，支持跳转和访问统计。"
 
-Manager 判断这是一个新需求，加载 `sop_feature_dev`，从四个维度评估：目标、边界、约束、风险。评估完，向用户发一张 Checkpoint 确认卡，等用户点确认。用户批了之后，Manager 在 workspace 里建好项目目录树（`needs/`、`design/`、`tech/`、`code/`、`qa/`、`mailboxes/`、`events.jsonl`），然后给 PM 发一封 `task_assign` 邮件。
+![用户在飞书发起需求](./ai-agent-digital-team-4/feishu-1-request.png)
+
+Manager 判断这是一个新需求，加载 `sop_feature_dev`，从四个维度评估：目标、边界、约束、风险。评估完，向用户发一张 Checkpoint 确认卡，等用户点确认。
+
+![Manager 通过飞书卡片请用户确认需求](./ai-agent-digital-team-4/feishu-2-checkpoint.png)
+
+用户批了之后，Manager 在 workspace 里建好项目目录树（`needs/`、`design/`、`tech/`、`code/`、`qa/`、`mailboxes/`、`events.jsonl`），然后给 PM 发一封 `task_assign` 邮件。
+
+![用户批准后项目启动](./ai-agent-digital-team-4/feishu-3-approve.png)
 
 邮件发完，下一个问题自然出现：**发邮件之后 PM 怎么知道该醒来了？**
 
@@ -70,6 +78,8 @@ execute: async ({to, type, subject, content, projectId}) => {
 ```
 
 `sendMail` 在内部做了两件事：写入邮箱文件，同时给收件人注册一个 1 秒后的唤醒任务。Agent 不需要知道"发完邮件还要通知调度器"，工具层把这两步封装在一起了。**发邮件 = 叫人**，这就是为什么整个系统里不需要写显式的编排代码。
+
+![终端日志展示自驱动循环](./ai-agent-digital-team-4/feishu-4-logs.png)
 
 ---
 
@@ -147,6 +157,8 @@ Manager 先给 QA 发 `test_design` 任务，QA 输出 `qa/test_plan.md`；之�
 
 所有测试通过，Manager 调用 `send_to_human({kind: 'delivery'})` 向用户发送交付报告，用户在飞书确认，系统记录 `delivered` 事件。
 
+![Manager 在飞书发出交付汇报](./ai-agent-digital-team-4/feishu-5-delivery.png)
+
 复盘阶段，Manager 同时给 PM、RD、QA 发 `retro_trigger` 邮件，三个角色同时被唤醒，各自写复盘。
 
 **这里又有一个问题：**
@@ -172,50 +184,8 @@ export function wrapWithLock(agentFn) {
 
 有意思的是，Python 版本也有一把锁，但原因不一样。Python 那边是 CrewAI 的 `@before_llm_call` 钩子挂在全局事件总线上，并发执行时 PM 的钩子会触发在 QA 的 LLM 调用上，把系统提示搞乱。JS 版没有这个框架层面的问题，这把锁是纯粹的防御性编程，防止任何潜在的 SDK 级共享状态被异步交替污染。**同一个接缝，Python 和 JS 各有各的根因。**
 
----
-
-# Demo 实录
-
-上面六个阶段都是设计层面的描述。下面是接入飞书、真实跑起来之后的实录。
-
-## 用户发起需求
-
-用户在飞书里发了一条消息，提到 URL 短链项目。Manager 收到后将其分类为新需求，进入澄清流程，开始向用户追问目标范围和约束条件。
-
-![用户在飞书发起需求](./ai-agent-digital-team-4/feishu-1-request.png)
-
-## Manager 发 checkpoint 卡片
-
-Manager 整理好需求（目标、边界、约束、风险），在飞书里向用户发送一张确认卡片。用户需要在卡片上点"批准"或"请修改"，项目才会正式启动。
-
-![Manager 通过飞书卡片请用户确认需求](./ai-agent-digital-team-4/feishu-2-checkpoint.png)
-
-## 用户批准，项目正式启动
-
-用户点了批准。Manager 收到 `checkpoint_response` 后，创建项目目录树（needs/ design/ tech/ code/ qa/ mailboxes/ events.jsonl），并向 PM 发出第一封 `task_assign` 邮件。自驱动循环从这一刻开始。
-
-![用户批准后项目启动](./ai-agent-digital-team-4/feishu-3-approve.png)
-
-## 终端日志：自驱动循环
-
-终端日志里可以看到自驱动循环的完整链条：Manager 发信 → CronService 1 秒后唤醒 PM → PM 处理完发信 → RD 被唤醒 → RD 完成发信 → QA 被唤醒……这整条序列在 JS 代码里没有任何硬编码的调度逻辑，全部由 `sendMail` 内部的 `scheduleWake` 驱动。
-
-![终端日志展示自驱动循环](./ai-agent-digital-team-4/feishu-4-logs.png)
-
-## Manager 发出交付汇报
-
-所有测试通过后，Manager 在飞书里发出交付报告，列出交付物清单（API 文档、DB Schema、测试报告、短链接口地址）。用户确认，事件日志记录 `delivered`，项目结束。
-
-![Manager 在飞书发出交付汇报](./ai-agent-digital-team-4/feishu-5-delivery.png)
-
----
-
-跑完之后，`workspace/shared/projects/url-shortener/` 里保存了完整的项目产物。events.jsonl 和邮箱文件的具体内容，等作者跑完 demo 后填入：
-
-```
 <!-- 运行后填入：events.jsonl 前几行（项目事件链） -->
 <!-- 运行后填入：mailboxes/pm.json 中 Manager→PM 的首封 task_assign 邮件 -->
-```
 
 ---
 
