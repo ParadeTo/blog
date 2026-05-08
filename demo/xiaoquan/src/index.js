@@ -5,15 +5,30 @@ import {FeishuListener, runForever} from './feishu/listener.js'
 import {FeishuDownloader} from './feishu/downloader.js'
 import {PodmanSandbox} from './sandbox/podman-sandbox.js'
 import {Runner} from './runner.js'
-import {runAgent} from './agent/react-loop.js'
 import {startTestApi} from './api/test-api.js'
+import {CronService} from './cron/service.js'
+import {scheduleHeartbeat} from './cron/tasks-store.js'
+import {buildAgentFnMap, ROLES} from './agent/build-team.js'
 import * as lark from '@larksuiteoapi/node-sdk'
+import path from 'path'
+
+const HEARTBEAT_INTERVAL_MS = 30_000
+const HEARTBEAT_STAGGER_MS = [0, 7_000, 14_000, 21_000]
+
+async function registerHeartbeats(cronTasksPath, {intervalMs = HEARTBEAT_INTERVAL_MS} = {}) {
+  for (let i = 0; i < ROLES.length; i++) {
+    const role = ROLES[i]
+    const firstDelayMs = HEARTBEAT_STAGGER_MS[i % HEARTBEAT_STAGGER_MS.length]
+    await scheduleHeartbeat(cronTasksPath, {role, intervalMs, firstDelayMs})
+    console.log(`[Heartbeat] registered ${role} every=${intervalMs}ms first_delay=${firstDelayMs}ms`)
+  }
+}
 
 async function main() {
   const config = loadConfig()
   const dataDir = config.data_dir || './data'
 
-  console.log('=== 小圈 · 飞书工作助手 ===')
+  console.log('=== 小圈小队 · 飞书工作助手（Team 模式）===')
 
   const sessionMgr = new SessionManager(dataDir)
   console.log('[Session] initialized')
@@ -36,30 +51,35 @@ async function main() {
   })
   console.log('[Sandbox] credentials injected')
 
-  const agentFn = async (userMessage, history, sessionId, routingKey, rootId, verbose) => {
-    const onStep = verbose
-      ? ({step, toolName, args, result}) => {
-          sender.send(routingKey, `💭 [Step ${step}] ${toolName}(${JSON.stringify(args)})\n${result}`, rootId)
-            .catch(() => {})
-        }
-      : null
+  // 29 课：构建 4 角色 agentFnMap
+  const workspaceRoot = path.resolve(config.memory?.workspace_dir || './workspace')
+  const ctxDir = path.resolve(config.memory?.ctx_dir || './data/ctx')
+  const cronTasksPath = path.resolve(path.join(dataDir, 'cron', 'tasks.json'))
 
-    return runAgent({
-      userMessage,
-      history,
-      sessionId,
-      routingKey,
-      config,
-      onStep,
-      sandbox,
-    })
-  }
+  const agentFnMap = buildAgentFnMap({
+    workspaceRoot,
+    ctxDir,
+    sandbox,
+    cronTasksPath,
+    sender,
+    dbDsn: config.memory?.db_dsn || '',
+  })
 
-  const runner = new Runner(sessionMgr, sender, agentFn, {
+  const runner = new Runner(sessionMgr, sender, null, {
     idleTimeoutS: config.runner?.idle_timeout_s,
     downloader,
     dbDsn: config.memory?.db_dsn,
+    agentFnMap,
   })
+
+  // 注册 4 个角色的 heartbeat，错峰启动
+  await registerHeartbeats(cronTasksPath)
+  console.log('[Heartbeat] all roles registered')
+
+  // 启动 CronService
+  const cronSvc = new CronService({dataDir: path.resolve(dataDir), dispatchFn: runner.dispatch.bind(runner)})
+  await cronSvc.start()
+  console.log('[CronService] started')
 
   const listener = new FeishuListener({
     appId: config.feishu.app_id,
@@ -76,6 +96,13 @@ async function main() {
       port: config.debug.test_api_port,
     })
   }
+
+  // 优雅退出
+  process.on('SIGINT', async () => {
+    console.log('\n[Main] stopping...')
+    await cronSvc.stop()
+    process.exit(0)
+  })
 
   await runForever(listener)
 }

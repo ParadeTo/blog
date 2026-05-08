@@ -10,20 +10,52 @@ const HELP_TEXT = `小圈 可用命令：
 
 const SLASH_COMMANDS = new Set(['/new', '/verbose', '/help', '/status'])
 
+// 29 课：routing_key 前缀
+const TEAM_PREFIX = 'team:'
+const P2P_PREFIX = 'p2p:'
+
+function _pickAgentFn(routingKey, agentFnMap, defaultFn) {
+  if (agentFnMap) {
+    if (routingKey.startsWith(TEAM_PREFIX)) {
+      const role = routingKey.slice(TEAM_PREFIX.length)
+      if (role in agentFnMap) return agentFnMap[role]
+      throw new Error(`no agent_fn for team role: ${role}`)
+    }
+    if ('manager' in agentFnMap) return agentFnMap['manager']
+  }
+  if (defaultFn) return defaultFn
+  throw new Error(`no agent_fn available for routingKey: ${routingKey}`)
+}
+
+function _isWakeMessage(inbound) {
+  return !!(inbound.meta && inbound.meta.wakeReason)
+}
+
 export class Runner {
-  constructor(sessionMgr, sender, agentFn, {idleTimeoutS = 300, downloader = null, dbDsn = null} = {}) {
+  constructor(sessionMgr, sender, agentFn, {
+    idleTimeoutS = 300, downloader = null, dbDsn = null, agentFnMap = null,
+  } = {}) {
     this._sessionMgr = sessionMgr
     this._sender = sender
-    this._agentFn = agentFn
+    this._agentFn = agentFn       // 22 课兼容：单 agentFn
+    this._agentFnMap = agentFnMap // 29 课：多角色
     this._idleTimeoutS = idleTimeoutS
     this._downloader = downloader
     this._dbDsn = dbDsn
     this._queues = new Map()
     this._workers = new Map()
+    this._wakers = new Map()
   }
 
   async dispatch(inbound) {
     const {routingKey} = inbound
+
+    // 29 课：wake_reason 去重（相同 routingKey 已有 pending wake 则丢弃）
+    if (_isWakeMessage(inbound) && this._hasPendingWake(routingKey)) {
+      console.log(`[Runner] dedup wake: routingKey=${routingKey}`)
+      return
+    }
+
     if (!this._queues.has(routingKey)) {
       this._queues.set(routingKey, [])
       this._startWorker(routingKey)
@@ -33,8 +65,13 @@ export class Runner {
     if (waker) waker()
   }
 
+  _hasPendingWake(routingKey) {
+    const queue = this._queues.get(routingKey)
+    if (!queue) return false
+    return queue.some(msg => msg.meta && msg.meta.wakeReason)
+  }
+
   _startWorker(routingKey) {
-    if (!this._wakers) this._wakers = new Map()
     const workerPromise = this._workerLoop(routingKey)
     this._workers.set(routingKey, workerPromise)
   }
@@ -105,14 +142,20 @@ export class Runner {
       return
     }
 
-    console.log(`[Runner] session=${session.id} userContent=${JSON.stringify(userContent).slice(0, 200)}`)
+    // 29 课：按 routing_key 选对应角色的 agentFn
+    const agentFn = _pickAgentFn(routingKey, this._agentFnMap, this._agentFn)
+
+    console.log(`[Runner] session=${session.id} routingKey=${routingKey} userContent=${JSON.stringify(userContent).slice(0, 200)}`)
 
     const history = await this._sessionMgr.loadHistory(session.id)
     console.log(`[Runner] history turns=${history.length}`)
 
-    const cardMsgId = await this._sender.sendThinking(routingKey, rootId)
+    // team:* 唤醒消息不发思考中 card，也不回消息
+    const isTeamWake = routingKey.startsWith(TEAM_PREFIX)
 
-    const reply = await this._agentFn(userContent, history, session.id, routingKey, rootId, session.verbose)
+    const cardMsgId = isTeamWake ? null : await this._sender.sendThinking(routingKey, rootId)
+
+    const reply = await agentFn(userContent, history, session.id, routingKey, rootId, session.verbose)
     console.log(`[Runner] reply length=${reply.length}`)
 
     const userTextForLog = Array.isArray(userContent) ? '[图片消息]' : userContent
@@ -131,10 +174,13 @@ export class Runner {
       dbDsn: this._dbDsn,
     }).catch(e => console.error('[Runner] storeMemory error:', e.message))
 
-    if (cardMsgId) {
-      await this._sender.updateCard(cardMsgId, reply)
-    } else {
-      await this._sender.send(routingKey, reply, rootId)
+    // team:* wake 消息不回飞书（Agent 通过 send_to_human 主动发）
+    if (!isTeamWake) {
+      if (cardMsgId) {
+        await this._sender.updateCard(cardMsgId, reply)
+      } else {
+        await this._sender.send(routingKey, reply, rootId)
+      }
     }
   }
 

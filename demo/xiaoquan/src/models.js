@@ -30,8 +30,9 @@ export function createInboundMessage({
   ts = Date.now(),
   isCron = false,
   attachment = null,
+  meta = null,
 }) {
-  return {routingKey, content, msgId, rootId: rootId || msgId, senderId, ts, isCron, attachment}
+  return {routingKey, content, msgId, rootId: rootId || msgId, senderId, ts, isCron, attachment, meta}
 }
 
 /**

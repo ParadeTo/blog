@@ -34,6 +34,12 @@ sender:
   max_retries: 3
   retry_backoff: [1, 2, 4]
 
+# 29 课：团队配置
+team:
+  roles: ["manager", "pm", "rd", "qa"]
+  heartbeat_interval_ms: 30000    # 心跳间隔（4 角色错峰 0/7/14/21s）
+  workspace_dir: "./workspace"    # 角色身份文件 + Skills 目录
+
 data_dir: "./data"
 
 debug:

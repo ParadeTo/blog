@@ -1,4 +1,4 @@
-import {describe, it, beforeEach} from 'node:test'
+import {describe, it, beforeEach, afterEach} from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'fs'
 import path from 'path'
@@ -24,9 +24,13 @@ describe('Runner', () => {
     sender = new CaptureSender()
   })
 
+  afterEach(async () => {
+    if (runner) await runner.shutdown()
+  })
+
   it('/help returns help text', async () => {
     const agentFn = async () => 'should not be called'
-    runner = new Runner(mgr, sender, agentFn)
+    runner = new Runner(mgr, sender, agentFn, {idleTimeoutS: 1})
     const msg = createInboundMessage({
       routingKey: 'p2p:ou_test',
       content: '/help',
@@ -42,7 +46,7 @@ describe('Runner', () => {
 
   it('/new creates new session', async () => {
     const agentFn = async () => 'reply'
-    runner = new Runner(mgr, sender, agentFn)
+    runner = new Runner(mgr, sender, agentFn, {idleTimeoutS: 1})
 
     const msg1 = createInboundMessage({routingKey: 'p2p:ou_test', content: 'hi', msgId: 'm1', senderId: 'ou_test'})
     await runner.dispatch(msg1)
@@ -58,12 +62,28 @@ describe('Runner', () => {
 
   it('dispatches to agent_fn and sends reply', async () => {
     const agentFn = async (userMessage) => `echo: ${userMessage}`
-    runner = new Runner(mgr, sender, agentFn)
+    runner = new Runner(mgr, sender, agentFn, {idleTimeoutS: 1})
     const msg = createInboundMessage({routingKey: 'p2p:ou_test', content: 'hello', msgId: 'm1', senderId: 'ou_test'})
     await runner.dispatch(msg)
     await new Promise(r => setTimeout(r, 200))
     const reply = sender.messages.find(m => m.cardMsgId)
     assert.ok(reply)
     assert.equal(reply.content, 'echo: hello')
+  })
+
+  it('team: wake message is deduplicated', async () => {
+    let callCount = 0
+    const agentFn = async () => { callCount++; return 'ok' }
+    runner = new Runner(mgr, sender, agentFn, {idleTimeoutS: 1, agentFnMap: {manager: agentFn}})
+
+    const wake1 = createInboundMessage({routingKey: 'team:manager', content: '__wake__:heartbeat', msgId: 'w1', senderId: 'system', meta: {wakeReason: 'heartbeat'}})
+    const wake2 = createInboundMessage({routingKey: 'team:manager', content: '__wake__:heartbeat', msgId: 'w2', senderId: 'system', meta: {wakeReason: 'heartbeat'}})
+    // No await between dispatches — both must run before any microtask fires,
+    // so wake1 stays in queue when wake2 is checked.
+    const p1 = runner.dispatch(wake1)
+    const p2 = runner.dispatch(wake2)
+    await Promise.all([p1, p2])
+    await new Promise(r => setTimeout(r, 300))
+    assert.equal(callCount, 1)
   })
 })
