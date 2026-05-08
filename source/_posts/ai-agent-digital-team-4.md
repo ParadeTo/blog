@@ -48,6 +48,8 @@ description: 数字团队系列终篇。把角色定义、邮箱通信、Human �
 
 这件事值得单独拿出来说的原因是：**SOP 是文本文件，改工作流等于改文本，不碰 JS。** 团队有新要求，比如加一个安全审查环节，或者把 PM 审批改成 Manager 直批，改一个 `.md` 文件，下次运行就生效了。
 
+![用户与 Manager 在飞书共创 SOP](./ai-agent-digital-team-4/feishu-0-sop.png)
+
 ---
 
 ## 阶段 1：需求澄清
