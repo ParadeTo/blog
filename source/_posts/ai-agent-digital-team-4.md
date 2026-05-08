@@ -97,3 +97,77 @@ export function loadRoleScopedSkillRegistry(workspaceRoot, role) {
 ```
 
 从全局变量改成函数参数，Manager 的 `skillsDir` 是 `workspace/manager/skills/`，PM 的是 `workspace/pm/skills/`，互不干扰。**这是单 Agent 转多 Agent 最典型的 bug 模式：一行改动，从全局到实例。**
+
+---
+
+## 阶段 3：RD 技术实现
+
+Manager 收到 PM 的 `task_done` 邮件，分两步给 RD 派任务：先发一封 `tech_design` 任务，等 RD 把 `tech/tech_design.md` 写完回报后，再单独发一封 `code_impl` 任务。两步拆开不是为了仪式感——实测把两个任务合在一封邮件里，Agent 写完技术方案就当自己完成了，代码实现根本没动。
+
+RD 收到 `code_impl` 后，加载对应 Skill，建好目录结构，在沙箱里写代码：Express + SQLite，实现三个接口（`POST /shorten`、`GET /:code`、`GET /:code/stats`）。代码写完自动跑测试，如果失败，RD 会读 stderr、修代码、重新跑，最多三轮，跑通为止。
+
+**这里有一个问题值得停下来想一下：**
+
+四个角色共享同一个项目目录，RD 不能动 PM 的 `design/`，QA 也不能往 `code/` 里写。怎么保证？
+
+靠 Prompt 说"请不要改别人的目录"？这太软了，Agent 偶尔会忘。真正可靠的办法是在工具层做强制拦截——用前缀 ACL：
+
+```javascript
+// workspace.js — 前缀 ACL
+const OWNER_BY_PREFIX = {
+  'needs/':  new Set(['manager']),
+  'design/': new Set(['pm']),
+  'tech/':   new Set(['rd']),
+  'code/':   new Set(['rd']),
+  'qa/':     new Set(['qa']),
+}
+
+export function checkWrite(role, relPath) {
+  for (const [prefix, owners] of Object.entries(OWNER_BY_PREFIX)) {
+    if (relPath.startsWith(prefix) && !owners.has(role)) {
+      throw new Error(`${role} cannot write ${relPath} (owner=${[...owners]})`)
+    }
+  }
+}
+```
+
+Prompt 约束是软约束，Agent 想绕就能绕。这个是工具层的硬抛出，Agent 就算想写也写不进去——`PermissionError` 直接返回给 Agent，它自己就知道这条路不通。
+
+---
+
+## 阶段 4：QA 测试 + 缺陷修复循环
+
+Manager 先给 QA 发 `test_design` 任务，QA 输出 `qa/test_plan.md`；之后再发 `test_run` 任务，QA 在沙箱里跑完所有测试用例。
+
+这里有一个值得注意的设计：如果发现缺陷，QA **自己**给 RD 发 `task_assign` 邮件，不需要经过 Manager 中转。RD 修完，QA 再验一遍，全部通过后才把 `task_done` 发回给 Manager。这个 QA→RD→QA 的闭环，**JS 代码里一行都没有写死**——QA 的 `test_run` Skill 文本里用自然语言描述了这个决策逻辑，Agent 自己读完就知道该怎么做。编排逻辑在 Skill 文本里，不在 JS 里。
+
+---
+
+## 阶段 5-6：交付 + 复盘
+
+所有测试通过，Manager 调用 `send_to_human(kind='delivery')` 向用户发送交付报告，用户在飞书确认，系统记录 `delivered` 事件。
+
+复盘阶段，Manager 同时给 PM、RD、QA 发 `retro_trigger` 邮件，三个角色同时被唤醒，各自写复盘。
+
+**这里又有一个问题：**
+
+JS 是单线程，三个角色同时唤醒有问题吗？
+
+有，而且是真实踩到过的问题。单线程不等于没有并发问题。PM 的 ReAct 循环挂在 `await generateText(...)` 等待 LLM 返回时，事件循环可以调度 Manager 开始跑——两个角色的循环**交替执行**。任何 SDK 里的模块级可变状态，都可能在这个交替里被污染。
+
+解法是用 Promise 链串行化所有 Agent 的执行：
+
+```javascript
+// build-team.js — Promise 链串行化
+export function wrapWithLock(agentFn) {
+  let lock = Promise.resolve()
+  return function lockedAgentFn(...args) {
+    let resolve
+    const prev = lock
+    lock = new Promise(r => { resolve = r })
+    return prev.then(() => agentFn(...args)).finally(() => resolve())
+  }
+}
+```
+
+有意思的是，Python 版本也有一把锁，但原因不一样。Python 那边是 CrewAI 的 `@before_llm_call` 钩子挂在全局事件总线上，并发执行时 PM 的钩子会触发在 QA 的 LLM 调用上，把系统提示搞乱。JS 版没有这个框架层面的问题，这把锁是纯粹的防御性编程——防止任何潜在的 SDK 级共享状态被异步交替污染。**同一个接缝，Python 和 JS 各有各的根因。**
