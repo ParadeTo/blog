@@ -216,3 +216,24 @@ Manager 整理好需求（目标、边界、约束、风险），在飞书里向
 <!-- 运行后填入：events.jsonl 前几行（项目事件链） -->
 <!-- 运行后填入：mailboxes/pm.json 中 Manager→PM 的首封 task_assign 邮件 -->
 ```
+
+---
+
+# 接缝总结
+
+六个阶段全部跑通。回头数一下，真正需要写的"胶水代码"到底有多少。
+
+| 接缝 | 文件 | 解决的问题 |
+|------|------|-----------|
+| SendMail = 叫人 | team-tools.js | 发邮件自动注册唤醒，消灭显式编排代码 |
+| RoleScopedSkillLoader | skill-tools-scoped.js | skillsDir 从全局变量改为实例绑定，多角色 Skill 不串台 |
+| workspace 前缀 ACL | workspace.js | 共享目录按角色隔离写权限，工具层硬拦截 |
+| 全局锁（Promise 链） | build-team.js | async 交织执行不污染，JS/Python 根因不同 |
+
+业务逻辑全在 Skill 文本文件里，JS 代码只管接缝。**新增一个角色几乎不用动接缝代码**——在 `workspace/` 下建一个目录，在 `ROLES` 数组里加一条，在 `OWNER_BY_PREFIX` 里加一个前缀，就结束了。
+
+---
+
+# 结语
+
+四篇写完了，从"临时工"写到"能自我进化的团队"。回头看，多 Agent 系统最难的不是业务逻辑——那些都在 Skill 文件里，改文本就够了。真正难的是接缝：几行看起来不起眼的代码，每一行都是踩过坑才知道要加的。SOP 是流程操作系统，邮件是调度器，JS 只管把这几处拼缝粘好。
