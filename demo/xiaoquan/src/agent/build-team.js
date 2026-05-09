@@ -150,7 +150,7 @@ export function buildTeamAgentFn({
         return step.text || ''
       }
 
-      messages.push(...response.messages)
+      messages.push(...response.messages.map(({id, ...m}) => m))
     }
 
     saveSessionCtx(sessionId, messages, ctxDirResolved)

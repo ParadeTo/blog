@@ -178,7 +178,7 @@ export async function runAgent({
       }
     }
 
-    messages.push(...response.messages)
+    messages.push(...response.messages.map(({id, ...m}) => m))
   }
 
   saveSessionCtx(sessionId, messages, ctxDir)

@@ -98,9 +98,11 @@ export class Runner {
         await this._handle(inbound)
       } catch (e) {
         console.error(`[Runner] error handling message:`, e)
-        try {
-          await this._sender.send(inbound.routingKey, `处理出错：${e.message}`, inbound.rootId)
-        } catch {}
+        if (!routingKey.startsWith(TEAM_PREFIX)) {
+          try {
+            await this._sender.send(inbound.routingKey, `处理出错：${e.message}`, inbound.rootId)
+          } catch {}
+        }
       }
     }
   }

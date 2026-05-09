@@ -40,9 +40,14 @@ export class CronService {
   async start() {
     this._loadStore()
     this._running = true
-    this._timer = setInterval(() => this._tick().catch(e => {
-      console.error('[CronService] tick error:', e.message)
-    }), this._tickIntervalMs)
+    this._ticking = false
+    this._timer = setInterval(() => {
+      if (this._ticking) return
+      this._ticking = true
+      this._tick().catch(e => {
+        console.error('[CronService] tick error:', e.message)
+      }).finally(() => { this._ticking = false })
+    }, this._tickIntervalMs)
   }
 
   async stop() {

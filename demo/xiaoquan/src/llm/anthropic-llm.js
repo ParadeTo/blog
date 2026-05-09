@@ -2,7 +2,8 @@ import {generateText} from 'ai'
 import {createAnthropic} from '@ai-sdk/anthropic'
 
 const anthropic = createAnthropic({
-  baseURL: 'http://localhost:3002',
+  apiKey: process.env.ANTHROPIC_API_KEY,
+  baseURL: process.env.ANTHROPIC_BASE_URL || 'http://localhost:3002/v1',
 })
 import {createOpenAI} from '@ai-sdk/openai'
 import {embed} from 'ai'
