@@ -19,7 +19,7 @@ import {buildRoleTools} from '../tools/team-tools.js'
 
 export const ROLES = ['manager', 'pm', 'rd', 'qa']
 
-const MAX_ITERATIONS = 10
+const MAX_ITERATIONS = 20
 
 function buildBootstrapForRole(workspaceRoot, role) {
   const roleDir = path.join(workspaceRoot, role)
@@ -111,7 +111,7 @@ export function buildTeamAgentFn({
 
     const skillTools = createScopedSkillTools(registry, {sessionId, historyAll: history, role})
     const teamTools = cronTasksPath
-      ? buildRoleTools(workspaceRoot, {role, cronTasksPath, sender})
+      ? buildRoleTools(workspaceRoot, {role, cronTasksPath, sender, defaultRoutingKey: routingKey})
       : {}
     const baseTools = buildBaseTools({sessionId, sessionDir, sandbox})
 
@@ -126,35 +126,51 @@ export function buildTeamAgentFn({
     const pruneKeepTurns = 10
     const compressThreshold = 80000
     let lastPromptTokens = 0
+    let finalText = '（达到最大迭代次数）'
+    try {
+      for (let i = 1; i <= maxIter; i++) {
+        pruneToolResults(messages, {keepTurns: pruneKeepTurns})
+        if (lastPromptTokens > compressThreshold) {
+          messages = await maybeCompress(messages, {threshold: compressThreshold, ctxDir: ctxDirResolved, sessionId})
+        }
 
-    for (let i = 1; i <= maxIter; i++) {
-      pruneToolResults(messages, {keepTurns: pruneKeepTurns})
-      if (lastPromptTokens > compressThreshold) {
-        messages = await maybeCompress(messages, {threshold: compressThreshold, ctxDir: ctxDirResolved, sessionId})
+        let steps, text, usage, response
+        try {
+          ;({steps, text, usage, response} = await generateText({
+            model: getModel(modelId),
+            system: systemPrompt,
+            messages,
+            tools,
+            maxSteps: 1,
+          }))
+        } catch (e) {
+          // Convert AI_InvalidToolArgumentsError to a recoverable tool result so the LLM can self-correct
+          if (e[Symbol.for('vercel.ai.error.AI_InvalidToolArgumentsError')]) {
+            const callId = `repair-${Date.now()}`
+            messages.push({role: 'assistant', content: [{type: 'tool-call', toolCallId: callId, toolName: e.toolName, args: JSON.parse(e.toolArgs || '{}')}]})
+            messages.push({role: 'tool', content: [{type: 'tool-result', toolCallId: callId, toolName: e.toolName, result: `{"errcode":1,"errmsg":"工具参数校验失败：${e.message.split('\n')[0]}，请重新调用并补全所有必填字段"}`}]})
+            continue
+          }
+          throw e
+        }
+
+        lastPromptTokens = usage?.promptTokens || 0
+        const step = steps[0]
+        if (!step) { finalText = text || ''; break }
+
+        if (step.toolCalls.length === 0) {
+          if (step.text) messages.push({role: 'assistant', content: step.text})
+          finalText = step.text || ''
+          break
+        }
+
+        messages.push(...response.messages.map(({id, ...m}) => m))
       }
-
-      const {steps, text, usage, response} = await generateText({
-        model: getModel(modelId),
-        system: systemPrompt,
-        messages,
-        tools,
-        maxSteps: 1,
-      })
-
-      lastPromptTokens = usage?.promptTokens || 0
-      const step = steps[0]
-      if (!step) { saveSessionCtx(sessionId, messages, ctxDirResolved); return text || '' }
-
-      if (step.toolCalls.length === 0) {
-        saveSessionCtx(sessionId, messages, ctxDirResolved)
-        return step.text || ''
-      }
-
-      messages.push(...response.messages.map(({id, ...m}) => m))
+    } finally {
+      saveSessionCtx(sessionId, messages, ctxDirResolved)
     }
 
-    saveSessionCtx(sessionId, messages, ctxDirResolved)
-    return '（达到最大迭代次数）'
+    return finalText
   }
 }
 

@@ -6,6 +6,7 @@ export class FeishuListener {
   constructor({appId, appSecret, onMessage, allowedChats = []}) {
     this._onMessage = onMessage
     this._allowedChats = new Set(allowedChats)
+    this._seenMsgIds = new Set()
     this._client = new lark.Client({appId, appSecret})
 
     this._eventDispatcher = new lark.EventDispatcher({}).register({
@@ -41,6 +42,11 @@ export class FeishuListener {
       const threadId = message.thread_id || null
 
       if (!this._isChatAllowed(chatId, chatType)) return
+      if (this._seenMsgIds.has(msgId)) {
+        console.log(`[FeishuListener] dedup msgId=${msgId}`)
+        return
+      }
+      this._seenMsgIds.add(msgId)
 
       const routingKey = resolveRoutingKey(chatType, senderId, chatId, threadId)
       const {content, attachment} = this._extractContent(message.message_type, message.content)

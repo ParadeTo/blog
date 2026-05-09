@@ -3,6 +3,7 @@ export class FeishuSender {
     this._client = client
     this._maxRetries = maxRetries
     this._retryBackoff = retryBackoff
+    this._pendingCards = new Map() // routingKey → cardMsgId
   }
 
   _buildCard(content) {
@@ -16,6 +17,14 @@ export class FeishuSender {
   }
 
   async send(routingKey, content, rootId = null) {
+    // If there's a pending thinking card for this routingKey, update it instead of sending a new message
+    if (this._pendingCards.has(routingKey)) {
+      const cardMsgId = this._pendingCards.get(routingKey)
+      this._pendingCards.delete(routingKey)
+      await this.updateCard(cardMsgId, content)
+      return
+    }
+
     const card = this._buildCard(content)
     const [type, id] = routingKey.split(':')
 
@@ -80,11 +89,23 @@ export class FeishuSender {
           params: {receive_id_type: 'chat_id'},
         })
       }
-      return resp?.data?.message_id || null
+      const msgId = resp?.data?.message_id || null
+      if (msgId) this._pendingCards.set(routingKey, msgId)
+      return msgId
     } catch (e) {
       console.error('[FeishuSender] sendThinking failed:', e.message)
       return null
     }
+  }
+
+  hasPendingCard(routingKey) {
+    return this._pendingCards.has(routingKey)
+  }
+
+  async consumePendingCard(routingKey, content) {
+    const cardMsgId = this._pendingCards.get(routingKey)
+    this._pendingCards.delete(routingKey)
+    if (cardMsgId) await this.updateCard(cardMsgId, content)
   }
 
   async updateCard(cardMsgId, content) {

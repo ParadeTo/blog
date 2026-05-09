@@ -33,8 +33,25 @@ function validateProjectId(projectId) {
   return null
 }
 
-export function buildTeamTools(workspaceRoot, {role, cronTasksPath, sender = null}) {
+export function buildTeamTools(workspaceRoot, {role, cronTasksPath, sender = null, defaultRoutingKey = ''}) {
   const commonTools = {
+    scan_projects: tool({
+      description: '列出当前所有活跃项目的 ID 列表，用于在 heartbeat 时发现有未读邮件的项目。返回 {projects: [projectId, ...]}',
+      parameters: z.object({}),
+      execute: async () => {
+        try {
+          const projectsDir = path.join(workspaceRoot, 'shared', 'projects')
+          const fs = await import('fs')
+          if (!fs.default.existsSync(projectsDir)) return JSON.stringify({projects: []})
+          const entries = fs.default.readdirSync(projectsDir, {withFileTypes: true})
+          const projects = entries.filter(e => e.isDirectory()).map(e => e.name)
+          return JSON.stringify({projects})
+        } catch (e) {
+          return JSON.stringify({projects: [], errmsg: e.message})
+        }
+      },
+    }),
+
     send_mail: tool({
       description: '向团队成员（manager/pm/rd/qa）发送一条邮件。发送后自动唤醒收件角色。返回 {errcode, msgId, scheduledWake}',
       parameters: z.object({
@@ -114,11 +131,11 @@ export function buildTeamTools(workspaceRoot, {role, cronTasksPath, sender = nul
     }),
 
     write_shared: tool({
-      description: '写项目共享区文件（Owner 权限校验）。needs/(manager) / design/(pm) / tech/+code/(rd) / qa/(qa)。',
+      description: '写项目共享区文件（Owner 权限校验）。needs/(manager) / design/(pm) / tech/+code/(rd) / qa/(qa)。content 为必填字段，为完整文件正文。',
       parameters: z.object({
         projectId: z.string().describe('项目 ID'),
         relPath: z.string().describe('相对路径（受 owner 约束）'),
-        content: z.string().describe('文件正文'),
+        content: z.string().describe('文件完整正文（必填）'),
       }),
       execute: async ({projectId, relPath, content}) => {
         const err = validateProjectId(projectId)
@@ -194,11 +211,13 @@ export function buildTeamTools(workspaceRoot, {role, cronTasksPath, sender = nul
         if (kind === 'checkpoint_request' && !checkpointId)
           return JSON.stringify({errcode: 1, errmsg: 'checkpoint_request requires checkpointId'})
 
-        // 异步发送飞书消息（不阻塞工具返回）
+        // "default" 回退到当前用户的 inbound routingKey
+        const resolvedKey = (routingKey === 'default' || !routingKey) ? defaultRoutingKey : routingKey
+
+        // 有思考中卡片就更新它，没有就发新消息
         if (sender) {
           setImmediate(() => {
-            sender.send(routingKey, message, '').catch(e =>
-              console.error('[send_to_human] feishu send error:', e.message))
+            sender.send(resolvedKey, message, '').catch(e => console.error('[send_to_human] feishu send error:', e.message))
           })
         }
 
@@ -219,6 +238,6 @@ export function buildTeamTools(workspaceRoot, {role, cronTasksPath, sender = nul
   return {...commonTools, ...managerTools}
 }
 
-export function buildRoleTools(workspaceRoot, {role, cronTasksPath, sender = null}) {
-  return buildTeamTools(workspaceRoot, {role, cronTasksPath, sender})
+export function buildRoleTools(workspaceRoot, {role, cronTasksPath, sender = null, defaultRoutingKey = ''}) {
+  return buildTeamTools(workspaceRoot, {role, cronTasksPath, sender, defaultRoutingKey})
 }

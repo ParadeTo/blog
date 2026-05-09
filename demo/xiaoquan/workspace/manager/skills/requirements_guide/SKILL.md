@@ -38,7 +38,22 @@ type: reference
 1-3 个具体问题；必要时带"例如 A / B / C"引导。
 
 ### Step 5 — 发出
-`send_to_human(routing_key, message, kind="info", project_id=<if_known>)`
+message 必须包含两部分：
+
+**① 4维评估表格**（每次都要展示，让用户看到进度）：
+```
+📋 需求覆盖度评估
+| 维度 | 状态 | 说明 |
+|------|------|------|
+| 🎯 Goal（目标）    | ✅ 已覆盖 / ⚠️ 部分 / ❌ 未覆盖 | 缺口描述 |
+| 🔲 Boundary（边界）| ✅ / ⚠️ / ❌ | ... |
+| ⚙️ Constraint（约束）| ✅ / ⚠️ / ❌ | ... |
+| ⚠️ Risk（风险）   | ✅ / ⚠️ / ❌ | ... |
+```
+
+**② 澄清问题**（≤3 个，用序号列出）
+
+调用：`send_to_human(routing_key, message, kind="info", project_id=<if_known>)`
 
 ### Step 6 — 覆盖判定
 如果 Step 2 的评估"全覆盖" → **不问问题**，转下一步：

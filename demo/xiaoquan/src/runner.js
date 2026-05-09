@@ -155,9 +155,10 @@ export class Runner {
     // team:* 唤醒消息不发思考中 card，也不回消息
     const isTeamWake = routingKey.startsWith(TEAM_PREFIX)
 
-    const cardMsgId = isTeamWake ? null : await this._sender.sendThinking(routingKey, rootId)
+    if (!isTeamWake) await this._sender.sendThinking(routingKey, rootId)
 
-    const reply = await agentFn(userContent, history, session.id, routingKey, rootId, session.verbose)
+    const result = await agentFn(userContent, history, session.id, routingKey, rootId, session.verbose)
+    const reply = typeof result === 'object' ? result.text : result
     console.log(`[Runner] reply length=${reply.length}`)
 
     const userTextForLog = Array.isArray(userContent) ? '[图片消息]' : userContent
@@ -177,11 +178,11 @@ export class Runner {
     }).catch(e => console.error('[Runner] storeMemory error:', e.message))
 
     // team:* wake 消息不回飞书（Agent 通过 send_to_human 主动发）
+    // send_to_human 调用 sender.send() 时会自动消费 pending card（updateCard）
+    // 若 agentFn 结束后 pending card 仍存在（未调用 send_to_human），则用 reply 兜底更新
     if (!isTeamWake) {
-      if (cardMsgId) {
-        await this._sender.updateCard(cardMsgId, reply)
-      } else {
-        await this._sender.send(routingKey, reply, rootId)
+      if (this._sender.hasPendingCard(routingKey)) {
+        await this._sender.consumePendingCard(routingKey, reply)
       }
     }
   }
