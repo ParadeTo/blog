@@ -12,19 +12,19 @@ description: 用一个 JS demo 把 Agent 的 LLM 调用、工具执行、任务�
 
 # 前言
 
-写 Agent demo 时，最烦的经常不是模型答错，而是你根本不知道它在哪一步开始跑偏。
+写 Agent demo 时，最烦的不是模型偶尔答错，而是你根本不知道它在哪一步开始跑偏。
 
-它是不是看懂了用户请求？有没有加载对 Skill？工具到底传了什么参数？文件写成功了吗？这些问题如果只靠终端里一坨日志翻，调两次还能忍，流程一长就会变成体力活。
+它看懂用户请求了吗？Skill 加载对了吗？工具到底传了什么参数？文件写成功了吗？只靠终端里那坨日志查，调两次还行，流程一长就是体力活。
 
-所以这篇做一件小事：给 Agent 加一个 **Hook 层**，再把 Hook 事件接到 **Langfuse**。这样一次 Agent run 会变成一棵 trace 树：哪一轮调用了 LLM，哪一个 tool span 失败了，最后 task output 是什么，都能一眼看出来。
+所以这篇文章就介绍下用 **Langfuse** 来监控 agent 的运行。
 
-这篇对应的 JS demo 在这里：[ParadeTo/blog/demo/langfuse-hooks](https://github.com/ParadeTo/blog/tree/master/demo/langfuse-hooks)。
+这篇对应的 demo 在这里：[ParadeTo/blog/demo/langfuse-hooks](https://github.com/ParadeTo/blog/tree/master/demo/langfuse-hooks)。
 
 ---
 
 # 一、Langfuse 解决什么问题
 
-Langfuse 是一个开源的 LLM 工程平台。它能做 trace、prompt 管理、评估和数据集，本文只用其中最基础的一块：**Tracing**。
+Langfuse 是开源 LLM 工程平台，支持 trace、prompt 管理、评估和数据集。这里先用最基础的 **Tracing**。
 
 Agent 调试时，我最想看到四类信息：
 
@@ -37,9 +37,9 @@ Agent 调试时，我最想看到四类信息：
 
 普通日志是一行一行的。Langfuse 更像把这些日志重新排成树。
 
-这里有几个词先简单对齐一下：`generation` 可以理解成一次模型调用记录；`tool span` 是一次工具调用记录；`observation` 是 Langfuse 里所有这些可观测节点的统称。先这么理解就够了，后面看图会更直观。
+先把几个词对齐：`generation` 可以理解成一次模型调用记录；`tool span` 是一次工具调用记录；`observation` 是 Langfuse 里这些可观测节点的统称。先这么理解就够了，后面看图会更直观。
 
-先看列表页。它的作用不是看完整调用细节，而是快速定位“刚才是哪一次 run”。
+先看列表页。它用来快速定位“刚才是哪一次 run”，完整调用细节留到详情页看。
 
 左侧 `Filters` 可以按 `Environment`、`Trace Name`、`Session ID` 过滤；顶部有搜索框和时间范围；中间表格里先看 `Timestamp` 和 `Name`，用它们找到刚才那次 run。`Input`、`Output` 在列表页只适合扫一眼，完整内容还是进详情页看。对 Agent 来说，`Name` 最好带上 session id，不然后面 trace 一多，很容易找错那次运行。
 
@@ -47,7 +47,7 @@ Agent 调试时，我最想看到四类信息：
 
 ![Langfuse trace 列表](./ai-agent-langfuse/langfuse-traces.png)
 
-点进去以后才是调试主场。这个页面可以按从左到右的顺序看：
+点进去以后，才真正开始排查。页面大概这么看：
 
 | 区域 | 看什么 |
 |------|--------|
@@ -72,7 +72,7 @@ session-sess_20260514082616
 └── task-complete
 ```
 
-这里的好处很直接：你不用猜“这条日志属于哪次 LLM 调用”，父子关系已经挂好了。
+这个结构省掉很多猜测。你不用再问“这条日志属于哪次 LLM 调用”，父子关系已经挂好了。
 
 ---
 
@@ -80,9 +80,9 @@ session-sess_20260514082616
 
 直接在业务代码里到处写 Langfuse 也能跑，但很快会乱。
 
-今天你接 Langfuse，明天想加 JSON log，后天又想写审计文件。如果这些逻辑散在 Agent loop、tool executor、task runner 里，最后业务流程会被观测代码泡满。
+刚开始只接 Langfuse，后来又想加 JSON log 和审计文件。如果这些逻辑散在 Agent loop、tool executor、task runner 里，最后业务流程会被观测代码泡满。
 
-所以我先做一层 Hook，把 Agent 的生命周期压成 5+2 个事件：
+所以我先加一层 Hook，把 Agent 的生命周期压成 5+2 个事件：
 
 ```js
 export const EventType = Object.freeze({
@@ -109,15 +109,15 @@ before_turn -> before_llm -> before_tool_call -> after_tool_call -> after_turn
 | `task_complete` | 记录最终产物、写审计 |
 | `session_end` | 关闭 span、flush trace |
 
-这样 Langfuse、日志、审计都只是 handler。Agent loop 不关心它们怎么实现，只负责在合适的时机发事件。
+这样观测逻辑都变成 handler。Agent loop 不关心它们怎么实现，只负责在合适的时机发事件。
 
 ---
 
 # 三、JS Demo 的结构
 
-Agent 框架有很多种，事件入口也不一样。为了让 demo 更容易复用，我没有把 Hook 绑死在某个具体框架上，而是把它做成一个轻量 adapter。
+Agent 框架很多，事件入口也不一样。这个 demo 用一个轻量 adapter 承接 Hook，Agent loop 只暴露几个关键节点。
 
-Agent loop 只要在几个关键节点调用 adapter，就能接入这套 Hook：
+Agent loop 调这几个方法就够了：
 
 ```js
 const adapter = new AgentObservabilityAdapter(registry, { sessionId })
@@ -130,7 +130,7 @@ await adapter.taskComplete({ rawOutput, description })
 await adapter.cleanup()
 ```
 
-后面的结构化日志、审计文件和 Langfuse trace，都会从这些事件里长出来。
+后面的结构化日志、审计文件和 Langfuse trace，都会从这些事件里生成。
 
 目录结构是这样：
 
@@ -186,13 +186,13 @@ hooks:
     - handler: task-audit.writeAuditEntry
 ```
 
-这个分层很实用。日志和 trace 是基础设施，不该每个 Agent 复制一遍；审计、告警、业务埋点通常和角色有关，放在 workspace 里更顺手。
+这个分层用起来很顺。日志和 trace 属于通用能力，每个 Agent 都复制一遍没必要；审计、告警、业务埋点和角色关系更近，放在 workspace 里更顺手。
 
 ---
 
 # 四、接入 Langfuse JS SDK v5
 
-Langfuse 初始化放在 `src/instrumentation.js`：
+Langfuse 初始化代码在 `src/instrumentation.js`：
 
 ```js
 import { NodeSDK } from '@opentelemetry/sdk-node'
@@ -213,7 +213,7 @@ const sdk = new NodeSDK({
 
 `LANGFUSE_PUBLIC_KEY` 和 `LANGFUSE_SECRET_KEY` 来自 Langfuse 项目的 **Settings -> API Keys**。Public Key 通常长得像 `pk-lf-...`，Secret Key 通常长得像 `sk-lf-...`。
 
-真正创建 trace 的地方在 `shared-hooks/langfuse-trace.js`。
+trace 创建逻辑在 `shared-hooks/langfuse-trace.js`。
 
 第一次收到事件时，先创建一个 root observation：
 
@@ -263,16 +263,16 @@ const observation = currentToolParent(state).startObservation(
 )
 ```
 
-这就是 trace 树的来源。
+trace 树就这么长出来。
 
-我还留了一个小保险：如果 `after_turn` 时还有没关掉的 tool span，会自动关闭并标成 `WARNING`。真实 Agent 很容易在异常分支里漏收尾，Hook 层最好兜一下。
+我还留了个兜底：如果 `after_turn` 时还有没关掉的 tool span，会自动关闭并标成 `WARNING`。真实 Agent 很容易在异常分支里漏收尾，Hook 层最好兜一下。
 
 ---
 
 # 总结
 
-这篇讲的是 Agent 可观测性：先把 Agent 运行过程压成 5+2 个 Hook 事件，再用 handler 接日志、审计和 Langfuse trace。
+这篇其实只解决一个问题：Agent 跑起来以后，怎么知道每一步发生了什么。
 
-HookRegistry 负责分发事件，HookLoader 负责从两层 `hooks.yaml` 加载 handler。全局层放通用观测能力，workspace 层放角色自己的业务逻辑。
+我把运行过程拆成 5+2 个 Hook 事件，再用 handler 接上日志、审计和 Langfuse trace。HookRegistry 管分发，HookLoader 管从全局层和 workspace 层加载配置。
 
-Langfuse 侧把一次任务组织成一个 root observation，下面挂 generation、tool span 和 task-complete。调试时不用翻散乱日志，直接看哪一轮 LLM、哪个工具调用出了问题。
+Langfuse 里，一次任务是一个 root observation，下面挂 generation、tool span 和 task-complete。下次结果不对，先点开 trace，看最后一次正常的 LLM 调用和紧跟着的工具调用，问题通常就在那里。
