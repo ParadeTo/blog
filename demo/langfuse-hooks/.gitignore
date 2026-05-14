@@ -1,0 +1,4 @@
+.env
+node_modules/
+workspace/demo_agent/audit.log
+workspace/demo_agent/output/*.md
