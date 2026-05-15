@@ -1,0 +1,44 @@
+hooks:
+  BEFORE_TURN:
+    - handler: structured-log.beforeTurnHandler
+    - handler: langfuse-trace.beforeTurnHandler
+  BEFORE_LLM:
+    - handler: structured-log.beforeLlmHandler
+    - handler: langfuse-trace.beforeLlmHandler
+  BEFORE_TOOL_CALL:
+    - handler: structured-log.beforeToolHandler
+    - handler: langfuse-trace.beforeToolHandler
+  AFTER_TOOL_CALL:
+    - handler: structured-log.afterToolHandler
+    - handler: langfuse-trace.afterToolHandler
+  AFTER_TURN:
+    - handler: structured-log.afterTurnHandler
+    - handler: langfuse-trace.afterTurnHandler
+  TASK_COMPLETE:
+    - handler: structured-log.taskCompleteHandler
+    - handler: langfuse-trace.taskCompleteHandler
+  SESSION_END:
+    - handler: structured-log.sessionEndHandler
+    - handler: langfuse-trace.sessionEndHandler
+
+strategies:
+  retry-tracker:
+    class: retry-tracker.RetryTracker
+    config:
+      maxRetries: 3
+    hooks:
+      AFTER_TOOL_CALL: afterToolHandler
+  cost-guard:
+    class: cost-guard.CostGuard
+    config:
+      budgetUsd: 1
+    hooks:
+      AFTER_TURN: afterTurnHandler
+      BEFORE_TOOL_CALL: beforeToolHandler
+  loop-detector:
+    class: loop-detector.LoopDetector
+    config:
+      threshold: 3
+    hooks:
+      AFTER_TOOL_CALL: afterToolHandler
+      AFTER_TURN: afterTurnHandler
