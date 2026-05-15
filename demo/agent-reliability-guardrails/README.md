@@ -29,6 +29,8 @@ npm run scenario:retry
 
 ## Test
 
+Tests are added in later implementation tasks; this scaffold only reserves the command.
+
 ```bash
 npm test
 ```
