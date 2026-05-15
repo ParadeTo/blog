@@ -93,6 +93,72 @@ describe('hook loader', () => {
     expect(loader.strategies.counter.getMetrics()).toEqual({ label: 'cost', count: 2 });
   });
 
+  test('loadTwoLayers registers global hooks before workspace hooks and tolerates missing workspace hooks', async () => {
+    const globalDir = path.join(tempRoot, 'global');
+    const workspaceDir = path.join(tempRoot, 'workspace');
+    const workspaceHooksDir = path.join(workspaceDir, 'hooks');
+    await fs.mkdir(globalDir, { recursive: true });
+    await fs.mkdir(workspaceHooksDir, { recursive: true });
+    await fs.writeFile(
+      path.join(globalDir, 'hooks.yaml'),
+      [
+        'hooks:',
+        '  BEFORE_TURN:',
+        '    - handler: globalObserver.onTurn',
+        '',
+      ].join('\n'),
+    );
+    await fs.writeFile(
+      path.join(globalDir, 'globalObserver.js'),
+      [
+        'export function onTurn(ctx) {',
+        "  ctx.metadata.hit.push('global');",
+        '}',
+        '',
+      ].join('\n'),
+    );
+    await fs.writeFile(
+      path.join(workspaceHooksDir, 'hooks.yaml'),
+      [
+        'hooks:',
+        '  BEFORE_TURN:',
+        '    - handler: workspaceObserver.onTurn',
+        '',
+      ].join('\n'),
+    );
+    await fs.writeFile(
+      path.join(workspaceHooksDir, 'workspaceObserver.js'),
+      [
+        'export function onTurn(ctx) {',
+        "  ctx.metadata.hit.push('workspace');",
+        '}',
+        '',
+      ].join('\n'),
+    );
+    const registry = new HookRegistry({ logger: vi.fn() });
+    const loader = new HookLoader(registry, { logger: vi.fn() });
+    const metadata = { hit: [] };
+
+    await loader.loadTwoLayers(globalDir, workspaceDir);
+    await registry.dispatch('BEFORE_TURN', { metadata });
+
+    expect(metadata.hit).toEqual(['global', 'workspace']);
+    expect(registry.summary().before_turn).toEqual([
+      '[global] globalObserver.onTurn',
+      '[workspace] workspaceObserver.onTurn',
+    ]);
+
+    const missingWorkspaceRegistry = new HookRegistry({ logger: vi.fn() });
+    const missingWorkspaceLoader = new HookLoader(missingWorkspaceRegistry, { logger: vi.fn() });
+
+    await expect(
+      missingWorkspaceLoader.loadTwoLayers(globalDir, path.join(tempRoot, 'missing-workspace')),
+    ).resolves.toBeUndefined();
+    expect(missingWorkspaceRegistry.summary().before_turn).toEqual([
+      '[global] globalObserver.onTurn',
+    ]);
+  });
+
   test('rejects handler path traversal', async () => {
     await fs.writeFile(
       path.join(tempRoot, 'hooks.yaml'),
@@ -110,6 +176,63 @@ describe('hook loader', () => {
     await loader.loadFromDirectory(tempRoot, 'workspace');
 
     expect(registry.handlerCount('BEFORE_TURN')).toBe(0);
+    expect(logger).toHaveBeenCalled();
+  });
+
+  test('rejects handler symlinks that resolve outside hooks directory', async () => {
+    const outsideModulePath = path.join(tempRoot, '..', `${path.basename(tempRoot)}-outside.js`);
+    await fs.writeFile(
+      path.join(tempRoot, 'hooks.yaml'),
+      [
+        'hooks:',
+        '  BEFORE_TURN:',
+        '    - handler: linked.onTurn',
+        '',
+      ].join('\n'),
+    );
+    await fs.writeFile(
+      outsideModulePath,
+      [
+        'export function onTurn(ctx) {',
+        "  ctx.metadata.hit.push('outside');",
+        '}',
+        '',
+      ].join('\n'),
+    );
+    await fs.symlink(outsideModulePath, path.join(tempRoot, 'linked.js'));
+    const logger = vi.fn();
+    const registry = new HookRegistry({ logger: vi.fn() });
+    const loader = new HookLoader(registry, { logger });
+
+    try {
+      await loader.loadFromDirectory(tempRoot, 'workspace');
+
+      expect(registry.handlerCount('BEFORE_TURN')).toBe(0);
+      expect(logger).toHaveBeenCalled();
+    } finally {
+      await fs.rm(outsideModulePath, { force: true });
+    }
+  });
+
+  test('rejects strategy class path traversal', async () => {
+    await fs.writeFile(
+      path.join(tempRoot, 'hooks.yaml'),
+      [
+        'strategies:',
+        '  evil:',
+        '    class: ../evil.EvilStrategy',
+        '    hooks:',
+        '      BEFORE_TOOL_CALL: beforeTool',
+        '',
+      ].join('\n'),
+    );
+    const logger = vi.fn();
+    const registry = new HookRegistry({ logger: vi.fn() });
+    const loader = new HookLoader(registry, { logger });
+
+    await loader.loadFromDirectory(tempRoot, 'workspace');
+
+    expect(registry.handlerCount('BEFORE_TOOL_CALL')).toBe(0);
     expect(logger).toHaveBeenCalled();
   });
 });

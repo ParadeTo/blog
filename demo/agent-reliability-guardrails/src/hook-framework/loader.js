@@ -31,7 +31,7 @@ export function splitRef(ref) {
 }
 
 export class HookLoader {
-  #strategies = {};
+  #strategies = Object.create(null);
 
   constructor(registry, { logger = console.error } = {}) {
     this.registry = registry;
@@ -156,22 +156,30 @@ export class HookLoader {
   async loadModule(hooksDir, moduleName) {
     const modulePath = path.resolve(hooksDir, `${moduleName}.js`);
 
-    if (!isInside(hooksDir, modulePath)) {
-      throw new Error(`hook module must stay inside hooks directory: ${moduleName}`);
-    }
-
-    if (this.moduleCache.has(modulePath)) {
-      return this.moduleCache.get(modulePath);
+    let realHooksDir;
+    let realModulePath;
+    try {
+      realHooksDir = await fs.realpath(hooksDir);
+    } catch (error) {
+      throw new Error(`hooks directory not found: ${hooksDir}`, { cause: error });
     }
 
     try {
-      await fs.access(modulePath);
+      realModulePath = await fs.realpath(modulePath);
     } catch (error) {
       throw new Error(`hook module not found: ${moduleName}`, { cause: error });
     }
 
-    const module = await import(pathToFileURL(modulePath).href);
-    this.moduleCache.set(modulePath, module);
+    if (!isInside(realHooksDir, realModulePath)) {
+      throw new Error(`hook module must stay inside hooks directory: ${moduleName}`);
+    }
+
+    if (this.moduleCache.has(realModulePath)) {
+      return this.moduleCache.get(realModulePath);
+    }
+
+    const module = await import(pathToFileURL(realModulePath).href);
+    this.moduleCache.set(realModulePath, module);
 
     return module;
   }
