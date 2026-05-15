@@ -2,6 +2,9 @@
   "name": "agent-reliability-guardrails-demo",
   "version": "1.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "scripts": {
     "start": "node src/demo.js",
     "scenario:cost": "COST_GUARD_BUDGET=0.001 node src/demo.js",
