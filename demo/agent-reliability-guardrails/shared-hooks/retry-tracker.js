@@ -14,7 +14,7 @@ export class RetryTracker {
     if (ctx.success) {
       if (currentFailures > 0) {
         this.successfulRetries += 1;
-        this.failures.delete(toolName);
+        this.failures.set(toolName, 0);
       }
       return;
     }
@@ -30,7 +30,7 @@ export class RetryTracker {
       this.logger(JSON.stringify({
         level: 'WARNING',
         guardrail: 'retry_tracker',
-        message: 'tool has repeated consecutive failures',
+        message: `Tool '${toolName}' failed ${nextFailures} times consecutively`,
         tool: toolName,
         consecutive_failures: nextFailures,
         max_retries: this.maxRetries,

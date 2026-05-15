@@ -41,12 +41,12 @@ export class LoopDetector {
 
     if (hashes.length === this.threshold && hashes.every((entry) => entry === hash)) {
       this.loopDetections += 1;
-      const reason = 'Loop detected - terminating';
+      const reason = `Loop detected: identical state repeated ${this.threshold} consecutive times`;
 
       this.logger(JSON.stringify({
         level: 'CRITICAL',
         guardrail: 'loop_detector',
-        message: reason,
+        message: 'Loop detected - terminating',
         turn: ctx.turnNumber ?? ctx.turn ?? 0,
         tool: ctx.toolName || '',
         threshold: this.threshold,

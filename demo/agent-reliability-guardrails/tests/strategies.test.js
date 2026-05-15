@@ -18,7 +18,7 @@ describe('reliability strategies', () => {
     expect(JSON.parse(logger.mock.calls.at(-1)[0])).toEqual({
       level: 'WARNING',
       guardrail: 'retry_tracker',
-      message: 'tool has repeated consecutive failures',
+      message: "Tool 'search' failed 2 times consecutively",
       tool: 'search',
       consecutive_failures: 2,
       max_retries: 2,
@@ -27,7 +27,9 @@ describe('reliability strategies', () => {
       total_retries: 1,
       successful_retries: 1,
       retry_success_rate: 1,
-      active_failures: {},
+      active_failures: {
+        search: 0,
+      },
     });
   });
 
@@ -49,11 +51,11 @@ describe('reliability strategies', () => {
           inputTokens: 1000,
           outputTokens: 1000,
         }),
-      ).toThrow(GuardrailDeny);
+      ).toThrow('Budget exceeded: $0.000750 >= limit $0.000001');
       expect(JSON.parse(logger.mock.calls.at(-1)[0])).toMatchObject({
         level: 'CRITICAL',
         guardrail: 'cost_guard',
-        message: 'Cost budget exceeded - terminating',
+        message: 'Budget exceeded - blocking',
         estimated_cost_usd: 0.00075,
         budget_usd: 0.000001,
       });
@@ -95,14 +97,14 @@ describe('reliability strategies', () => {
         budget_usd: 1,
         remaining_usd: 0.99925,
       });
-      expect(guard.getMetrics()).toMatchObject({
+      expect(guard.getMetrics()).toEqual({
         model: 'gpt-4o-mini',
         total_input_tokens: 1000,
         total_output_tokens: 1000,
         estimated_cost_usd: 0.00075,
         budget_usd: 1,
         remaining_usd: 0.99925,
-        budget_utilization: 0.00075,
+        budget_utilization: 0,
         deny_count: 0,
       });
     } finally {
@@ -128,7 +130,9 @@ describe('reliability strategies', () => {
     detector.afterToolHandler(repeatedToolCall);
     detector.afterToolHandler(repeatedToolCall);
 
-    expect(() => detector.afterToolHandler(repeatedToolCall)).toThrow(GuardrailDeny);
+    expect(() => detector.afterToolHandler(repeatedToolCall)).toThrow(
+      'Loop detected: identical state repeated 3 consecutive times',
+    );
     expect(JSON.parse(logger.mock.calls.at(-1)[0])).toMatchObject({
       level: 'CRITICAL',
       guardrail: 'loop_detector',
