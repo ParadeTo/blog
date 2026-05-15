@@ -11,7 +11,7 @@ const MODEL_PRICES = Object.freeze({
 const FALLBACK_PRICE = Object.freeze({ input: 1, output: 3 });
 
 export class CostGuard {
-  constructor({ budgetUsd, model, logger = console.error } = {}) {
+  constructor({ budgetUsd = 1, model, logger = console.error } = {}) {
     this.budgetUsd = parseBudget(process.env.COST_GUARD_BUDGET ?? budgetUsd);
     this.model = model ?? process.env.AGENT_MODEL ?? 'gpt-4o-mini';
     this.logger = logger;
@@ -21,8 +21,8 @@ export class CostGuard {
     this.denyCount = 0;
   }
 
-  beforeToolHandler() {
-    this.denyIfOverBudget();
+  beforeToolHandler(ctx = {}) {
+    this.denyIfOverBudget(ctx);
   }
 
   afterTurnHandler(ctx) {
@@ -30,37 +30,39 @@ export class CostGuard {
     this.outputTokens += Number(ctx.outputTokens ?? 0);
     this.totalCostUsd = this.calculateCost();
 
-    this.logger({
-      level: 'INFO',
-      guardrail: 'cost_guard',
-      message: 'cost usage updated',
-      model: this.model,
-      budgetUsd: this.budgetUsd,
-      estimatedCostUsd: this.totalCostUsd,
-      inputTokens: this.inputTokens,
-      outputTokens: this.outputTokens,
-    });
-
-    this.denyIfOverBudget();
+    this.emitCostUpdate(ctx);
+    this.denyIfOverBudget(ctx);
   }
 
-  denyIfOverBudget() {
+  emitCostUpdate(ctx) {
+    this.logger(JSON.stringify({
+      level: 'INFO',
+      guardrail: 'cost_guard',
+      turn: ctx.turnNumber ?? ctx.turn ?? 0,
+      input_tokens: this.inputTokens,
+      output_tokens: this.outputTokens,
+      estimated_cost_usd: this.totalCostUsd,
+      budget_usd: this.budgetUsd,
+      remaining_usd: this.remainingUsd(),
+    }));
+  }
+
+  denyIfOverBudget(ctx = {}) {
     if (this.totalCostUsd < this.budgetUsd) {
       return;
     }
 
     this.denyCount += 1;
-    const reason = `cost budget exceeded: ${this.totalCostUsd} >= ${this.budgetUsd}`;
+    const reason = 'Cost budget exceeded - terminating';
 
-    this.logger({
+    this.logger(JSON.stringify({
       level: 'CRITICAL',
       guardrail: 'cost_guard',
       message: reason,
-      model: this.model,
-      budgetUsd: this.budgetUsd,
-      estimatedCostUsd: this.totalCostUsd,
-      denyCount: this.denyCount,
-    });
+      turn: ctx.turnNumber ?? ctx.turn ?? 0,
+      estimated_cost_usd: this.totalCostUsd,
+      budget_usd: this.budgetUsd,
+    }));
 
     throw new GuardrailDeny(reason, { guardrail: 'cost_guard' });
   }
@@ -71,15 +73,19 @@ export class CostGuard {
     return (this.inputTokens * price.input + this.outputTokens * price.output) / 1_000_000;
   }
 
+  remainingUsd() {
+    return Math.max(this.budgetUsd - this.totalCostUsd, 0);
+  }
+
   getMetrics() {
     return {
       model: this.model,
-      budget_usd: this.budgetUsd,
-      input_tokens: this.inputTokens,
-      output_tokens: this.outputTokens,
-      total_tokens: this.inputTokens + this.outputTokens,
+      total_input_tokens: this.inputTokens,
+      total_output_tokens: this.outputTokens,
       estimated_cost_usd: this.totalCostUsd,
-      remaining_budget_usd: Math.max(this.budgetUsd - this.totalCostUsd, 0),
+      budget_usd: this.budgetUsd,
+      remaining_usd: this.remainingUsd(),
+      budget_utilization: this.budgetUsd === 0 ? 1 : this.totalCostUsd / this.budgetUsd,
       deny_count: this.denyCount,
     };
   }

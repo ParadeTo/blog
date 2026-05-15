@@ -15,6 +15,14 @@ describe('reliability strategies', () => {
     tracker.afterToolHandler({ toolName: 'search', success: true });
 
     expect(logger).toHaveBeenCalled();
+    expect(JSON.parse(logger.mock.calls.at(-1)[0])).toEqual({
+      level: 'WARNING',
+      guardrail: 'retry_tracker',
+      message: 'tool has repeated consecutive failures',
+      tool: 'search',
+      consecutive_failures: 2,
+      max_retries: 2,
+    });
     expect(tracker.getMetrics()).toEqual({
       total_retries: 1,
       successful_retries: 1,
@@ -26,20 +34,29 @@ describe('reliability strategies', () => {
   test('CostGuard denies turns that meet or exceed the configured budget', () => {
     const originalBudget = process.env.COST_GUARD_BUDGET;
     delete process.env.COST_GUARD_BUDGET;
+    const logger = vi.fn();
 
     try {
       const guard = new CostGuard({
         budgetUsd: 0.000001,
         model: 'gpt-4o-mini',
-        logger: () => {},
+        logger,
       });
 
       expect(() =>
         guard.afterTurnHandler({
+          turnNumber: 3,
           inputTokens: 1000,
           outputTokens: 1000,
         }),
       ).toThrow(GuardrailDeny);
+      expect(JSON.parse(logger.mock.calls.at(-1)[0])).toMatchObject({
+        level: 'CRITICAL',
+        guardrail: 'cost_guard',
+        message: 'Cost budget exceeded - terminating',
+        estimated_cost_usd: 0.00075,
+        budget_usd: 0.000001,
+      });
       expect(guard.getMetrics().deny_count).toBe(1);
     } finally {
       if (originalBudget === undefined) {
@@ -50,9 +67,58 @@ describe('reliability strategies', () => {
     }
   });
 
+  test('CostGuard uses a safe default budget and logs cost updates with plan fields', () => {
+    const originalBudget = process.env.COST_GUARD_BUDGET;
+    delete process.env.COST_GUARD_BUDGET;
+    const logger = vi.fn();
+
+    try {
+      const guard = new CostGuard({
+        model: 'gpt-4o-mini',
+        logger,
+      });
+
+      expect(() => guard.beforeToolHandler({ turnNumber: 1 })).not.toThrow();
+      guard.afterTurnHandler({
+        turnNumber: 7,
+        inputTokens: 1000,
+        outputTokens: 1000,
+      });
+
+      expect(JSON.parse(logger.mock.calls.at(-1)[0])).toEqual({
+        level: 'INFO',
+        guardrail: 'cost_guard',
+        turn: 7,
+        input_tokens: 1000,
+        output_tokens: 1000,
+        estimated_cost_usd: 0.00075,
+        budget_usd: 1,
+        remaining_usd: 0.99925,
+      });
+      expect(guard.getMetrics()).toMatchObject({
+        model: 'gpt-4o-mini',
+        total_input_tokens: 1000,
+        total_output_tokens: 1000,
+        estimated_cost_usd: 0.00075,
+        budget_usd: 1,
+        remaining_usd: 0.99925,
+        budget_utilization: 0.00075,
+        deny_count: 0,
+      });
+    } finally {
+      if (originalBudget === undefined) {
+        delete process.env.COST_GUARD_BUDGET;
+      } else {
+        process.env.COST_GUARD_BUDGET = originalBudget;
+      }
+    }
+  });
+
   test('LoopDetector denies repeated identical tool output at the configured threshold', () => {
-    const detector = new LoopDetector({ threshold: 3, logger: () => {} });
+    const logger = vi.fn();
+    const detector = new LoopDetector({ threshold: 3, logger });
     const repeatedToolCall = {
+      turnNumber: 4,
       toolName: 'search',
       metadata: {
         toolOutput: 'same result',
@@ -63,6 +129,14 @@ describe('reliability strategies', () => {
     detector.afterToolHandler(repeatedToolCall);
 
     expect(() => detector.afterToolHandler(repeatedToolCall)).toThrow(GuardrailDeny);
+    expect(JSON.parse(logger.mock.calls.at(-1)[0])).toMatchObject({
+      level: 'CRITICAL',
+      guardrail: 'loop_detector',
+      message: 'Loop detected - terminating',
+      turn: 4,
+      tool: 'search',
+      threshold: 3,
+    });
     expect(detector.getMetrics().loop_detections).toBe(1);
   });
 });

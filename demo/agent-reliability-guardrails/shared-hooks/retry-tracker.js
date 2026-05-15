@@ -27,14 +27,14 @@ export class RetryTracker {
     }
 
     if (nextFailures >= this.maxRetries) {
-      this.logger({
-        level: 'WARN',
+      this.logger(JSON.stringify({
+        level: 'WARNING',
         guardrail: 'retry_tracker',
         message: 'tool has repeated consecutive failures',
-        toolName,
-        consecutiveFailures: nextFailures,
-        maxRetries: this.maxRetries,
-      });
+        tool: toolName,
+        consecutive_failures: nextFailures,
+        max_retries: this.maxRetries,
+      }));
     }
   }
 

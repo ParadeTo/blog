@@ -19,7 +19,7 @@ export class LoopDetector {
     const output = truncate(ctx.metadata?.toolOutput ?? ctx.metadata?.output ?? '');
     const state = `${ctx.toolName || ''}:${output}`;
 
-    this.checkLoop(this.toolHashes, state);
+    this.checkLoop(this.toolHashes, state, ctx);
   }
 
   afterTurnHandler(ctx) {
@@ -27,10 +27,10 @@ export class LoopDetector {
     const output = truncate(ctx.metadata?.output ?? '');
     const state = `${ctx.toolName || ''}:${output}`;
 
-    this.checkLoop(this.turnHashes, state);
+    this.checkLoop(this.turnHashes, state, ctx);
   }
 
-  checkLoop(hashes, state) {
+  checkLoop(hashes, state, ctx) {
     const hash = crypto.createHash('md5').update(state).digest('hex').slice(0, 16);
     hashes.push(hash);
     this.uniqueStates.add(hash);
@@ -41,16 +41,16 @@ export class LoopDetector {
 
     if (hashes.length === this.threshold && hashes.every((entry) => entry === hash)) {
       this.loopDetections += 1;
-      const reason = `loop detected after ${this.threshold} repeated states`;
+      const reason = 'Loop detected - terminating';
 
-      this.logger({
+      this.logger(JSON.stringify({
         level: 'CRITICAL',
         guardrail: 'loop_detector',
         message: reason,
-        stateHash: hash,
+        turn: ctx.turnNumber ?? ctx.turn ?? 0,
+        tool: ctx.toolName || '',
         threshold: this.threshold,
-        loopDetections: this.loopDetections,
-      });
+      }));
 
       throw new GuardrailDeny(reason, { guardrail: 'loop_detector' });
     }
