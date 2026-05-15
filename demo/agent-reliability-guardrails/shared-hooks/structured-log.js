@@ -14,7 +14,7 @@ function emit(ctx) {
     payload.tool = ctx.toolName;
   }
 
-  if (ctx.inputTokens !== undefined || ctx.outputTokens !== undefined) {
+  if (ctx.inputTokens || ctx.outputTokens) {
     payload.tokens = {
       input: Number(ctx.inputTokens ?? 0),
       output: Number(ctx.outputTokens ?? 0),

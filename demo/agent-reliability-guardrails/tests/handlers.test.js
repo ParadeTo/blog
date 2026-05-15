@@ -23,6 +23,7 @@ describe('observability handlers', () => {
         turn: 1,
         agent_id: 'demo-agent',
       });
+      expect(payload).not.toHaveProperty('tokens');
     } finally {
       errorSpy.mockRestore();
     }
