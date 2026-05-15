@@ -4,6 +4,7 @@ import {
   EventType,
   GuardrailDeny,
   HookRegistry,
+  createHookContext,
   normalizeEventType,
 } from '../src/hook-framework/registry.js';
 
@@ -11,10 +12,44 @@ describe('hook registry', () => {
   test('normalizes known event names', () => {
     expect(normalizeEventType('BEFORE_TURN')).toBe(EventType.BEFORE_TURN);
     expect(normalizeEventType('before_llm')).toBe(EventType.BEFORE_LLM);
+    expect(normalizeEventType(' BEFORE_TURN ')).toBe(EventType.BEFORE_TURN);
+    expect(normalizeEventType('Before_Llm')).toBe(EventType.BEFORE_LLM);
   });
 
   test('rejects unknown event names', () => {
     expect(() => normalizeEventType('before_breakfast')).toThrow(/unknown hook event/i);
+  });
+
+  test('createHookContext applies defaults and preserves metadata', () => {
+    const metadata = { requestId: 'req-1' };
+    const context = createHookContext({
+      eventType: ' Before_Turn ',
+      metadata,
+    });
+
+    expect(context).toMatchObject({
+      eventType: EventType.BEFORE_TURN,
+      agentId: '',
+      taskName: '',
+      toolName: '',
+      toolInput: {},
+      inputTokens: 0,
+      outputTokens: 0,
+      durationMs: 0,
+      success: true,
+      turnNumber: 0,
+      metadata,
+    });
+    expect(context.metadata).toBe(metadata);
+    expect(typeof context.timestamp).toBe('string');
+  });
+
+  test('register rejects non-function handlers', () => {
+    const registry = new HookRegistry({ logger: vi.fn() });
+
+    expect(() => registry.register(EventType.AFTER_TURN, 'not-a-handler')).toThrow(
+      /hook handler must be a function/i,
+    );
   });
 
   test('dispatch catches ordinary handler errors, logs once, and keeps going', async () => {
