@@ -141,7 +141,19 @@ This gives the code one readable place where observation, execution, result reco
 
 `src/agent/real-agent.js` owns the main Agent loop and a small sub-task runner. The main Agent should decide to load the SOP skill, then the sub-task runner should produce the actual design document. This keeps the demo close to a real Agent workflow without growing into a full multi-agent product.
 
-`src/agent/sandbox.js` provides a constrained execution/write boundary for generated artifacts. For this demo, the sandbox can be a lightweight local boundary that only writes under `workspace/demo-agent/output/` and rejects paths outside that directory. The article should present this as an engineering boundary, not as a full security sandbox.
+`src/agent/sandbox.js` provides a constrained execution/write boundary for generated artifacts. Use the existing demo patterns as the reference:
+
+- `demo/ai-agent-digital-team/sandbox.js` for the small `PodmanSandbox` wrapper shape.
+- `demo/xiaoquan/src/sandbox/podman-sandbox.js` for session mounts, timeout handling, `execute()`, and `executeCode()`.
+
+The new demo should prefer a Podman-backed sandbox with explicit mounts:
+
+- skills mounted read-only
+- workspace/output or session output mounted read-write
+- optional credentials/config mounted read-only only when needed
+- timeout enforced per run
+
+Tests should use a mock sandbox instead of Podman. The article should present the sandbox as an execution boundary for demo artifacts, not as a complete security model.
 
 ### Observability Hooks
 
