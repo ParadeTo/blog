@@ -1,0 +1,24 @@
+{
+  "name": "agent-reliability-guardrails-demo",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node src/demo.js",
+    "scenario:cost": "COST_GUARD_BUDGET=0.001 node src/demo.js",
+    "scenario:loop": "GUARDRAIL_SCENARIO=loop node src/demo.js",
+    "scenario:retry": "GUARDRAIL_SCENARIO=retry node src/demo.js",
+    "test": "vitest run",
+    "build:sandbox": "podman build -f Dockerfile.sandbox -t agent-reliability-sandbox ."
+  },
+  "dependencies": {
+    "@langfuse/otel": "^5.3.0",
+    "@langfuse/tracing": "^5.3.0",
+    "@opentelemetry/sdk-node": "^0.218.0",
+    "dotenv": "^17.4.2",
+    "yaml": "^2.9.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.6"
+  }
+}
