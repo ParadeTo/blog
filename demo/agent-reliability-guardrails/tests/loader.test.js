@@ -93,6 +93,48 @@ describe('hook loader', () => {
     expect(loader.strategies.counter.getMetrics()).toEqual({ label: 'cost', count: 2 });
   });
 
+  test('loaded strategies run once when dispatch and dispatchGate both run for one event', async () => {
+    await fs.writeFile(
+      path.join(tempRoot, 'hooks.yaml'),
+      [
+        'strategies:',
+        '  counter:',
+        '    class: counter.CounterStrategy',
+        '    hooks:',
+        '      AFTER_TURN: afterTurn',
+        '',
+      ].join('\n'),
+    );
+    await fs.writeFile(
+      path.join(tempRoot, 'counter.js'),
+      [
+        'export class CounterStrategy {',
+        '  constructor() {',
+        '    this.count = 0;',
+        '  }',
+        '  afterTurn() {',
+        '    this.count += 1;',
+        '  }',
+        '  getMetrics() {',
+        '    return { count: this.count };',
+        '  }',
+        '}',
+        '',
+      ].join('\n'),
+    );
+    const registry = new HookRegistry({ logger: vi.fn() });
+    const loader = new HookLoader(registry, { logger: vi.fn() });
+
+    await loader.loadFromDirectory(tempRoot, 'workspace');
+    await registry.dispatch('after_turn', {});
+    await registry.dispatchGate('after_turn', {});
+
+    expect(loader.strategies.counter.getMetrics()).toEqual({ count: 1 });
+    expect(registry.summary().after_turn).toEqual([
+      '[workspace] counter.CounterStrategy.afterTurn',
+    ]);
+  });
+
   test('loadTwoLayers registers global hooks before workspace hooks and tolerates missing workspace hooks', async () => {
     const globalDir = path.join(tempRoot, 'global');
     const workspaceDir = path.join(tempRoot, 'workspace');

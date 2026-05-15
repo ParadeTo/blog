@@ -52,6 +52,34 @@ describe('hook registry', () => {
     );
   });
 
+  test('register rejects unknown handler modes', () => {
+    const registry = new HookRegistry({ logger: vi.fn() });
+
+    expect(() =>
+      registry.register(EventType.AFTER_TURN, () => {}, 'bad-mode', { mode: 'sometimes' }),
+    ).toThrow(/unknown hook handler mode/i);
+  });
+
+  test('observe and gate modes avoid double-running when dispatch and dispatchGate both run', async () => {
+    const registry = new HookRegistry({ logger: vi.fn() });
+    const calls = [];
+
+    registry.register(EventType.AFTER_TURN, () => calls.push('observe'), 'observer', {
+      mode: 'observe',
+    });
+    registry.register(EventType.AFTER_TURN, () => calls.push('gate'), 'guard', {
+      mode: 'gate',
+    });
+    registry.register(EventType.AFTER_TURN, () => calls.push('both'), 'shared');
+
+    await registry.dispatch(EventType.AFTER_TURN, {});
+    await registry.dispatchGate(EventType.AFTER_TURN, {});
+
+    expect(calls).toEqual(['observe', 'both', 'gate', 'both']);
+    expect(registry.handlerCount(EventType.AFTER_TURN)).toBe(3);
+    expect(registry.summary().after_turn).toEqual(['observer', 'guard', 'shared']);
+  });
+
   test('dispatch catches ordinary handler errors, logs once, and keeps going', async () => {
     const logger = vi.fn();
     const registry = new HookRegistry({ logger });

@@ -97,7 +97,9 @@ export class HookLoader {
             continue;
           }
 
-          this.registry.register(eventType, handler, this.handlerName(layerName, handlerRef));
+          this.registry.register(eventType, handler, this.handlerName(layerName, handlerRef), {
+            mode: 'observe',
+          });
         } catch (error) {
           this.log('failed to load hook handler', { eventName, handler: handlerRef, error });
         }
@@ -145,6 +147,7 @@ export class HookLoader {
             eventType,
             method.bind(instance),
             this.handlerName(layerName, `${classRef}.${methodName}`),
+            { mode: 'gate' },
           );
         }
       } catch (error) {

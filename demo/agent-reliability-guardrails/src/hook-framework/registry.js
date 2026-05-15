@@ -9,6 +9,12 @@ export const EventType = Object.freeze({
 });
 
 const EVENT_VALUES = new Set(Object.values(EventType));
+const HandlerMode = Object.freeze({
+  OBSERVE: 'observe',
+  GATE: 'gate',
+  BOTH: 'both',
+});
+const HANDLER_MODES = new Set(Object.values(HandlerMode));
 
 export class GuardrailDeny extends Error {
   constructor(reason, metadata = {}) {
@@ -79,16 +85,22 @@ export class HookRegistry {
     this.handlers = new Map(Object.values(EventType).map((eventType) => [eventType, []]));
   }
 
-  register(eventType, handler, name = '') {
+  register(eventType, handler, name = '', options = {}) {
     const normalizedEventType = normalizeEventType(eventType);
+    const mode = options.mode ?? HandlerMode.BOTH;
 
     if (typeof handler !== 'function') {
       throw new TypeError('hook handler must be a function');
     }
 
+    if (!HANDLER_MODES.has(mode)) {
+      throw new Error(`unknown hook handler mode: ${String(mode)}`);
+    }
+
     this.handlers.get(normalizedEventType).push({
       handler,
       name,
+      mode,
     });
   }
 
@@ -97,6 +109,10 @@ export class HookRegistry {
     const hookContext = createHookContext({ ...context, eventType: normalizedEventType });
 
     for (const entry of this.handlers.get(normalizedEventType)) {
+      if (!runsInDispatch(entry.mode)) {
+        continue;
+      }
+
       try {
         await entry.handler(hookContext);
       } catch (error) {
@@ -110,6 +126,10 @@ export class HookRegistry {
     const hookContext = createHookContext({ ...context, eventType: normalizedEventType });
 
     for (const entry of this.handlers.get(normalizedEventType)) {
+      if (!runsInGate(entry.mode)) {
+        continue;
+      }
+
       try {
         await entry.handler(hookContext);
       } catch (error) {
@@ -143,4 +163,12 @@ export class HookRegistry {
       error,
     });
   }
+}
+
+function runsInDispatch(mode) {
+  return mode === HandlerMode.OBSERVE || mode === HandlerMode.BOTH;
+}
+
+function runsInGate(mode) {
+  return mode === HandlerMode.GATE || mode === HandlerMode.BOTH;
 }

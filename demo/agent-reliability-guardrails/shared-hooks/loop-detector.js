@@ -4,7 +4,7 @@ import { GuardrailDeny } from '../src/hook-framework/registry.js';
 
 export class LoopDetector {
   constructor({ threshold = process.env.LOOP_DETECTOR_THRESHOLD ?? 3, logger = console.error } = {}) {
-    this.threshold = Math.max(1, Number(threshold));
+    this.threshold = parsePositiveInteger(threshold, 'threshold');
     this.logger = logger;
     this.toolHashes = [];
     this.turnHashes = [];
@@ -16,7 +16,7 @@ export class LoopDetector {
 
   afterToolHandler(ctx) {
     this.totalToolCalls += 1;
-    const output = truncate(ctx.metadata?.toolOutput ?? ctx.metadata?.output ?? '');
+    const output = normalizeOutput(ctx.metadata?.toolOutput ?? ctx.metadata?.output ?? '');
     const state = `${ctx.toolName || ''}:${output}`;
 
     this.checkLoop(this.toolHashes, state, ctx);
@@ -24,7 +24,7 @@ export class LoopDetector {
 
   afterTurnHandler(ctx) {
     this.totalTurns += 1;
-    const output = truncate(ctx.metadata?.output ?? '');
+    const output = normalizeOutput(ctx.metadata?.output ?? '');
     const state = `${ctx.toolName || ''}:${output}`;
 
     this.checkLoop(this.turnHashes, state, ctx);
@@ -66,6 +66,16 @@ export class LoopDetector {
   }
 }
 
-function truncate(value) {
-  return String(value).slice(0, 200);
+function normalizeOutput(value) {
+  return String(value);
+}
+
+function parsePositiveInteger(value, label) {
+  const parsed = Number(value);
+
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    throw new Error(`${label} must be a positive integer`);
+  }
+
+  return parsed;
 }

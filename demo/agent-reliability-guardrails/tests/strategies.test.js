@@ -1,11 +1,36 @@
 import { describe, expect, test, vi } from 'vitest';
 
-import { GuardrailDeny } from '../src/hook-framework/registry.js';
+import { GuardrailDeny, HookRegistry } from '../src/hook-framework/registry.js';
 import { CostGuard } from '../shared-hooks/cost-guard.js';
 import { LoopDetector } from '../shared-hooks/loop-detector.js';
 import { RetryTracker } from '../shared-hooks/retry-tracker.js';
 
 describe('reliability strategies', () => {
+  test('CostGuard registered as a gate counts one event once across dispatch and dispatchGate', async () => {
+    const guard = new CostGuard({
+      budgetUsd: 1,
+      model: 'gpt-4o-mini',
+      logger: () => {},
+    });
+    const registry = new HookRegistry({ logger: vi.fn() });
+
+    registry.register('after_turn', guard.afterTurnHandler.bind(guard), 'cost', { mode: 'gate' });
+    await registry.dispatch('after_turn', {
+      inputTokens: 1000,
+      outputTokens: 1000,
+    });
+    await registry.dispatchGate('after_turn', {
+      inputTokens: 1000,
+      outputTokens: 1000,
+    });
+
+    expect(guard.getMetrics()).toMatchObject({
+      total_input_tokens: 1000,
+      total_output_tokens: 1000,
+      estimated_cost_usd: 0.00075,
+    });
+  });
+
   test('RetryTracker tracks consecutive failures and recovery metrics', () => {
     const logger = vi.fn();
     const tracker = new RetryTracker({ maxRetries: 2, logger });
@@ -31,6 +56,12 @@ describe('reliability strategies', () => {
         search: 0,
       },
     });
+  });
+
+  test('RetryTracker rejects invalid maxRetries values', () => {
+    expect(() => new RetryTracker({ maxRetries: 0 })).toThrow(/positive integer/i);
+    expect(() => new RetryTracker({ maxRetries: 1.5 })).toThrow(/positive integer/i);
+    expect(() => new RetryTracker({ maxRetries: 'many' })).toThrow(/positive integer/i);
   });
 
   test('CostGuard denies turns that meet or exceed the configured budget', () => {
@@ -142,5 +173,31 @@ describe('reliability strategies', () => {
       threshold: 3,
     });
     expect(detector.getMetrics().loop_detections).toBe(1);
+  });
+
+  test('LoopDetector rejects invalid thresholds and distinguishes long outputs beyond the prefix', () => {
+    expect(() => new LoopDetector({ threshold: 0 })).toThrow(/positive integer/i);
+    expect(() => new LoopDetector({ threshold: 2.5 })).toThrow(/positive integer/i);
+    expect(() => new LoopDetector({ threshold: 'often' })).toThrow(/positive integer/i);
+
+    const detector = new LoopDetector({ threshold: 3, logger: () => {} });
+    const sharedPrefix = 'x'.repeat(220);
+
+    detector.afterToolHandler({
+      toolName: 'search',
+      metadata: { toolOutput: `${sharedPrefix}-one` },
+    });
+    detector.afterToolHandler({
+      toolName: 'search',
+      metadata: { toolOutput: `${sharedPrefix}-two` },
+    });
+
+    expect(() =>
+      detector.afterToolHandler({
+        toolName: 'search',
+        metadata: { toolOutput: `${sharedPrefix}-three` },
+      }),
+    ).not.toThrow();
+    expect(detector.getMetrics().loop_detections).toBe(0);
   });
 });

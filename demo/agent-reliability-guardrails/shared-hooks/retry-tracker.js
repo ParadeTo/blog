@@ -1,6 +1,6 @@
 export class RetryTracker {
   constructor({ maxRetries = 3, logger = console.error } = {}) {
-    this.maxRetries = maxRetries;
+    this.maxRetries = parsePositiveInteger(maxRetries, 'maxRetries');
     this.logger = logger;
     this.failures = new Map();
     this.totalRetries = 0;
@@ -50,4 +50,14 @@ export class RetryTracker {
 
 function roundToTwo(value) {
   return Math.round(value * 100) / 100;
+}
+
+function parsePositiveInteger(value, label) {
+  const parsed = Number(value);
+
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    throw new Error(`${label} must be a positive integer`);
+  }
+
+  return parsed;
 }
