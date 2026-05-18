@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -16,12 +17,66 @@ export const WORKSPACE_DIR = path.join(DEMO_DIR, 'workspace/demo-agent');
 export const SKILLS_DIR = path.join(WORKSPACE_DIR, 'skills');
 export const SHARED_HOOKS_DIR = path.join(DEMO_DIR, 'shared-hooks');
 export const DEFAULT_TASK = '请根据当前上下文写一份简洁的 Agent 护栏可靠性设计文档。';
+export const PROVIDER_ENV_KEYS = Object.freeze([
+  'AGENT_MODEL',
+  'ANTHROPIC_API_KEY',
+  'OPENAI_API_BASE',
+  'OPENAI_API_KEY',
+  'OPENAI_BASE_URL',
+  'OPENAI_MODEL',
+]);
+export const COMMAND_ENV_OVERRIDE_KEYS = Object.freeze([
+  'COST_GUARD_BUDGET',
+  'GUARDRAIL_SCENARIO',
+  'LANGFUSE_BASE_URL',
+  'LANGFUSE_BASEURL',
+  'LANGFUSE_ENV',
+  'LANGFUSE_ENVIRONMENT',
+  'LANGFUSE_EXPORT_MODE',
+  'LANGFUSE_PUBLIC_KEY',
+  'LANGFUSE_SECRET_KEY',
+  'LANGFUSE_TRACING_ENVIRONMENT',
+  'LOOP_DETECTOR_THRESHOLD',
+  'SANDBOX_IMAGE',
+  'SANDBOX_TIMEOUT_MS',
+]);
 
-dotenv.config({
-  path: path.join(DEMO_DIR, '.env'),
+const commandEnv = { ...process.env };
+const demoEnvPath = path.join(DEMO_DIR, '.env');
+const demoEnvExists = existsSync(demoEnvPath);
+
+const demoEnv = dotenv.config({
+  path: demoEnvPath,
   override: true,
   quiet: true,
 });
+
+applyDemoProviderEnv(process.env, demoEnvExists ? demoEnv.parsed ?? {} : null);
+applyCommandEnvOverrides(process.env, commandEnv);
+
+export function applyDemoProviderEnv(targetEnv, demoEnv, keys = PROVIDER_ENV_KEYS) {
+  if (!demoEnv) {
+    return;
+  }
+
+  for (const key of keys) {
+    if (!Object.hasOwn(demoEnv, key)) {
+      delete targetEnv[key];
+    }
+  }
+}
+
+export function applyCommandEnvOverrides(
+  targetEnv,
+  commandLineEnv,
+  keys = COMMAND_ENV_OVERRIDE_KEYS,
+) {
+  for (const key of keys) {
+    if (Object.hasOwn(commandLineEnv, key)) {
+      targetEnv[key] = commandLineEnv[key];
+    }
+  }
+}
 
 export function makeSessionId(date = new Date()) {
   const parts = [
@@ -37,7 +92,7 @@ export function makeSessionId(date = new Date()) {
 }
 
 export function resolveLlmConfig(env = process.env) {
-  const apiKey = env.OPENAI_API_KEY ?? env.ANTHROPIC_API_KEY;
+  const apiKey = firstNonEmpty(env.OPENAI_API_KEY, env.ANTHROPIC_API_KEY);
 
   if (!apiKey) {
     throw new Error('OPENAI_API_KEY or ANTHROPIC_API_KEY is required');
@@ -45,8 +100,8 @@ export function resolveLlmConfig(env = process.env) {
 
   return {
     apiKey,
-    baseUrl: env.OPENAI_API_BASE ?? env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1',
-    model: env.AGENT_MODEL ?? env.OPENAI_MODEL ?? 'gpt-4o-mini',
+    baseUrl: firstNonEmpty(env.OPENAI_API_BASE, env.OPENAI_BASE_URL) ?? 'https://api.openai.com/v1',
+    model: firstNonEmpty(env.AGENT_MODEL, env.OPENAI_MODEL) ?? 'gpt-4o-mini',
   };
 }
 
@@ -232,6 +287,10 @@ function langfuseUrl(env) {
 
 function pad(value) {
   return String(value).padStart(2, '0');
+}
+
+function firstNonEmpty(...values) {
+  return values.find((value) => String(value ?? '').trim() !== '');
 }
 
 async function readDesignDoc(designDocPath) {

@@ -9,8 +9,11 @@ import { AgentObservabilityAdapter } from '../src/hook-framework/agent-adapter.j
 import { HookLoader } from '../src/hook-framework/loader.js';
 import { HookRegistry } from '../src/hook-framework/registry.js';
 import {
+  applyDemoProviderEnv,
+  applyCommandEnvOverrides,
   createScenarioChatClient,
   main,
+  resolveLlmConfig,
   SHARED_HOOKS_DIR,
   SKILLS_DIR,
   WORKSPACE_DIR,
@@ -93,6 +96,63 @@ describe('guardrails demo e2e wiring', () => {
       log.mockRestore();
       error.mockRestore();
     }
+  });
+
+  test('runtime command env overrides do not replace provider config from .env aliases', () => {
+    const targetEnv = {
+      AGENT_MODEL: 'outer-shell-model',
+      COST_GUARD_BUDGET: '1',
+      LANGFUSE_PUBLIC_KEY: '',
+      OPENAI_API_BASE: 'https://outer-shell.example/v1',
+      OPENAI_API_KEY: 'env-file-provider-key',
+      OPENAI_BASE_URL: 'https://env-file.example/v1',
+      OPENAI_MODEL: 'env-file-model',
+    };
+    const demoEnv = {
+      OPENAI_API_KEY: 'env-file-provider-key',
+      OPENAI_BASE_URL: 'https://env-file.example/v1',
+      OPENAI_MODEL: 'env-file-model',
+    };
+    const commandLineEnv = {
+      AGENT_MODEL: 'outer-shell-model',
+      OPENAI_API_KEY: 'outer-shell-provider-key',
+      OPENAI_API_BASE: 'https://outer-shell.example/v1',
+      COST_GUARD_BUDGET: '0.0005',
+      LANGFUSE_PUBLIC_KEY: 'dummy-public-key',
+    };
+
+    applyDemoProviderEnv(targetEnv, demoEnv);
+    applyCommandEnvOverrides(targetEnv, commandLineEnv);
+
+    expect(targetEnv).toMatchObject({
+      OPENAI_API_KEY: 'env-file-provider-key',
+      OPENAI_BASE_URL: 'https://env-file.example/v1',
+      OPENAI_MODEL: 'env-file-model',
+      COST_GUARD_BUDGET: '0.0005',
+      LANGFUSE_PUBLIC_KEY: 'dummy-public-key',
+    });
+    expect(targetEnv).not.toHaveProperty('AGENT_MODEL');
+    expect(targetEnv).not.toHaveProperty('OPENAI_API_BASE');
+    expect(resolveLlmConfig(targetEnv)).toMatchObject({
+      apiKey: 'env-file-provider-key',
+      baseUrl: 'https://env-file.example/v1',
+      model: 'env-file-model',
+    });
+  });
+
+  test('LLM config falls through blank provider aliases', () => {
+    expect(resolveLlmConfig({
+      OPENAI_API_KEY: '',
+      ANTHROPIC_API_KEY: 'anthropic-key',
+      OPENAI_API_BASE: '',
+      OPENAI_BASE_URL: 'https://openai-compatible.example/v1',
+      AGENT_MODEL: '',
+      OPENAI_MODEL: 'model-from-alias',
+    })).toMatchObject({
+      apiKey: 'anthropic-key',
+      baseUrl: 'https://openai-compatible.example/v1',
+      model: 'model-from-alias',
+    });
   });
 
   test('loop scenario deterministically triggers the loop detector', async () => {

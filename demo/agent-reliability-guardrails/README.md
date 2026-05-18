@@ -29,11 +29,13 @@ Required runtime environment:
 - `COST_GUARD_BUDGET`: optional budget in USD; defaults to `1`.
 - `GUARDRAIL_SCENARIO`: optional deterministic scenario selector, currently `loop` or `retry`.
 
-For deterministic local verification where trace upload is not needed, dummy Langfuse keys are enough to start the CLI:
+For deterministic local verification where trace upload is not needed, dummy Langfuse keys are enough to start the CLI if `.env` does not contain real Langfuse keys:
 
 ```bash
 LANGFUSE_PUBLIC_KEY=x LANGFUSE_SECRET_KEY=y npm start
 ```
+
+Provider settings come from the demo `.env` so unrelated shell defaults do not accidentally select a different endpoint, key, or model. Runtime scenario settings shown in the commands below, such as `COST_GUARD_BUDGET=0.0005`, still take precedence over `.env` for that single run.
 
 Do not commit real API keys or a filled `.env`.
 
@@ -58,7 +60,7 @@ Expected result: exit 0, `Design doc:` printed, `workspace/demo-agent/output/des
 Run the cost guard scenario:
 
 ```bash
-COST_GUARD_BUDGET=0.001 npm start
+COST_GUARD_BUDGET=0.0005 npm start
 ```
 
 Expected result: `Guardrail triggered: Budget exceeded`, a `Metrics: cost-guard` block with `deny_count` incremented, and a Langfuse URL.
@@ -79,7 +81,7 @@ GUARDRAIL_SCENARIO=retry npm start -- "调用不稳定工具并继续完成任�
 
 Expected result: exit 0, a generated design doc, `Metrics: retry-tracker` showing retry recovery, and a Langfuse URL.
 
-Verification note from 2026-05-18: sandbox build, deterministic loop, and deterministic retry were verified locally with dummy Langfuse keys. The real LLM and cost scenarios reached the chat-completions endpoint but returned `401 API key not found`, so they require a valid provider key before they can be marked verified in this workspace.
+Verification note from 2026-05-18: sandbox build, the normal real LLM run, the cost guard run with `COST_GUARD_BUDGET=0.0005`, deterministic loop, and deterministic retry were verified locally. The verification used provider and Langfuse keys from `.env`; no secrets are stored in this repository.
 
 ## Test
 
