@@ -27,6 +27,7 @@ export class OutputSandbox {
       throw new Error('outside output directory');
     }
 
+    await assertWritableTargetInsideOutput(this.outputDir, targetPath);
     await fsp.writeFile(targetPath, content, 'utf8');
 
     return targetPath;
@@ -164,6 +165,29 @@ function resolveInside(parentDir, relPath, message) {
   }
 
   return targetPath;
+}
+
+async function assertWritableTargetInsideOutput(outputDir, targetPath) {
+  let stat;
+
+  try {
+    stat = await fsp.lstat(targetPath);
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return;
+    }
+
+    throw error;
+  }
+
+  if (stat.isSymbolicLink()) {
+    throw new Error('symlink target outside output directory');
+  }
+
+  const realTargetPath = await fsp.realpath(targetPath);
+  if (!isInside(outputDir, realTargetPath)) {
+    throw new Error('outside output directory');
+  }
 }
 
 function isInside(parentDir, childPath) {

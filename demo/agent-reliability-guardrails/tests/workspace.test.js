@@ -58,4 +58,34 @@ describe('OutputSandbox', () => {
       /outside output directory/i,
     );
   });
+
+  test('rejects an existing symlink target inside outputDir that points outside', async () => {
+    const outputDir = path.join(tempRoot, 'output');
+    const outsideDir = path.join(tempRoot, 'outside');
+    const outsideFile = path.join(outsideDir, 'escape.txt');
+    await fs.mkdir(outputDir, { recursive: true });
+    await fs.mkdir(outsideDir, { recursive: true });
+    await fs.writeFile(outsideFile, 'before', 'utf8');
+    await fs.symlink(outsideFile, path.join(outputDir, 'escape.txt'));
+    const sandbox = new OutputSandbox({ outputDir });
+
+    await expect(sandbox.writeOutput('escape.txt', 'after')).rejects.toThrow(
+      /outside output directory|symlink/i,
+    );
+    await expect(fs.readFile(outsideFile, 'utf8')).resolves.toBe('before');
+  });
+
+  test('rejects writes through a symlink parent directory', async () => {
+    const outputDir = path.join(tempRoot, 'output');
+    const outsideDir = path.join(tempRoot, 'outside-dir');
+    await fs.mkdir(outputDir, { recursive: true });
+    await fs.mkdir(outsideDir, { recursive: true });
+    await fs.symlink(outsideDir, path.join(outputDir, 'linkdir'));
+    const sandbox = new OutputSandbox({ outputDir });
+
+    await expect(sandbox.writeOutput('linkdir/file.md', '# nope')).rejects.toThrow(
+      /outside output directory|symlink/i,
+    );
+    await expect(fs.readdir(outsideDir)).resolves.toEqual([]);
+  });
 });
