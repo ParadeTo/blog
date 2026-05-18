@@ -232,40 +232,22 @@ export class RetryTracker {
 }
 ```
 
-这个 demo 里的重试发生在 Agent loop 里。工具抛出普通异常后，如果开启了 `continueOnToolError`，`runRealAgent` 会把错误转成一次工具返回，再塞回消息列表：
+准确说，这个 demo 没有做“框架自动重试”。它演示的是另一种常见路径：工具失败后，把错误结果交回给 Agent，让下一轮 Agent 自己决定要不要再调用一次。
 
-```js
-try {
-  toolOutput = await runGuardedToolCall({
-    adapter: agentAdapter,
-    toolName,
-    toolInput,
-    execute: tool.execute,
-  })
-} catch (error) {
-  if (!continueOnToolError || error instanceof GuardrailDeny) {
-    throw error
-  }
+retry 场景的链路是这样：
 
-  toolOutput = {
-    errcode: 1,
-    error: error.message,
-  }
-}
+| 步骤 | 发生了什么 |
+|------|------------|
+| 第 1 轮 | Agent 调用 `flaky_tool` |
+| 工具执行 | `flaky_tool` 抛出 `flaky tool failed` |
+| Agent loop | 开启了 `continueOnToolError`，所以错误被转成 `{ errcode: 1, error: "flaky tool failed" }` 放回对话 |
+| 第 2 轮 | Agent 看到错误后，再次调用 `flaky_tool` |
+| 工具执行 | 第二次调用成功 |
+| RetryTracker | 看到这个工具先失败、后成功，记录一次恢复 |
 
-messages.push({
-  role: 'tool',
-  tool_call_id: call.id,
-  name: toolName,
-  content: serializeToolOutput(toolOutput),
-})
-```
+所以 `RetryTracker` 的职责很窄：它不决定要不要重试，也不重新执行工具。它只回答一个问题：**某个工具失败以后，后面有没有恢复回来？**
 
-也就是说，`RetryTracker` 不负责“再执行一次”。它只记录第一次失败。下一轮 LLM 看到 `{ errcode: 1, error: "flaky tool failed" }` 后，可以选择继续调用同一个工具，也可以换方案。
-
-retry 场景里走的是第一种：`flaky_tool` 第一次失败，下一轮又被调用一次，这次成功。`RetryTracker` 看到“先失败、后成功”，于是把它记成一次恢复。
-
-如果要做框架层自动重试，位置也在这个 catch 附近：先判断错误是否可重试，再检查工具是否幂等，最后按 backoff 重新执行 `runGuardedToolCall`。这个 demo 没把自动重试写进 executor，是为了把“谁发起重试”和“谁记录重试效果”分开。
+如果你想做框架层自动重试，位置应该在工具执行的 `catch` 附近：判断错误是否可重试，确认工具是幂等的，再按 backoff 重新执行工具。这个 demo 没这么做，是为了先把“重试由谁发起”和“重试效果由谁记录”分开。
 
 最后 metrics 会变成这样：
 
