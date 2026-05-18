@@ -45,7 +45,20 @@ Agent 失控的时候，经常不是“坏”，而是“蠢”。
 | 本轮结束 | LLM 输出、token usage | 估算成本、识别重复回复 |
 | 最外层 catch | 护栏拒绝原因 | 把拒绝变成可读结果 |
 
-所以后面的顺序是这样的：先讲 Hook 为什么要分成观测通道和门禁通道，再讲拒绝信号怎么表达，最后再看重试、循环、成本这几个策略怎么挂到链路上。
+后面会反复出现几个名字，先混个脸熟：
+
+| 名字 | 先怎么理解 |
+|------|------------|
+| `dispatch` | 观测通道，日志和 trace 走这里 |
+| `dispatchGate` | 门禁通道，护栏策略走这里 |
+| `GuardrailDeny` | 护栏主动拒绝时抛出的信号 |
+| `runGuardedToolCall` | 工具调用外面那层包装，负责补齐事件 |
+| `RetryTracker` | 记录工具失败和失败后的恢复 |
+| `LoopDetector` | 用状态哈希发现 Agent 原地打转 |
+| `CostGuard` | 累加 token 成本，超预算就拦 |
+| `strategies` | `hooks.yaml` 里声明这些策略挂在哪些事件上 |
+
+所以后面的顺序是这样的：先讲 Hook 为什么要分成观测通道和门禁通道，再讲 `GuardrailDeny` 怎么表达拒绝，最后看 `RetryTracker`、`LoopDetector`、`CostGuard` 怎么挂到链路上。
 
 ---
 
