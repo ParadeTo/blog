@@ -1,6 +1,7 @@
 import { startObservation } from '@langfuse/tracing';
 
 const sessions = new Map();
+let observationFactory = startObservation;
 
 function isEnabled() {
   return Boolean(process.env.LANGFUSE_PUBLIC_KEY && process.env.LANGFUSE_SECRET_KEY);
@@ -19,7 +20,7 @@ function getState(ctx) {
   let state = sessions.get(key);
 
   if (!state) {
-    const root = startObservation(
+    const root = observationFactory(
       `session-${key}`,
       {
         metadata: {
@@ -46,7 +47,7 @@ function startChild(parent, name, attributes, options) {
     return parent.startObservation(name, attributes, options);
   }
 
-  return startObservation(name, attributes, options);
+  return observationFactory(name, attributes, options);
 }
 
 function updateObservation(observation, fields) {
@@ -93,7 +94,7 @@ export function beforeLlmHandler(ctx) {
     state.root,
     `turn-${ctx.turnNumber ?? 0}-generation`,
     {
-      input: ctx.metadata?.prompt,
+      input: ctx.metadata?.promptPreview ?? ctx.metadata?.prompt,
       metadata: {
         sessionId: ctx.sessionId ?? null,
         turn: ctx.turnNumber ?? 0,
@@ -144,8 +145,8 @@ export function afterToolHandler(ctx) {
 
   const [entry] = state.tools.splice(index, 1);
   updateObservation(entry.observation, {
-    output: ctx.metadata?.toolOutput ?? ctx.metadata?.output,
-    level: ctx.success === false ? 'ERROR' : 'DEFAULT',
+    output: toolOutput(ctx),
+    level: ctx.success === false || ctx.metadata?.guardrailDeny ? 'ERROR' : 'DEFAULT',
     metadata: {
       success: ctx.success !== false,
       durationMs: ctx.durationMs ?? 0,
@@ -162,7 +163,7 @@ export function afterTurnHandler(ctx) {
   }
 
   updateObservation(state.generation, {
-    output: ctx.metadata?.output,
+    output: ctx.metadata?.llmResponse || ctx.metadata?.output,
     usageDetails: usageDetails(ctx),
     metadata: {
       turn: ctx.turnNumber ?? 0,
@@ -183,7 +184,8 @@ export function taskCompleteHandler(ctx) {
     state.root,
     'task-complete',
     {
-      output: ctx.metadata?.output,
+      input: ctx.metadata?.taskDescription || ctx.taskName,
+      output: ctx.metadata?.rawOutput || ctx.metadata?.output,
       metadata: {
         sessionId: ctx.sessionId ?? null,
         taskName: ctx.taskName ?? '',
@@ -194,7 +196,7 @@ export function taskCompleteHandler(ctx) {
 
   endObservation(observation);
   updateObservation(state.root, {
-    output: ctx.metadata?.output,
+    output: ctx.metadata?.rawOutput || ctx.metadata?.output,
   });
 }
 
@@ -231,4 +233,36 @@ function findToolIndex(tools, name) {
   }
 
   return -1;
+}
+
+function toolOutput(ctx) {
+  if (!ctx.metadata?.guardrailDeny) {
+    return ctx.metadata?.toolOutput ?? ctx.metadata?.output;
+  }
+
+  return {
+    toolOutput: ctx.metadata?.toolOutput,
+    denyReason: ctx.metadata?.denyReason ?? ctx.metadata?.reason ?? '',
+  };
+}
+
+export function __setObservationFactoryForTests(factory) {
+  observationFactory = factory;
+}
+
+export function __resetLangfuseTraceForTests() {
+  for (const state of sessions.values()) {
+    if (state.generation) {
+      endObservation(state.generation);
+    }
+
+    for (const entry of state.tools) {
+      endObservation(entry.observation);
+    }
+
+    endObservation(state.root);
+  }
+
+  sessions.clear();
+  observationFactory = startObservation;
 }
