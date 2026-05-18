@@ -208,7 +208,7 @@ describe('guardrails demo e2e wiring', () => {
 
     expect(result.result).toMatchObject({ scenario: 'retry', ok: true });
     expect(loader.strategies['retry-tracker'].getMetrics()).toMatchObject({
-      successful_retries: 1,
+      recoveries_after_failure: 1,
       active_failures: {
         flaky_tool: 0,
       },

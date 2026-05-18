@@ -34,7 +34,6 @@ strategies:
       budgetUsd: 1
     hooks:
       AFTER_TURN: afterTurnHandler
-      BEFORE_TOOL_CALL: beforeToolHandler
   loop-detector:
     class: loop-detector.LoopDetector
     config:

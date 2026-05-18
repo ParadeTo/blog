@@ -23,10 +23,6 @@ export class CostGuard {
     this.denyCount = 0;
   }
 
-  beforeToolHandler(ctx = {}) {
-    this.denyIfOverBudget(ctx);
-  }
-
   afterTurnHandler(ctx) {
     this.inputTokens += Number(ctx.inputTokens ?? 0);
     this.outputTokens += Number(ctx.outputTokens ?? 0);

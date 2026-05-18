@@ -3,8 +3,8 @@ export class RetryTracker {
     this.maxRetries = parsePositiveInteger(maxRetries, 'maxRetries');
     this.logger = logger;
     this.failures = new Map();
-    this.totalRetries = 0;
-    this.successfulRetries = 0;
+    this.repeatedFailuresAfterFirst = 0;
+    this.recoveriesAfterFailure = 0;
   }
 
   afterToolHandler(ctx) {
@@ -13,7 +13,7 @@ export class RetryTracker {
 
     if (ctx.success) {
       if (currentFailures > 0) {
-        this.successfulRetries += 1;
+        this.recoveriesAfterFailure += 1;
         this.failures.set(toolName, 0);
       }
       return;
@@ -23,7 +23,7 @@ export class RetryTracker {
     this.failures.set(toolName, nextFailures);
 
     if (currentFailures > 0) {
-      this.totalRetries += 1;
+      this.repeatedFailuresAfterFirst += 1;
     }
 
     if (nextFailures >= this.maxRetries) {
@@ -40,16 +40,11 @@ export class RetryTracker {
 
   getMetrics() {
     return {
-      total_retries: this.totalRetries,
-      successful_retries: this.successfulRetries,
-      retry_success_rate: roundToTwo(this.successfulRetries / Math.max(this.totalRetries, 1)),
+      repeated_failures_after_first: this.repeatedFailuresAfterFirst,
+      recoveries_after_failure: this.recoveriesAfterFailure,
       active_failures: Object.fromEntries(this.failures),
     };
   }
-}
-
-function roundToTwo(value) {
-  return Math.round(value * 100) / 100;
 }
 
 function parsePositiveInteger(value, label) {

@@ -49,9 +49,8 @@ describe('reliability strategies', () => {
       max_retries: 2,
     });
     expect(tracker.getMetrics()).toEqual({
-      total_retries: 1,
-      successful_retries: 1,
-      retry_success_rate: 1,
+      repeated_failures_after_first: 1,
+      recoveries_after_failure: 1,
       active_failures: {
         search: 0,
       },
@@ -111,7 +110,6 @@ describe('reliability strategies', () => {
         logger,
       });
 
-      expect(() => guard.beforeToolHandler({ turnNumber: 1 })).not.toThrow();
       guard.afterTurnHandler({
         turnNumber: 7,
         inputTokens: 1000,

@@ -1,5 +1,5 @@
 ---
-title: 让 Agent 学会自动刹车：重试、循环控制与成本围栏
+title: 给 Agent 加运行时护栏：失败追踪、循环检测与成本控制
 date: 2026-05-18 14:35:00
 tags:
   - ai
@@ -7,7 +7,7 @@ tags:
   - javascript
 categories:
   - ai
-description: 用一个 JS demo 给 Agent 加运行时护栏，把 Hook 从观测系统升级成可以拦截重试失控、循环和成本超预算的控制面。
+description: 用一个 JS demo 给 Agent 加运行时护栏：工具失败怎么记，重复状态怎么停，成本超了怎么拦。
 ---
 
 # 前言
@@ -20,7 +20,7 @@ Agent 失控的时候，经常不是“坏”，而是“蠢”。
 
 **看见它在原地打转以后，谁来踩刹车？**
 
-这篇就给 Agent 加一层运行时护栏。重点不是让 prompt 写得更严，而是把重试、循环检测、成本预算做成 Hook 策略，让主流程继续专心跑任务，护栏在关键节点决定是否继续执行。
+这篇试着给 Agent 加一层运行时护栏。失败追踪、循环检测和成本预算不塞进 prompt，而是做成 Hook 策略。主流程继续跑任务，护栏在几个节点上决定要不要继续。
 
 这篇对应的 demo 放在仓库的 [`demo/agent-reliability-guardrails`](https://github.com/ParadeTo/blog/tree/master/demo/agent-reliability-guardrails) 目录。
 
@@ -40,25 +40,12 @@ Agent 失控的时候，经常不是“坏”，而是“蠢”。
 
 | 节点 | 能看到什么 | 适合做什么 |
 |------|------------|------------|
-| 工具调用前 | 工具名、工具入参、当前累计状态 | 超预算就别再执行工具 |
+| 工具调用前 | 工具名、工具入参 | 做权限、参数、配额这类预执行判断 |
 | 工具调用后 | 工具是否成功、工具输出 | 统计失败、识别重复输出 |
 | 本轮结束 | LLM 输出、token usage | 估算成本、识别重复回复 |
 | 最外层 catch | 护栏拒绝原因 | 把拒绝变成可读结果 |
 
-后面会反复出现几个名字，先混个脸熟：
-
-| 名字 | 先怎么理解 |
-|------|------------|
-| `dispatch` | 观测通道，日志和 trace 走这里 |
-| `dispatchGate` | 门禁通道，护栏策略走这里 |
-| `GuardrailDeny` | 护栏主动拒绝时抛出的信号 |
-| `runGuardedToolCall` | 工具调用外面那层包装，负责补齐事件 |
-| `RetryTracker` | 记录工具失败模式，避免无脑重试 |
-| `LoopDetector` | 用状态哈希发现 Agent 原地打转 |
-| `CostGuard` | 累加 token 成本，超预算就拦 |
-| `strategies` | `hooks.yaml` 里声明这些策略挂在哪些事件上 |
-
-所以后面的顺序是这样的：先讲 Hook 为什么要分成观测通道和门禁通道，再讲 `GuardrailDeny` 怎么表达拒绝，最后看 `RetryTracker`、`LoopDetector`、`CostGuard` 怎么挂到链路上。
+后面就按这条链路往下看：先把 Hook 分成观测通道和门禁通道，再看拒绝信号怎么往外抛，最后把失败追踪、循环检测和成本预算三个策略挂上去。
 
 ---
 
@@ -80,7 +67,7 @@ export const EventType = Object.freeze({
 })
 ```
 
-做观测时，Hook 有一个默认原则：**handler 失败不能拖垮主流程**。日志写失败了，最多丢一条日志；Langfuse 临时不可用，也不能让 Agent 任务直接失败。
+做观测时，我给 Hook 定了一个默认规则：handler 失败不能拖垮主流程。日志写失败了，最多丢一条日志；Langfuse 临时不可用，也不能让 Agent 任务直接失败。
 
 可靠性护栏不一样。
 
@@ -113,7 +100,7 @@ async dispatchGate(eventType, context = {}) {
 
 `dispatch` 是观测通道，普通异常会被记录下来。`dispatchGate` 是门禁通道，普通异常仍然隔离，但 `GuardrailDeny` 会继续往外抛。
 
-这一刀切开后，Hook 就不只是“旁路记录”。它变成了 Agent 的控制面。
+这一刀切开后，Hook 就不只是旁路记录了。它开始能影响 Agent 往不往下跑。
 
 ---
 
@@ -121,7 +108,7 @@ async dispatchGate(eventType, context = {}) {
 
 如果护栏只是抛一个普通 `Error`，外层很难判断它到底是工具炸了、日志炸了，还是策略主动拒绝。
 
-所以 demo 里单独定义了 `GuardrailDeny`：
+demo 里单独定义了 `GuardrailDeny`：
 
 ```js
 export class GuardrailDeny extends Error {
@@ -134,11 +121,11 @@ export class GuardrailDeny extends Error {
 }
 ```
 
-它解决两个问题。
+这里主要用它干两件事。
 
-第一，`dispatchGate` 只会把这种拒绝信号向上传播。普通 handler 异常继续按观测故障处理，不影响 Agent。
+一是让 `dispatchGate` 只传播这种拒绝信号。普通 handler 异常继续按观测故障处理，不影响 Agent。
 
-第二，最外层可以用统一方式收口：
+二是让最外层有一个统一收口：
 
 ```js
 try {
@@ -152,13 +139,13 @@ try {
 }
 ```
 
-这样终端里看到的不是一坨 stack trace，而是明确的护栏原因：
+终端里就不会只剩一坨 stack trace，而是明确告诉你被哪条护栏拦了：
 
 ```text
 Guardrail triggered: Budget exceeded: $0.000635 >= limit $0.000500
 ```
 
-这里还有一个容易漏的细节：工具调用前触发拒绝时，工具根本不会执行。那这次工具调用怎么进观测链路？
+这里还有一个容易漏的细节：如果某个护栏在工具调用前触发拒绝，工具根本不会执行。那这次工具调用怎么进观测链路？
 
 `runGuardedToolCall` 会补一条失败的 `afterToolCall`，再原样抛出拒绝：
 
@@ -183,146 +170,146 @@ try {
 }
 ```
 
-这段逻辑做的是拒绝后的事件补偿：`beforeToolCall` 已经阻止工具执行，但 `afterToolCall` 仍然会收到一条失败事件，里面带着 `guardrailDeny`、`denyReason` 和 `deniedBeforeExecution`。
+这算是拒绝后的事件补偿：`beforeToolCall` 已经阻止工具执行，但 `afterToolCall` 仍然会收到一条失败事件，里面带着 `guardrailDeny`、`denyReason` 和 `deniedBeforeExecution`。
 
 这样观测链路能分清两种失败：一种是工具真的执行失败了，另一种是工具还没执行就被护栏拦住了。
 
-核心只有一句：**拒绝信号不能丢，也不能被普通工具失败覆盖。**
+我想保住的是这一点：拒绝信号不能丢，也不能被普通工具失败覆盖。
 
 ---
 
-# 三、RetryTracker：先记录失败模式
+# 三、RetryTracker：把重试效果记下来
 
-有了 `GuardrailDeny`，不代表所有异常都要立刻拒绝。
+有了 `GuardrailDeny`，不代表工具一失败就要拦。
 
-第一类要处理的是工具失败。它最常见，也最容易误判：外部 API 偶发 500，可能重试一次就好了；鉴权失败、参数错误、资源不存在，重试十次也还是错。
+工具失败以后，系统有两种做法。
 
-Agent 这里更麻烦。错误信息会进入上下文，连续失败会污染后面的推理。所以在真正决定“要不要拦”之前，先把失败次数、失败来源和恢复情况记下来。
+一种是工具层自动重试：executor 在 `catch` 里判断错误是否可重试，符合条件就再执行一次。这个 demo 没做这件事。
 
-所以 demo 里的 `RetryTracker` 先做观测，不直接帮工具重试：
+另一种是 Agent 自己重试：工具错误被写回上下文，下一轮 Agent 看到错误，再决定要不要调用同一个工具。这个 demo 走的是这一种。
+
+所以 `RetryTracker` 这个名字其实容易误会。它不是 `Retrier`，不包工具，也不重新执行工具。它只看 `after_tool_call` 事件流：
+
+```text
+fail(flaky_tool)
+success(flaky_tool)
+```
+
+如果一个工具先失败、后成功，说明 Agent 自己做了一次有效重试。`RetryTracker` 把这件事记下来。
+
+主要逻辑就这几行：
 
 ```js
-export class RetryTracker {
-  constructor({ maxRetries = 3, logger = console.error } = {}) {
-    this.maxRetries = maxRetries
-    this.failures = new Map()
-    this.totalRetries = 0
-    this.successfulRetries = 0
+afterToolHandler(ctx) {
+  const toolName = ctx.toolName || 'unknown'
+  const currentFailures = this.failures.get(toolName) ?? 0
+
+  if (!ctx.success) {
+    this.failures.set(toolName, currentFailures + 1)
+    if (currentFailures > 0) this.repeatedFailuresAfterFirst += 1
+    return
   }
 
-  afterToolHandler(ctx) {
-    const toolName = ctx.toolName || 'unknown'
-    const currentFailures = this.failures.get(toolName) ?? 0
-
-    if (ctx.success) {
-      if (currentFailures > 0) {
-        this.successfulRetries += 1
-        this.failures.set(toolName, 0)
-      }
-      return
-    }
-
-    const nextFailures = currentFailures + 1
-    this.failures.set(toolName, nextFailures)
-
-    if (currentFailures > 0) {
-      this.totalRetries += 1
-    }
+  if (currentFailures > 0) {
+    this.recoveriesAfterFailure += 1
+    this.failures.set(toolName, 0)
   }
 }
 ```
 
-准确说，这个 demo 没有做“框架自动重试”。它演示的是另一种常见路径：工具失败后，把错误结果交回给 Agent，让下一轮 Agent 自己决定要不要再调用一次。
+代码里的 `maxRetries` 也不是“最多自动重试几次”。它只是一个连续失败告警阈值：同一个工具失败次数达到阈值，就打一条 warning。
 
-retry 场景的链路是这样：
+retry 场景里，第一次 `flaky_tool` 失败后，`continueOnToolError` 会把异常转成工具结果：
 
-| 步骤 | 发生了什么 |
-|------|------------|
-| 第 1 轮 | Agent 调用 `flaky_tool` |
-| 工具执行 | `flaky_tool` 抛出 `flaky tool failed` |
-| Agent loop | 开启了 `continueOnToolError`，所以错误被转成 `{ errcode: 1, error: "flaky tool failed" }` 放回对话 |
-| 第 2 轮 | Agent 看到错误后，再次调用 `flaky_tool` |
-| 工具执行 | 第二次调用成功 |
-| RetryTracker | 看到这个工具先失败、后成功，记录一次恢复 |
+```json
+{ "errcode": 1, "error": "flaky tool failed" }
+```
 
-所以 `RetryTracker` 的职责很窄：它不决定要不要重试，也不重新执行工具。它只回答一个问题：**某个工具失败以后，后面有没有恢复回来？**
+这条结果进入上下文以后，Agent 下一轮再次调用 `flaky_tool`。第二次成功，`RetryTracker` 才记录一次恢复。
 
-如果你想做框架层自动重试，位置应该在工具执行的 `catch` 附近：判断错误是否可重试，确认工具是幂等的，再按 backoff 重新执行工具。这个 demo 没这么做，是为了先把“重试由谁发起”和“重试效果由谁记录”分开。
-
-最后 metrics 会变成这样：
+最后 metrics 里看这几个字段：
 
 ```json
 {
-  "total_retries": 0,
-  "successful_retries": 1,
-  "retry_success_rate": 1,
+  "repeated_failures_after_first": 0,
+  "recoveries_after_failure": 1,
   "active_failures": {
     "flaky_tool": 0
   }
 }
 ```
 
-这里 `successful_retries` 比单纯的“失败次数”更有用。它告诉你：这类失败到底有没有靠重试恢复。如果一个工具连续失败很多次，却几乎没有恢复记录，那就不该继续重试，应该改参数、降级，或者直接让任务失败。
+这里把指标名写得啰嗦一点，是为了少一点误会。`repeated_failures_after_first` 统计的是“第一次失败以后，又连续失败了几次”；`recoveries_after_failure` 统计的是“失败以后恢复了几次”。所以 `fail -> success` 这条链路里，恢复次数是 1，重复失败次数是 0。
+
+有了这个数据，才知道该不该继续让 Agent 试下去。如果某个工具一直失败，几乎没有恢复记录，那就该改参数、降级，或者直接让任务失败。
+
+`RetryTracker` 到这里就够了：它不判断任务该不该停，只把工具失败和恢复情况记成指标。
 
 ---
 
-# 四、LoopDetector：不要等 maxIterations 才停
+# 四、LoopDetector：看状态有没有前进
 
-`maxIterations` 是兜底。它能限制最多跑几轮，但它不知道 Agent 是不是从第 3 轮开始就在重复同一个动作。
+`maxIterations` 是最后的硬上限：跑到第 N 轮就停。
 
-循环检测要看状态。
+但有些循环不用等到第 N 轮。比如 Agent 连续几次拿到同样的工具结果，或者连续几轮输出完全一样的话术，这时候问题已经不是“还剩几轮”，而是“状态有没有变化”。
 
-demo 里有一个专门的 `repeat_state` 工具，用来模拟 Agent 反复拿到同一个结果。`LoopDetector` 会把工具名和输出拼成状态，再做哈希：
+`LoopDetector` 的实现没多复杂：
+
+1. 在固定节点取一个状态。
+2. 把状态压成 hash。
+3. 只保留最近 N 个 hash。
+4. 如果最近 N 个 hash 完全一样，就抛 `GuardrailDeny`。
+
+这里的 N 就是 `threshold`，默认是 3。它不是总轮数上限，而是“连续重复几次才判定循环”。
+
+demo 里有两条检测流：工具调用后和每轮结束后
+
+这两种检查互不影响。
+
+对应到代码，就是两个 handler 分别写入两个窗口：
 
 ```js
 afterToolHandler(ctx) {
-  this.totalToolCalls += 1
-  const output = String(ctx.metadata?.toolOutput ?? '')
+  const output = normalizeOutput(ctx.metadata?.toolOutput ?? ctx.metadata?.output ?? '')
   const state = `${ctx.toolName || ''}:${output}`
 
   this.checkLoop(this.toolHashes, state, ctx)
 }
+
+afterTurnHandler(ctx) {
+  const output = normalizeOutput(ctx.metadata?.output ?? '')
+  const state = `${ctx.toolName || ''}:${output}`
+
+  this.checkLoop(this.turnHashes, state, ctx)
+}
 ```
 
-`checkLoop` 保留最近 N 次哈希。如果连续 N 次完全一样，就抛 `GuardrailDeny`：
+`checkLoop` 不理解业务，只看最近几个状态指纹是不是一样：
 
 ```js
+const hash = crypto.createHash('md5').update(state).digest('hex').slice(0, 16)
+hashes.push(hash)
+
+if (hashes.length > this.threshold) {
+  hashes.splice(0, hashes.length - this.threshold)
+}
+
 if (hashes.length === this.threshold && hashes.every((entry) => entry === hash)) {
-  this.loopDetections += 1
-  const reason = `Loop detected: identical state repeated ${this.threshold} consecutive times`
-
-  throw new GuardrailDeny(reason, { guardrail: 'loop_detector' })
+  throw new GuardrailDeny(
+    `Loop detected: identical state repeated ${this.threshold} consecutive times`,
+    { guardrail: 'loop_detector' },
+  )
 }
 ```
 
-这和 `maxIterations` 的差别很明显。
+这里的“重复”很朴素：状态字符串一样，hash 才一样。它不做语义相似度判断，所以“我再试一次”和“我继续尝试一下”不会被当成同一个状态。
 
-| 机制 | 看什么 | 什么时候停 |
-|------|--------|------------|
-| `maxIterations` | 总轮数 | 跑满上限 |
-| `LoopDetector` | 最近状态是否重复 | 发现重复就停 |
+对比一下：
 
-运行 deterministic loop 场景：
-
-```bash
-GUARDRAIL_SCENARIO=loop npm start -- "反复检查同一个状态，直到你认为可以停止"
-```
-
-输出里能看到它在第 3 次重复时被拦住：
-
-```text
-Guardrail triggered: Loop detected: identical state repeated 3 consecutive times
-
-Metrics: loop-detector
-{
-  "total_turns": 2,
-  "total_tool_calls": 3,
-  "unique_states": 3,
-  "loop_detections": 1
-}
-```
-
-生产里状态指纹要按业务调。只看完整输出，可能漏掉语义重复；截得太短，又可能误判。更稳的做法是先只记录 metrics，跑一段时间后再打开拦截。
+| 机制 | 回答的问题 |
+|------|------------|
+| `maxIterations` | 最多允许跑几轮 |
+| `LoopDetector` | 最近几次状态指纹有没有重复 |
 
 ---
 
@@ -332,12 +319,9 @@ Metrics: loop-detector
 
 Agent 的执行路径不稳定。同一个任务，可能两轮完成，也可能调用十几次工具。上下文越滚越长，每一轮模型调用都会更贵。
 
-`CostGuard` 做两件事：
+`CostGuard` 只放在每轮结束后做一件事：按 usage 累加输入和输出 token，然后检查预算。超了就抛 `GuardrailDeny`，后面不会再继续跑。
 
-1. 每轮结束后，按 usage 累加输入和输出 token。
-2. 工具调用前和每轮结束后检查预算，超了就拒绝继续执行。
-
-代码核心很短：
+主要代码就这段：
 
 ```js
 afterTurnHandler(ctx) {
@@ -348,9 +332,32 @@ afterTurnHandler(ctx) {
   this.emitCostUpdate(ctx)
   this.denyIfOverBudget(ctx)
 }
+```
 
-beforeToolHandler(ctx = {}) {
-  this.denyIfOverBudget(ctx)
+这里没有再挂 `BEFORE_TOOL_CALL`。因为当前 demo 只能在模型返回以后拿到 usage，工具调用前并不知道“这一轮 LLM 刚花了多少钱”。与其放一个作用不明显的检查点，不如让 `CostGuard` 专心在 `AFTER_TURN` 收账和拦截。
+
+拦截放在 `denyIfOverBudget` 里：
+
+```js
+denyIfOverBudget(ctx = {}) {
+  if (this.estimatedCost < this.budget) {
+    return;
+  }
+
+  this.denyCount += 1;
+  const logMessage = 'Budget exceeded - blocking';
+  const reason = `Budget exceeded: $${this.estimatedCost.toFixed(6)} >= limit $${this.budget.toFixed(6)}`;
+
+  this.logger(JSON.stringify({
+    level: 'CRITICAL',
+    guardrail: 'cost_guard',
+    message: logMessage,
+    turn: ctx.turnNumber ?? ctx.turn ?? 0,
+    estimated_cost_usd: roundUsd(this.estimatedCost),
+    budget_usd: roundUsd(this.budget),
+  }));
+
+  throw new GuardrailDeny(reason, { guardrail: 'cost_guard' });
 }
 ```
 
@@ -365,35 +372,13 @@ const MODEL_PRICES = Object.freeze({
 })
 ```
 
-这不追求账单级精确。护栏层需要的是及时刹车，精确分析可以交给 Langfuse。
-
-跑低预算场景：
-
-```bash
-COST_GUARD_BUDGET=0.0005 npm start
-```
-
-这次真实跑出来的结果是：
-
-```text
-Guardrail triggered: Budget exceeded: $0.000635 >= limit $0.000500
-
-Metrics: cost-guard
-{
-  "model": "gpt-4o-mini",
-  "total_input_tokens": 1281,
-  "total_output_tokens": 738,
-  "estimated_cost_usd": 0.000635,
-  "budget_usd": 0.0005,
-  "deny_count": 1
-}
-```
+这张表只是 demo 里的估算配置，真实价格以 provider 当前计费说明为准。它不追求账单级精确，护栏层需要的是及时刹车，精确分析可以交给 Langfuse。
 
 这里预算是运行时硬约束，不是 prompt 里的“请节省一点”。Agent 不需要理解价格表，价格表也不应该交给 Agent 自己判断。
 
 ---
 
-# 六、策略化之后，主流程干净很多
+# 六、把护栏策略挂到 hooks.yaml
 
 如果把这些判断都塞进 Agent loop，代码很快会变成这样：
 
@@ -431,7 +416,6 @@ strategies:
       budgetUsd: 1
     hooks:
       AFTER_TURN: afterTurnHandler
-      BEFORE_TOOL_CALL: beforeToolHandler
   loop-detector:
     class: loop-detector.LoopDetector
     config:
@@ -478,78 +462,16 @@ await agentAdapter.afterTurn({
 })
 ```
 
-主流程少一点“策略知识”，系统就更容易加新护栏。今天是成本和循环，明天可以是敏感数据、权限边界、交付门禁。
-
----
-
-# 七、跑一下 demo
-
-先准备环境：
-
-```bash
-cd demo/agent-reliability-guardrails
-source ~/.nvm/nvm.sh
-nvm use 20.19.5
-npm install
-npm run build:sandbox
-```
-
-`.env` 里需要有模型服务和 Langfuse 配置：
-
-```bash
-OPENAI_API_KEY=...
-OPENAI_API_BASE=http://localhost:3002
-AGENT_MODEL=gpt-4o-mini
-
-LANGFUSE_PUBLIC_KEY=...
-LANGFUSE_SECRET_KEY=...
-LANGFUSE_BASE_URL=http://localhost:3000
-```
-
-正常跑一次：
-
-```bash
-npm start -- "为一个短链接服务产出技术设计文档"
-```
-
-预期是生成 `workspace/demo-agent/output/design_doc.md`，终端打印三个策略的 metrics，最后给出 Langfuse URL。
-
-再跑成本拦截：
-
-```bash
-COST_GUARD_BUDGET=0.0005 npm start
-```
-
-再跑循环检测：
-
-```bash
-GUARDRAIL_SCENARIO=loop npm start -- "反复检查同一个状态，直到你认为可以停止"
-```
-
-再跑重试恢复：
-
-```bash
-GUARDRAIL_SCENARIO=retry npm start -- "调用不稳定工具并继续完成任务"
-```
-
-这四条命令都不是单元测试里的 mock。正常场景和成本场景会走真实模型接口，loop 和 retry 是 deterministic 场景，用来稳定复现护栏行为。
-
-最后跑测试：
-
-```bash
-npm test
-```
-
-当前 demo 的测试覆盖 57 个用例，包括 Hook 分发、策略注册、沙箱路径限制、真实 Agent loop、loop/retry 场景和 env 优先级。
+主流程不用知道太多策略细节，后面加新护栏也省事。今天是成本和循环，明天可以是敏感数据、权限边界、交付门禁。
 
 ---
 
 # 总结
 
-这篇讲了 Agent 可靠性的三个问题：工具失败怎么观察，重复状态怎么早停，成本超预算怎么拦住。
+这篇把 Hook 往前推了一步：不只看日志，也参与运行时决策。
 
-Hook 分成 `dispatch` 和 `dispatchGate` 后，观测和门禁有了不同的异常语义；`GuardrailDeny` 让拒绝变成可识别的运行时信号。
+`dispatch` 继续负责日志和 trace，`dispatchGate` 跑会影响执行结果的护栏策略。策略要拒绝时抛 `GuardrailDeny`，外层就能分清这是主动拦截，不是工具自己炸了。
 
-`RetryTracker`、`LoopDetector`、`CostGuard` 都是有状态策略，适合放在 `hooks.yaml` 里声明式加载，不适合散在主流程的 if 判断里。
+`RetryTracker` 记录工具失败后有没有恢复，`LoopDetector` 看状态有没有前进，`CostGuard` 在运行中计算预算。放到 `hooks.yaml` 里，是为了把“哪个事件点跑哪些策略”从 Agent loop 里拿出来。
 
-我的理解是：可靠性防“蠢”，安全性防“骗”。这一篇先把自动刹车做起来，下一步再看输入、权限和数据泄漏这些安全护栏。
+到这里，可靠性护栏先告一段落。下一步再看安全护栏：输入、权限和数据泄漏这些问题不能只靠 prompt 兜底。
