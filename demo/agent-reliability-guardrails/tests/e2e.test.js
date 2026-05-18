@@ -1,3 +1,4 @@
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -9,6 +10,7 @@ import { HookLoader } from '../src/hook-framework/loader.js';
 import { HookRegistry } from '../src/hook-framework/registry.js';
 import {
   createScenarioChatClient,
+  main,
   SHARED_HOOKS_DIR,
   SKILLS_DIR,
   WORKSPACE_DIR,
@@ -17,6 +19,7 @@ import { resolveLangfuseEnvironment } from '../src/instrumentation.js';
 
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 const demoDir = path.resolve(testDir, '..');
+const outputDir = path.join(WORKSPACE_DIR, 'output');
 
 describe('guardrails demo e2e wiring', () => {
   test('loads shared and workspace hooks, records a turn, and exposes core strategies', async () => {
@@ -150,6 +153,40 @@ describe('guardrails demo e2e wiring', () => {
         flaky_tool: 0,
       },
     });
+  });
+
+  test('main retry scenario completes without OpenAI key and prints result plus metrics', async () => {
+    await fs.rm(path.join(outputDir, 'design_doc.md'), { force: true });
+    await fs.rm(path.join(outputDir, 'task-audit.jsonl'), { force: true });
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    let lines = [];
+    let errorText = '';
+
+    try {
+      await expect(
+        main([], {
+          GUARDRAIL_SCENARIO: 'retry',
+          LANGFUSE_PUBLIC_KEY: 'test-public-key',
+          LANGFUSE_SECRET_KEY: 'test-secret-key',
+          LANGFUSE_EXPORT_MODE: 'immediate',
+        }),
+      ).resolves.toBeUndefined();
+      lines = log.mock.calls.map((entry) => entry.join(' '));
+      errorText = error.mock.calls.flat().join('\n');
+    } finally {
+      log.mockRestore();
+      error.mockRestore();
+      await fs.rm(path.join(outputDir, 'design_doc.md'), { force: true });
+      await fs.rm(path.join(outputDir, 'task-audit.jsonl'), { force: true });
+    }
+
+    expect(lines).toContain('Result:');
+    expect(lines.join('\n')).toContain('"scenario": "retry"');
+    expect(lines).toContain('Design doc:');
+    expect(lines.join('\n')).toContain('Retry Scenario Design Doc');
+    expect(lines.join('\n')).toContain('Metrics: retry-tracker');
+    expect(errorText).not.toContain('Guardrail triggered:');
   });
 
   test('default scenario delegates to fallback chat client', async () => {

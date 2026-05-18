@@ -80,12 +80,22 @@ export function createScenarioChatClient(scenario, fallbackChatClient) {
         prompt_tokens: 52,
         completion_tokens: 10,
       }),
+      toolResponse('retry-design-doc', 'write_design_doc', {
+        content: [
+          '# Retry Scenario Design Doc',
+          '',
+          'The deterministic retry scenario fails flaky_tool once, retries it, then records recovery.',
+        ].join('\n'),
+      }, {
+        prompt_tokens: 54,
+        completion_tokens: 24,
+      }),
       finalResponse(JSON.stringify({
         ok: true,
         scenario: 'retry',
         recovered: true,
       }), {
-        prompt_tokens: 54,
+        prompt_tokens: 56,
         completion_tokens: 12,
       }),
     ]);
@@ -173,7 +183,7 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
     console.log('Result:');
     console.log(JSON.stringify(result, null, 2));
     console.log('Design doc:');
-    console.log(await fs.readFile(designDocPath, 'utf8'));
+    console.log(await readDesignDoc(designDocPath));
   } catch (error) {
     if (error instanceof GuardrailDeny) {
       console.error(`Guardrail triggered: ${error.reason}`);
@@ -224,6 +234,18 @@ function pad(value) {
   return String(value).padStart(2, '0');
 }
 
+async function readDesignDoc(designDocPath) {
+  try {
+    return await fs.readFile(designDocPath, 'utf8');
+  } catch (error) {
+    if (error?.code === 'ENOENT') {
+      return '<not generated>';
+    }
+
+    throw error;
+  }
+}
+
 function createScriptedChatClient(responses) {
   let index = 0;
 
@@ -244,7 +266,7 @@ function toolResponse(id, name, args, usage) {
       {
         message: {
           role: 'assistant',
-          content: '',
+          content: `scripted tool call: ${id}`,
           tool_calls: [
             {
               id,
