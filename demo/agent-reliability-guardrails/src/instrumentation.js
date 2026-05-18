@@ -8,6 +8,10 @@ export function isLangfuseConfigured(env = process.env) {
   return Boolean(env.LANGFUSE_PUBLIC_KEY && env.LANGFUSE_SECRET_KEY);
 }
 
+export function resolveLangfuseEnvironment(env = process.env) {
+  return env.LANGFUSE_ENVIRONMENT ?? env.LANGFUSE_ENV ?? env.LANGFUSE_TRACING_ENVIRONMENT;
+}
+
 export async function startLangfuseSdk(env = process.env) {
   if (!isLangfuseConfigured(env)) {
     throw new Error('Langfuse requires LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY');
@@ -21,7 +25,7 @@ export async function startLangfuseSdk(env = process.env) {
     publicKey: env.LANGFUSE_PUBLIC_KEY,
     secretKey: env.LANGFUSE_SECRET_KEY,
     baseUrl: env.LANGFUSE_BASE_URL ?? env.LANGFUSE_BASEURL,
-    environment: env.LANGFUSE_ENVIRONMENT ?? env.LANGFUSE_ENV,
+    environment: resolveLangfuseEnvironment(env),
     exportMode: env.LANGFUSE_EXPORT_MODE ?? 'immediate',
   });
 

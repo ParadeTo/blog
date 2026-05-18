@@ -50,6 +50,54 @@ export function resolveLlmConfig(env = process.env) {
   };
 }
 
+export function createScenarioChatClient(scenario, fallbackChatClient) {
+  const normalizedScenario = String(scenario ?? '').trim().toLowerCase();
+
+  if (normalizedScenario === 'loop') {
+    return createScriptedChatClient([
+      toolResponse('loop-repeat-1', 'repeat_state', { value: 'same-state' }, {
+        prompt_tokens: 40,
+        completion_tokens: 8,
+      }),
+      toolResponse('loop-repeat-2', 'repeat_state', { value: 'same-state' }, {
+        prompt_tokens: 42,
+        completion_tokens: 8,
+      }),
+      toolResponse('loop-repeat-3', 'repeat_state', { value: 'same-state' }, {
+        prompt_tokens: 44,
+        completion_tokens: 8,
+      }),
+    ]);
+  }
+
+  if (normalizedScenario === 'retry') {
+    return createScriptedChatClient([
+      toolResponse('retry-flaky-1', 'flaky_tool', {}, {
+        prompt_tokens: 50,
+        completion_tokens: 10,
+      }),
+      toolResponse('retry-flaky-2', 'flaky_tool', {}, {
+        prompt_tokens: 52,
+        completion_tokens: 10,
+      }),
+      finalResponse(JSON.stringify({
+        ok: true,
+        scenario: 'retry',
+        recovered: true,
+      }), {
+        prompt_tokens: 54,
+        completion_tokens: 12,
+      }),
+    ]);
+  }
+
+  return fallbackChatClient;
+}
+
+export function isDeterministicScenario(scenario) {
+  return ['loop', 'retry'].includes(String(scenario ?? '').trim().toLowerCase());
+}
+
 export function printMetrics(strategies, logger = console.log) {
   for (const [name, strategy] of Object.entries(strategies ?? {})) {
     if (typeof strategy.getMetrics !== 'function') {
@@ -75,8 +123,15 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
     await loader.loadTwoLayers(SHARED_HOOKS_DIR, WORKSPACE_DIR);
 
     const strategies = loader.strategies;
-    const llmConfig = resolveLlmConfig(env);
     const scenario = env.GUARDRAIL_SCENARIO ?? 'default';
+    const deterministicScenario = isDeterministicScenario(scenario);
+    const llmConfig = deterministicScenario
+      ? {
+          apiKey: 'deterministic-scenario',
+          baseUrl: 'deterministic-scenario',
+          model: env.AGENT_MODEL ?? env.OPENAI_MODEL ?? 'gpt-4o-mini',
+        }
+      : resolveLlmConfig(env);
     const backstory = await buildBootstrapPrompt(WORKSPACE_DIR);
     const skillRegistry = await loadSkillRegistry(SKILLS_DIR);
     const taskDescription = buildTaskDescription({
@@ -106,11 +161,13 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
       model: llmConfig.model,
       workspaceDir: WORKSPACE_DIR,
       skillsDir: SKILLS_DIR,
-      chatClient: (request) =>
+      continueOnToolError: String(scenario).trim().toLowerCase() === 'retry',
+      chatClient: createScenarioChatClient(scenario, (request) =>
         defaultChatClient({
           ...request,
           ...llmConfig,
         }),
+      ),
     });
 
     console.log('Result:');
@@ -165,6 +222,58 @@ function langfuseUrl(env) {
 
 function pad(value) {
   return String(value).padStart(2, '0');
+}
+
+function createScriptedChatClient(responses) {
+  let index = 0;
+
+  return async () => {
+    if (index >= responses.length) {
+      throw new Error('deterministic scenario exhausted scripted responses');
+    }
+
+    const response = responses[index];
+    index += 1;
+    return response;
+  };
+}
+
+function toolResponse(id, name, args, usage) {
+  return {
+    choices: [
+      {
+        message: {
+          role: 'assistant',
+          content: '',
+          tool_calls: [
+            {
+              id,
+              type: 'function',
+              function: {
+                name,
+                arguments: JSON.stringify(args),
+              },
+            },
+          ],
+        },
+      },
+    ],
+    usage,
+  };
+}
+
+function finalResponse(content, usage) {
+  return {
+    choices: [
+      {
+        message: {
+          role: 'assistant',
+          content,
+        },
+      },
+    ],
+    usage,
+  };
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {

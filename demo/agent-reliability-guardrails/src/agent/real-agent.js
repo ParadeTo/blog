@@ -236,6 +236,7 @@ export async function runRealAgent({
   skillsDir = path.join(workspaceDir, 'skills'),
   outputDir = path.join(workspaceDir, 'output'),
   maxIterations = 8,
+  continueOnToolError = false,
 } = {}) {
   if (!taskDescription) {
     throw new Error('taskDescription is required');
@@ -314,12 +315,24 @@ export async function runRealAgent({
           throw error;
         }
 
-        const toolOutput = await runGuardedToolCall({
-          adapter: agentAdapter,
-          toolName,
-          toolInput,
-          execute: tool.execute,
-        });
+        let toolOutput;
+        try {
+          toolOutput = await runGuardedToolCall({
+            adapter: agentAdapter,
+            toolName,
+            toolInput,
+            execute: tool.execute,
+          });
+        } catch (error) {
+          if (!continueOnToolError || error instanceof GuardrailDeny) {
+            throw error;
+          }
+
+          toolOutput = {
+            errcode: 1,
+            error: error.message,
+          };
+        }
 
         messages.push({
           role: 'tool',
