@@ -186,9 +186,9 @@ try {
 
 一种是工具层自动重试：executor 在 `catch` 里判断错误是否可重试，符合条件就再执行一次。这个 demo 没做这件事。
 
-另一种是 Agent 自己重试：工具错误被写回上下文，下一轮 Agent 看到错误，再决定要不要调用同一个工具。这个 demo 走的是这一种。
+另一种是 Agent 自己重试：工具错误被写回上下文，下一轮 Agent 看到错误，再决定要不要调用同一个工具。这个 demo 走的是这一种，还专门放了一个 `flaky_tool` 来模拟“第一次失败，第二次恢复”。
 
-demo 里放了一个 `flaky_tool`，专门模拟这种场景：第一次调用失败，第二次调用恢复。`RetryTracker` 这个名字其实容易误会。它不是 `Retrier`，不包工具，也不重新执行工具。它只看 `after_tool_call` 事件流：
+`RetryTracker` 这个名字其实容易误会。它不是 `Retrier`，不包工具，也不重新执行工具。它只看 `after_tool_call` 事件流：
 
 ```text
 fail(flaky_tool)
