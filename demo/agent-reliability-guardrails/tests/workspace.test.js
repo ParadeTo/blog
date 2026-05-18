@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 
@@ -9,9 +10,10 @@ import {
   loadSkillContent,
   loadSkillRegistry,
 } from '../src/agent/skill-loader.js';
-import { OutputSandbox } from '../src/agent/sandbox.js';
+import { OutputSandbox, PodmanSandbox } from '../src/agent/sandbox.js';
 
 const demoWorkspaceDir = path.resolve('workspace/demo-agent');
+const taskAuditPath = path.join(demoWorkspaceDir, 'output/task-audit.jsonl');
 
 describe('demo agent workspace', () => {
   test('buildBootstrapPrompt includes workspace sections and observability memory', async () => {
@@ -32,6 +34,152 @@ describe('demo agent workspace', () => {
       path: 'sop-design/SKILL.md',
     });
     expect(content).toContain('写设计文档');
+  });
+
+  test('task audit default path is stable across current working directories', async () => {
+    const originalCwd = process.cwd();
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'task-audit-cwd-'));
+    await fs.rm(taskAuditPath, { force: true });
+
+    try {
+      process.chdir(tempRoot);
+      const moduleUrl = pathToFileURL(
+        path.join(demoWorkspaceDir, 'hooks/task-audit.js'),
+      );
+      const taskAudit = await import(`${moduleUrl.href}?case=${Date.now()}`);
+      process.chdir(originalCwd);
+
+      taskAudit.writeAuditEntry({
+        eventType: 'task_complete',
+        sessionId: 'stable-session',
+        metadata: { rawOutput: 'stable output' },
+      });
+
+      await expect(fs.readFile(taskAuditPath, 'utf8')).resolves.toContain('stable-session');
+      await expect(
+        fs.access(path.join(tempRoot, 'workspace/demo-agent/output/task-audit.jsonl')),
+      ).rejects.toThrow();
+    } finally {
+      process.chdir(originalCwd);
+      await fs.rm(taskAuditPath, { force: true });
+      await fs.rm(tempRoot, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('skill-loader containment', () => {
+  let tempRoot;
+
+  beforeEach(async () => {
+    tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'skill-loader-'));
+  });
+
+  afterEach(async () => {
+    await fs.rm(tempRoot, { recursive: true, force: true });
+  });
+
+  test('loadSkillContent rejects registry paths outside skillsDir', async () => {
+    const skillsDir = path.join(tempRoot, 'skills');
+    const outsideFile = path.join(tempRoot, 'outside.md');
+    await fs.mkdir(skillsDir, { recursive: true });
+    await fs.writeFile(outsideFile, 'outside', 'utf8');
+
+    await expect(
+      loadSkillContent(skillsDir, {
+        escape: {
+          name: 'escape',
+          path: '../outside.md',
+          description: '',
+        },
+      }, 'escape'),
+    ).rejects.toThrow(/inside directory/i);
+  });
+
+  test('loadSkillContent rejects symlink skill files that point outside skillsDir', async () => {
+    const skillsDir = path.join(tempRoot, 'skills');
+    const outsideFile = path.join(tempRoot, 'outside-skill.md');
+    await fs.mkdir(skillsDir, { recursive: true });
+    await fs.writeFile(outsideFile, 'outside skill', 'utf8');
+    await fs.symlink(outsideFile, path.join(skillsDir, 'linked-skill.md'));
+
+    await expect(
+      loadSkillContent(skillsDir, {
+        linked: {
+          name: 'linked',
+          path: 'linked-skill.md',
+          description: '',
+        },
+      }, 'linked'),
+    ).rejects.toThrow(/inside directory/i);
+  });
+});
+
+describe('PodmanSandbox validation', () => {
+  let tempRoot;
+  let workspaceDir;
+  let skillsDir;
+  let outputDir;
+
+  beforeEach(async () => {
+    tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'podman-sandbox-'));
+    workspaceDir = path.join(tempRoot, 'workspace');
+    skillsDir = path.join(tempRoot, 'skills');
+    outputDir = path.join(tempRoot, 'output');
+    await fs.mkdir(workspaceDir, { recursive: true });
+    await fs.mkdir(skillsDir, { recursive: true });
+  });
+
+  afterEach(async () => {
+    await fs.rm(tempRoot, { recursive: true, force: true });
+  });
+
+  test('constructor rejects missing required directories', () => {
+    expect(() =>
+      new PodmanSandbox({
+        image: 'demo-image',
+        workspaceDir: path.join(tempRoot, 'missing-workspace'),
+        skillsDir,
+        outputDir,
+      }),
+    ).toThrow(/workspaceDir must exist/i);
+
+    expect(() =>
+      new PodmanSandbox({
+        image: 'demo-image',
+        workspaceDir,
+        skillsDir: path.join(tempRoot, 'missing-skills'),
+        outputDir,
+      }),
+    ).toThrow(/skillsDir must exist/i);
+  });
+
+  test('execute rejects scripts outside skillsDir before invoking Podman', async () => {
+    const outsideScript = path.join(tempRoot, 'outside.js');
+    await fs.writeFile(outsideScript, 'console.log("outside");', 'utf8');
+    const sandbox = new PodmanSandbox({
+      image: 'demo-image',
+      workspaceDir,
+      skillsDir,
+      outputDir,
+    });
+
+    await expect(sandbox.execute(outsideScript)).rejects.toThrow(/inside skillsDir/i);
+  });
+
+  test('execute rejects symlink scripts inside skillsDir that point outside', async () => {
+    const outsideScript = path.join(tempRoot, 'outside-linked.js');
+    await fs.writeFile(outsideScript, 'console.log("outside");', 'utf8');
+    await fs.symlink(outsideScript, path.join(skillsDir, 'linked.js'));
+    const sandbox = new PodmanSandbox({
+      image: 'demo-image',
+      workspaceDir,
+      skillsDir,
+      outputDir,
+    });
+
+    await expect(sandbox.execute(path.join(skillsDir, 'linked.js'))).rejects.toThrow(
+      /inside skillsDir/i,
+    );
   });
 });
 

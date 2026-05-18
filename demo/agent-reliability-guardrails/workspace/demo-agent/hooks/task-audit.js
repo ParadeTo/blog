@@ -1,7 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-let auditFile = path.resolve('workspace/demo-agent/output/task-audit.jsonl');
+const hooksDir = path.dirname(fileURLToPath(import.meta.url));
+let auditFile = path.resolve(hooksDir, '../output/task-audit.jsonl');
 
 export function setAuditFile(file) {
   auditFile = path.resolve(file);
