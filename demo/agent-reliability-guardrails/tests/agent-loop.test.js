@@ -6,7 +6,12 @@ import { afterEach, describe, expect, test, vi } from 'vitest';
 
 import { GuardrailDeny } from '../src/hook-framework/registry.js';
 import { AgentObservabilityAdapter } from '../src/hook-framework/agent-adapter.js';
-import { runGuardedToolCall, runRealAgent } from '../src/agent/real-agent.js';
+import {
+  defaultChatClient,
+  parseToolArguments,
+  runGuardedToolCall,
+  runRealAgent,
+} from '../src/agent/real-agent.js';
 
 const tempDirs = [];
 
@@ -64,6 +69,7 @@ describe('real agent loop', () => {
       tool_call_id: 'call-2',
       name: 'write_design_doc',
     });
+    expect(calls[2].messages.at(-1).content).not.toContain('absolute_path');
     expect(result.result.errcode).toBe(0);
     expect(result.designDocPath).toBe(path.join(outputDir, 'design_doc.md'));
     await expect(fs.readFile(result.designDocPath, 'utf8')).resolves.toContain('短链接服务');
@@ -100,6 +106,141 @@ describe('real agent loop', () => {
         deniedBeforeExecution: true,
       },
     });
+  });
+
+  test('runGuardedToolCall does not convert afterToolCall denial into tool failure', async () => {
+    const deny = new GuardrailDeny('after tool blocked', { guardrail: 'loop_detector' });
+    const adapter = {
+      beforeToolCall: vi.fn(),
+      afterToolCall: vi.fn(async () => {
+        throw deny;
+      }),
+    };
+    const tool = vi.fn(async () => ({ ok: true }));
+
+    await expect(
+      runGuardedToolCall({
+        adapter,
+        toolName: 'repeat_state',
+        toolInput: { value: 'same' },
+        execute: tool,
+      }),
+    ).rejects.toBe(deny);
+
+    expect(tool).toHaveBeenCalledOnce();
+    expect(adapter.afterToolCall).toHaveBeenCalledTimes(1);
+    expect(adapter.afterToolCall).toHaveBeenCalledWith({
+      toolName: 'repeat_state',
+      toolInput: { value: 'same' },
+      success: true,
+      output: JSON.stringify({ ok: true }),
+    });
+  });
+
+  test('runGuardedToolCall preserves beforeToolCall denial when close also denies', async () => {
+    const beforeDeny = new GuardrailDeny('before blocked', { guardrail: 'cost_guard' });
+    const closeDeny = new GuardrailDeny('close blocked', { guardrail: 'loop_detector' });
+    const adapter = {
+      beforeToolCall: vi.fn(async () => {
+        throw beforeDeny;
+      }),
+      afterToolCall: vi.fn(async () => {
+        throw closeDeny;
+      }),
+    };
+    const tool = vi.fn(async () => 'should not run');
+
+    await expect(
+      runGuardedToolCall({
+        adapter,
+        toolName: 'write_design_doc',
+        toolInput: { content: 'blocked' },
+        execute: tool,
+      }),
+    ).rejects.toBe(beforeDeny);
+
+    expect(tool).not.toHaveBeenCalled();
+    expect(adapter.afterToolCall).toHaveBeenCalledTimes(1);
+    expect(beforeDeny.metadata.afterToolCallError).toMatchObject({
+      reason: 'close blocked',
+    });
+  });
+
+  test('runRealAgent emits failed afterToolCall for malformed tool-call JSON', async () => {
+    const adapter = createFakeAdapter();
+    const outputDir = await makeTempDir();
+    const chatClient = vi.fn(async () => ({
+      content: '',
+      toolCalls: [
+        {
+          id: 'bad-json',
+          type: 'function',
+          function: {
+            name: 'skill_loader',
+            arguments: '{bad json',
+          },
+        },
+      ],
+      usage: { input_tokens: 10, output_tokens: 3 },
+    }));
+
+    await expect(
+      runRealAgent({
+        taskDescription: '为短链接服务写设计文档',
+        chatClient,
+        adapter,
+        outputDir,
+        maxIterations: 1,
+      }),
+    ).rejects.toThrow(/invalid tool arguments JSON/i);
+
+    expect(adapter.afterToolCall).toHaveBeenCalledWith({
+      toolName: 'skill_loader',
+      toolInput: {},
+      success: false,
+      output: expect.stringContaining('invalid tool arguments JSON'),
+      metadata: {
+        errorMessage: expect.stringContaining('invalid tool arguments JSON'),
+      },
+    });
+  });
+
+  test('defaultChatClient supports OPENAI_API_BASE while keeping OPENAI_BASE_URL alias', async () => {
+    const originalApiKey = process.env.OPENAI_API_KEY;
+    const originalApiBase = process.env.OPENAI_API_BASE;
+    const originalBaseUrl = process.env.OPENAI_BASE_URL;
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        choices: [{ message: { content: '{"errcode":0}', tool_calls: [] } }],
+        usage: {},
+      }),
+    }));
+
+    process.env.OPENAI_API_KEY = 'sk-test';
+    process.env.OPENAI_API_BASE = 'https://openai-compatible.example/v1/';
+    delete process.env.OPENAI_BASE_URL;
+
+    try {
+      await defaultChatClient({
+        messages: [],
+        tools: [],
+        fetchImpl,
+      });
+
+      expect(fetchImpl.mock.calls[0][0]).toBe(
+        'https://openai-compatible.example/v1/chat/completions',
+      );
+    } finally {
+      restoreEnv('OPENAI_API_KEY', originalApiKey);
+      restoreEnv('OPENAI_API_BASE', originalApiBase);
+      restoreEnv('OPENAI_BASE_URL', originalBaseUrl);
+    }
+  });
+
+  test('parseToolArguments rejects non-object JSON values', () => {
+    expect(() => parseToolArguments('null')).toThrow(/tool arguments must be a JSON object/i);
+    expect(() => parseToolArguments('[]')).toThrow(/tool arguments must be a JSON object/i);
   });
 });
 
@@ -182,6 +323,42 @@ describe('AgentObservabilityAdapter', () => {
     expect(registry.dispatch).toHaveBeenCalledTimes(7);
     expect(registry.dispatchGate).toHaveBeenCalledTimes(3);
   });
+
+  test('afterTurn resets turn state even when gate denies', async () => {
+    const deny = new GuardrailDeny('budget exceeded');
+    const registry = {
+      dispatch: vi.fn(),
+      dispatchGate: vi.fn(async () => {
+        throw deny;
+      }),
+    };
+    const adapter = new AgentObservabilityAdapter({
+      registry,
+      sessionId: 'session-reset',
+    });
+
+    await adapter.beforeLlm({
+      messages: [{ role: 'user', content: 'first prompt' }],
+    });
+    await expect(
+      adapter.afterTurn({
+        output: 'blocked',
+        llmResponse: 'blocked',
+      }),
+    ).rejects.toBe(deny);
+    await adapter.beforeLlm({
+      messages: [{ role: 'user', content: 'second prompt' }],
+    });
+
+    expect(registry.dispatch.mock.calls.map(([eventType]) => eventType)).toEqual([
+      'before_turn',
+      'before_llm',
+      'after_turn',
+      'before_turn',
+      'before_llm',
+    ]);
+    expect(registry.dispatch.mock.calls.at(-1)[1].metadata.promptPreview).toBe('second prompt');
+  });
 });
 
 function toolCall(id, name, args) {
@@ -199,4 +376,24 @@ async function makeTempDir() {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'agent-loop-'));
   tempDirs.push(dir);
   return dir;
+}
+
+function createFakeAdapter() {
+  return {
+    beforeLlm: vi.fn(),
+    beforeToolCall: vi.fn(),
+    afterToolCall: vi.fn(),
+    afterTurn: vi.fn(),
+    taskComplete: vi.fn(),
+    cleanup: vi.fn(),
+  };
+}
+
+function restoreEnv(name, value) {
+  if (value === undefined) {
+    delete process.env[name];
+    return;
+  }
+
+  process.env[name] = value;
 }

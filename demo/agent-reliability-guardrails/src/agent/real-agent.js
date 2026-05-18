@@ -17,7 +17,7 @@ export async function defaultChatClient({
   tools,
   model = process.env.AGENT_MODEL ?? 'gpt-4o-mini',
   apiKey = process.env.OPENAI_API_KEY,
-  baseUrl = process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1',
+  baseUrl = process.env.OPENAI_API_BASE ?? process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1',
   fetchImpl = globalThis.fetch,
 } = {}) {
   if (!apiKey) {
@@ -92,11 +92,12 @@ export async function makeTools({
         },
       },
       execute: async ({ content }) => {
-        const filePath = await outputSandbox.writeOutput('design_doc.md', String(content ?? ''));
+        const contentText = String(content ?? '');
+        await outputSandbox.writeOutput('design_doc.md', contentText);
         return {
           errcode: 0,
           file_path: 'output/design_doc.md',
-          absolute_path: filePath,
+          bytes: Buffer.byteLength(contentText, 'utf8'),
         };
       },
     },
@@ -148,14 +149,19 @@ export function parseToolArguments(rawArguments) {
   }
 
   if (typeof rawArguments === 'object') {
+    assertPlainArgumentsObject(rawArguments);
     return rawArguments;
   }
 
+  let parsed;
   try {
-    return JSON.parse(rawArguments);
+    parsed = JSON.parse(rawArguments);
   } catch (error) {
     throw new Error(`invalid tool arguments JSON: ${error.message}`);
   }
+
+  assertPlainArgumentsObject(parsed);
+  return parsed;
 }
 
 export async function runGuardedToolCall({
@@ -168,30 +174,28 @@ export async function runGuardedToolCall({
     await adapter.beforeToolCall({ toolName, toolInput });
   } catch (error) {
     if (error instanceof GuardrailDeny) {
-      await adapter.afterToolCall({
-        toolName,
-        toolInput,
-        success: false,
-        output: '',
-        metadata: {
-          guardrailDeny: true,
-          denyReason: error.reason,
-          deniedBeforeExecution: true,
-        },
-      });
+      try {
+        await adapter.afterToolCall({
+          toolName,
+          toolInput,
+          success: false,
+          output: '',
+          metadata: {
+            guardrailDeny: true,
+            denyReason: error.reason,
+            deniedBeforeExecution: true,
+          },
+        });
+      } catch (closeError) {
+        attachCloseError(error, closeError);
+      }
     }
     throw error;
   }
 
+  let output;
   try {
-    const output = await execute(toolInput);
-    await adapter.afterToolCall({
-      toolName,
-      toolInput,
-      success: true,
-      output: serializeToolOutput(output),
-    });
-    return output;
+    output = await execute(toolInput);
   } catch (error) {
     const metadata = {
       errorMessage: error.message,
@@ -199,15 +203,27 @@ export async function runGuardedToolCall({
       denyReason: error instanceof GuardrailDeny ? error.reason : '',
     };
 
-    await adapter.afterToolCall({
-      toolName,
-      toolInput,
-      success: false,
-      output: '',
-      metadata,
-    });
+    try {
+      await adapter.afterToolCall({
+        toolName,
+        toolInput,
+        success: false,
+        output: error.message,
+        metadata,
+      });
+    } catch (closeError) {
+      attachCloseError(error, closeError);
+    }
     throw error;
   }
+
+  await adapter.afterToolCall({
+    toolName,
+    toolInput,
+    success: true,
+    output: serializeToolOutput(output),
+  });
+  return output;
 }
 
 export async function runRealAgent({
@@ -290,7 +306,14 @@ export async function runRealAgent({
           throw new Error(`unknown tool: ${toolName}`);
         }
 
-        const toolInput = parseToolArguments(call.function?.arguments ?? call.arguments);
+        let toolInput;
+        try {
+          toolInput = parseToolArguments(call.function?.arguments ?? call.arguments);
+        } catch (error) {
+          await emitFailedToolParse(agentAdapter, toolName, error);
+          throw error;
+        }
+
         const toolOutput = await runGuardedToolCall({
           adapter: agentAdapter,
           toolName,
@@ -352,6 +375,47 @@ function serializeToolOutput(output) {
   }
 
   return JSON.stringify(output);
+}
+
+function assertPlainArgumentsObject(value) {
+  if (value === null || Array.isArray(value) || typeof value !== 'object') {
+    throw new Error('tool arguments must be a JSON object');
+  }
+}
+
+async function emitFailedToolParse(adapter, toolName, error) {
+  try {
+    await adapter.afterToolCall({
+      toolName,
+      toolInput: {},
+      success: false,
+      output: error.message,
+      metadata: {
+        errorMessage: error.message,
+      },
+    });
+  } catch (closeError) {
+    attachCloseError(error, closeError);
+  }
+}
+
+function attachCloseError(originalError, closeError) {
+  originalError.metadata = {
+    ...(originalError.metadata ?? {}),
+    afterToolCallError: summarizeError(closeError),
+  };
+  if (!originalError.cause) {
+    originalError.cause = closeError;
+  }
+}
+
+function summarizeError(error) {
+  return {
+    name: error?.name ?? 'Error',
+    message: error?.message ?? String(error),
+    reason: error?.reason,
+    metadata: error?.metadata,
+  };
 }
 
 function cloneMessages(messages) {

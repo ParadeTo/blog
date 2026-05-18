@@ -101,10 +101,13 @@ export class AgentObservabilityAdapter {
       },
     });
 
-    await this.registry.dispatch(EventType.AFTER_TURN, context);
-    await this.registry.dispatchGate(EventType.AFTER_TURN, context);
-    this.turnStarted = false;
-    this.promptPreview = '';
+    try {
+      await this.registry.dispatch(EventType.AFTER_TURN, context);
+      await this.registry.dispatchGate(EventType.AFTER_TURN, context);
+    } finally {
+      this.turnStarted = false;
+      this.promptPreview = '';
+    }
   }
 
   async taskComplete({ rawOutput = '', taskDescription = this.taskDescription } = {}) {
