@@ -188,7 +188,7 @@ try {
 
 另一种是 Agent 自己重试：工具错误被写回上下文，下一轮 Agent 看到错误，再决定要不要调用同一个工具。这个 demo 走的是这一种。
 
-所以 `RetryTracker` 这个名字其实容易误会。它不是 `Retrier`，不包工具，也不重新执行工具。它只看 `after_tool_call` 事件流：
+demo 里放了一个 `flaky_tool`，专门模拟这种场景：第一次调用失败，第二次调用恢复。`RetryTracker` 这个名字其实容易误会。它不是 `Retrier`，不包工具，也不重新执行工具。它只看 `after_tool_call` 事件流：
 
 ```text
 fail(flaky_tool)
@@ -247,7 +247,7 @@ retry 场景里，第一次 `flaky_tool` 失败后，`continueOnToolError` 会�
 
 ---
 
-# 四、LoopDetector：看状态有没有前进
+# 四、LoopDetector：用状态指纹检测循环
 
 `maxIterations` 是最后的硬上限：跑到第 N 轮就停。
 
