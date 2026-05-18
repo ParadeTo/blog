@@ -1,0 +1,3 @@
+hooks:
+  TASK_COMPLETE:
+    - handler: task-audit.writeAuditEntry

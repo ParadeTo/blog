@@ -1,0 +1,4 @@
+skills:
+  - name: sop_design
+    path: sop-design/SKILL.md
+    description: 技术设计文档 SOP，要求先理解背景和约束，再产出 design_doc.md。
