@@ -20,7 +20,7 @@ Agent 失控的时候，经常不是“坏”，而是“蠢”。
 
 **看见它在原地打转以后，谁来踩刹车？**
 
-这篇就给 Agent 加一层运行时护栏。重点不是让 prompt 写得更严，而是把重试、循环检测、成本预算做成 Hook 策略，让主流程继续专心跑任务，护栏在关键节点决定是否放行。
+这篇就给 Agent 加一层运行时护栏。重点不是让 prompt 写得更严，而是把重试、循环检测、成本预算做成 Hook 策略，让主流程继续专心跑任务，护栏在关键节点决定是否继续执行。
 
 这篇对应的 demo 放在仓库的 [`demo/agent-reliability-guardrails`](https://github.com/ParadeTo/blog/tree/master/demo/agent-reliability-guardrails) 目录。
 
@@ -100,7 +100,7 @@ export class GuardrailDeny extends Error {
 
 它解决两个问题。
 
-第一，`dispatchGate` 可以只放行这种拒绝信号。普通 handler 异常继续按观测故障处理，不影响 Agent。
+第一，`dispatchGate` 只会把这种拒绝信号向上传播。普通 handler 异常继续按观测故障处理，不影响 Agent。
 
 第二，最外层可以用统一方式收口：
 
