@@ -16,7 +16,9 @@ description: 用一个 JS demo 拆解 Agent 运行时安全护栏：工具参数
 
 这篇换一个问题：如果 Agent 被任务骗了，想去调用一个不该调用的工具，谁来拦？
 
-我们先来看一个 demo。它模拟的是这样一次工具调用：
+先不用真实 LLM，我们只把最危险的那一瞬间抽出来：Agent 已经决定要调工具了，工具名和参数也准备好了。
+
+比如它准备执行这样一次调用：
 
 ```js
 {
@@ -25,9 +27,9 @@ description: 用一个 JS demo 拆解 Agent 运行时安全护栏：工具参数
 }
 ```
 
-它不是在跑一个完整的 LLM Agent，而是把“模型可能产生的一次工具调用”写死了。
+这不是一段 prompt，也不是模型回复。它代表的是 Agent loop 里已经形成的一次工具调用请求：调用 `shell_executor`，参数是 `whoami`。
 
-demo 里也确实有这个工具：
+demo 里确实有这个工具。如果真的执行到 `execute`，它会返回一个危险标记：
 
 ```js
 shell_executor: {
@@ -41,7 +43,9 @@ shell_executor: {
 }
 ```
 
-而 `workspace/demo-agent/soul.md` 里写着：
+现在矛盾来了。
+
+`workspace/demo-agent/soul.md` 里明明写着：
 
 ```markdown
 - NEVER 执行 shell 命令或任何操作系统级指令
@@ -49,9 +53,9 @@ shell_executor: {
 - NEVER 对外发送邮件或通过未授权 API 传输数据
 ```
 
-这就到了 Agent 安全里最容易误判的地方：prompt 说“不准执行 shell”，不等于 JS 里的 `shell_executor.execute()` 不能被调用。
+但 prompt 说“不准执行 shell”，不等于 JS 里的 `shell_executor.execute()` 不能被调用。只要工具调用请求已经生成，接下来就不能再指望模型自觉了。
 
-所以这个 demo 只验证一件事：在 `shell_executor.execute()` 之前，先触发 `BEFORE_TOOL_CALL`，让权限策略决定这次调用能不能继续。
+所以这个 demo 验证的是运行时最后一道门：在 `shell_executor.execute()` 之前，先触发 `BEFORE_TOOL_CALL`，让权限策略决定这次调用能不能继续。
 
 跑一下：
 
@@ -69,8 +73,8 @@ Guardrail triggered: Permission denied: tool 'shell_executor'
 
 | 输出 | 意思 |
 |---|---|
-| `Scenario: privilege` | 当前跑的是“越权调用 shell 工具”的场景 |
-| `Guardrail triggered` | 工具还没执行，护栏先拒绝了 |
+| `Scenario: privilege` | 当前回放的是“越权调用 shell 工具”的场景 |
+| `Guardrail triggered` | 工具还没执行，运行时护栏先拒绝了 |
 | `Permission denied` | 拒绝来自 `PermissionGate` |
 | `denied_tools:["shell_executor"]` | 被拦的工具就是 `shell_executor` |
 
@@ -85,11 +89,11 @@ Guardrail triggered: Permission denied: tool 'shell_executor'
   -> execute 不会运行
 ```
 
-代码在 `demo/agent-security-guardrails`。这是一个纯 JS demo，不接真实 LLM，方便把安全链路跑稳。简单讲，上篇是可靠性防蠢，这篇是安全性防骗。
+代码在 `demo/agent-security-guardrails`。这个 demo 不演示模型怎么思考，只演示工具调用已经出现以后，运行时怎么拦。
 
 Agent 安全的问题不在“它会不会说错话”，而在“它说完以后会不会真的做事”。Chatbot 的注入主要影响输出，Agent 的注入会进入工具层。
 
-所以本文要解决的不是“怎么把 prompt 写得更严”，而是把工具调用变成一条必须过门禁的链路。
+简单讲，上篇是可靠性防蠢，这篇是安全性防骗。本文要解决的不是“怎么把 prompt 写得更严”，而是把工具调用变成一条必须过门禁的链路。
 
 # 一、真正的边界在工具调用前
 
