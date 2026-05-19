@@ -12,15 +12,19 @@ description: 用一个 JS demo 拆解 Agent 运行时安全护栏：工具参数
 
 # 前言
 
-Chatbot 被 prompt injection 绕一下，最常见的后果是输出乱了。
+上篇给 Agent 加了一层可靠性护栏，拦的是“它自己犯傻”：工具失败了还重试，结果重复了还继续，token 已经花超了还往下跑。
 
-Agent 不一样。Agent 后面挂着工具，工具可能读文件、发邮件、调 API，甚至执行 shell。输出乱了只是表面，真正麻烦的是它可能把一句“帮我排查下机器状态”翻译成一个真实的副作用。
+这篇要拦另一类问题：它被任务骗去调用不该调用的工具。
 
-上一篇我们做了可靠性护栏：失败追踪、循环检测、成本控制。那一层解决的是 Agent 会不会原地打转、会不会把账单打爆。
+简单讲，上篇是可靠性防蠢，这篇是安全性防骗。
 
-这一篇换个角度：**可靠性防蠢，安全性防骗**。
+我在 JS demo 里故意放了一个 `shell_executor`。`soul.md` 里明明写着 NEVER 执行 shell，但只要工具列表里有这个能力，任务压力就可能把调用推到它面前。
 
-代码放在 `demo/agent-security-guardrails`，是一个纯 JS demo。它不用真实 LLM，直接用脚本化工具调用把四个场景跑出来：
+最后挡住它的不是 prompt，而是 `BEFORE_TOOL_CALL` 上的 `PermissionGate`。
+
+这就是我这篇想拆的问题：prompt 可以提醒 Agent 怎么做，Hook 才能在工具执行前说“不准做”。
+
+代码放在 `demo/agent-security-guardrails`。还是小 demo，不接真实 LLM，直接用脚本化工具调用把几个安全场景跑出来：
 
 ```bash
 npm start
@@ -29,7 +33,7 @@ npm run attack:inject
 npm run attack:api-leak
 ```
 
-先看提权场景。
+后面就按这几条命令往下扒：权限怎么拦，参数怎么消毒，API Key 怎么不进模型上下文。
 
 # 一、Prompt 禁止了，为什么还要 Hook 拦？
 
