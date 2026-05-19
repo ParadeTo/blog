@@ -16,9 +16,11 @@ description: 用一个 JS demo 拆解 Agent 运行时安全护栏：工具参数
 
 这篇换一个问题：如果 Agent 被任务骗了，想去调用一个不该调用的工具，谁来拦？
 
-先不用真实 LLM，我们只把最危险的那一瞬间抽出来：Agent 已经决定要调工具了，工具名和参数也准备好了。
+先把边界说清楚：这里不是一个“证明模型会被诱导”的 demo。它没有接真实 LLM，也没有让模型从 prompt 里自己选工具。
 
-比如它准备执行这样一次调用：
+它做的是更小的一件事：假设上游已经产出了一次工具调用请求，运行时能不能在 `execute` 前把它拦住。
+
+这个工具调用请求长这样：
 
 ```js
 {
@@ -27,9 +29,9 @@ description: 用一个 JS demo 拆解 Agent 运行时安全护栏：工具参数
 }
 ```
 
-这不是一段 prompt，也不是模型回复。它代表的是 Agent loop 里已经形成的一次工具调用请求：调用 `shell_executor`，参数是 `whoami`。
+它不是一段 prompt，也不是模型回复。它代表的是 Agent loop 里已经形成的一次工具调用：调用 `shell_executor`，参数是 `whoami`。
 
-demo 里确实有这个工具。如果真的执行到 `execute`，它会返回一个危险标记：
+代码里确实有这个工具。如果真的执行到 `execute`，它会返回一个危险标记：
 
 ```js
 shell_executor: {
@@ -55,7 +57,7 @@ shell_executor: {
 
 但 prompt 说“不准执行 shell”，不等于 JS 里的 `shell_executor.execute()` 不能被调用。只要工具调用请求已经生成，接下来就不能再指望模型自觉了。
 
-所以这个 demo 验证的是运行时最后一道门：在 `shell_executor.execute()` 之前，先触发 `BEFORE_TOOL_CALL`，让权限策略决定这次调用能不能继续。
+所以这个最小复现验证的是运行时最后一道门：在 `shell_executor.execute()` 之前，先触发 `BEFORE_TOOL_CALL`，让权限策略决定这次调用能不能继续。
 
 跑一下：
 
@@ -89,7 +91,9 @@ Guardrail triggered: Permission denied: tool 'shell_executor'
   -> execute 不会运行
 ```
 
-代码在 `demo/agent-security-guardrails`。这个 demo 不演示模型怎么思考，只演示工具调用已经出现以后，运行时怎么拦。
+代码在 `demo/agent-security-guardrails`。它不演示模型怎么思考，只演示工具调用已经出现以后，运行时怎么拦。
+
+如果要证明“模型真的会被骗到选这个工具”，那就应该接真实 LLM 或 CrewAI 场景。本文先把后半段跑清楚：工具调用出现以后，Hook 怎么兜住副作用。
 
 Agent 安全的问题不在“它会不会说错话”，而在“它说完以后会不会真的做事”。Chatbot 的注入主要影响输出，Agent 的注入会进入工具层。
 
