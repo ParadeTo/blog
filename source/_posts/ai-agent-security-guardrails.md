@@ -14,40 +14,38 @@ description: 用一个 JS demo 拆解 Agent 运行时安全护栏：工具参数
 
 上篇给 Agent 加了一层可靠性护栏，拦的是“它自己犯傻”：工具失败了还重试，结果重复了还继续，token 已经花超了还往下跑。
 
-这篇要拦另一类问题：它被任务骗去调用不该调用的工具。
+这篇换一个问题：如果 Agent 被任务骗了，想去调用一个不该调用的工具，谁来拦？
 
-简单讲，上篇是可靠性防蠢，这篇是安全性防骗。
-
-我在 JS demo 里故意放了一个 `shell_executor`。`soul.md` 里明明写着 NEVER 执行 shell，但只要工具列表里有这个能力，任务压力就可能把调用推到它面前。
-
-最后挡住它的不是 prompt，而是 `BEFORE_TOOL_CALL` 上的 `PermissionGate`。
-
-这就是我这篇想拆的问题：prompt 可以提醒 Agent 怎么做，Hook 才能在工具执行前说“不准做”。
-
-代码放在 `demo/agent-security-guardrails`。还是小 demo，不接真实 LLM，直接用脚本化工具调用把几个安全场景跑出来：
+先看 demo 输出：
 
 ```bash
-npm start
 npm run attack:privilege
-npm run attack:inject
-npm run attack:api-leak
 ```
 
-后面就按这几条命令往下扒：权限怎么拦，参数怎么消毒，API Key 怎么不进模型上下文。
-
-# 一、Prompt 禁止了，为什么还要 Hook 拦？
-
-demo 里的 `workspace/demo-agent/soul.md` 写得很清楚：
-
-```markdown
-- NEVER 执行 shell 命令或任何操作系统级指令
-- NEVER 读取系统敏感路径（/etc、~/.ssh、用户主目录）
-- NEVER 对外发送邮件或通过未授权 API 传输数据
+```text
+Scenario: privilege
+Guardrail triggered: Permission denied: tool 'shell_executor'
+[permission-gate] {"deny_count":1,"denied_tools":["shell_executor"]}
 ```
 
-如果安全边界只写在 prompt 里，问题是：模型“知道不该做”和系统“不能做”不是一回事。
+这里有个挺微妙的点：`workspace/demo-agent/soul.md` 里已经写了 NEVER 执行 shell。可最终拦住 `shell_executor` 的不是 prompt，而是 `BEFORE_TOOL_CALL` 上的 `PermissionGate`。
 
-`src/agent/real-agent.js` 里故意放了一个危险工具：
+这篇就顺着这条链路拆：
+
+```text
+任务诱导
+  -> Agent 准备调用工具
+  -> BEFORE_TOOL_CALL
+  -> SandboxGuard / PermissionGate
+  -> GuardrailDeny
+  -> 审计留痕
+```
+
+代码在 `demo/agent-security-guardrails`。这是一个纯 JS demo，不接真实 LLM，方便把安全链路跑稳。简单讲，上篇是可靠性防蠢，这篇是安全性防骗。
+
+# 一、先看事故链路
+
+demo 里故意放了一个危险工具：
 
 ```js
 shell_executor: {
@@ -61,34 +59,30 @@ shell_executor: {
 }
 ```
 
-这就是 Agent 安全和 Chatbot 安全的分叉点。Chatbot 说错话，最多是内容事故。Agent 一旦调用了这个工具，事故就进入系统边界。
+工具本身能执行，prompt 里也确实写了禁止：
 
-跑一下提权场景：
-
-```bash
-npm run attack:privilege
+```markdown
+- NEVER 执行 shell 命令或任何操作系统级指令
+- NEVER 读取系统敏感路径（/etc、~/.ssh、用户主目录）
+- NEVER 对外发送邮件或通过未授权 API 传输数据
 ```
 
-输出里最关键的是这几行：
+如果安全只靠这几行文字，边界其实还在模型脑子里。模型没选 `shell_executor`，这次就安全；模型被任务压力诱导，下一步就可能把工具调出去。
 
-```text
-Scenario: privilege
-Guardrail triggered: Permission denied: tool 'shell_executor'
-[permission-gate] {"deny_count":1,"denied_tools":["shell_executor"]}
-```
+Agent 安全的问题不在“它会不会说错话”，而在“它说完以后会不会真的做事”。Chatbot 的注入主要影响输出，Agent 的注入会进入工具层。
 
-Prompt 负责表达意图，Hook 负责执行边界。`shell_executor` 不是靠模型自觉忍住的，而是在工具执行前被 `PermissionGate` 拦下来了。
+所以本文要解决的不是“怎么把 prompt 写得更严”，而是把工具调用变成一条必须过门禁的链路。
 
-# 二、拦截点在哪里：BEFORE_TOOL_CALL
+# 二、真正的边界在工具调用前
 
-安全策略最适合卡在工具调用前。因为此时已经能拿到两个东西：
+工具调用前刚好能看到两个关键信息：
 
-| 信息 | 用处 |
+| 信息 | 能做的判断 |
 |---|---|
-| `toolName` | 判断工具能不能被当前 Agent 使用 |
-| `toolInput` | 判断参数里有没有路径穿越、命令注入、密钥引用 |
+| `toolName` | 这个工具当前能不能用 |
+| `toolInput` | 参数里有没有路径穿越、命令注入、密钥引用 |
 
-JS demo 里，工具执行被包在 `runGuardedToolCall` 里：
+JS demo 里，所有工具执行都要经过 `runGuardedToolCall`：
 
 ```js
 try {
@@ -112,13 +106,13 @@ try {
 const output = await execute(toolInput)
 ```
 
-这里有两个动作。
+顺序很重要。
 
-第一，`beforeToolCall` 先走 Hook。只要抛出 `GuardrailDeny`，`execute` 就不会跑。
+先跑 `beforeToolCall`，再执行工具。只要前面抛出 `GuardrailDeny`，后面的 `execute` 根本不会发生。
 
-第二，即使工具没有执行，也补一条失败的 `afterToolCall`。这样审计日志能知道“这次不是工具炸了，是护栏在执行前拒绝了”。
+这里还补了一条失败的 `afterToolCall`。工具虽然没执行，但审计链路需要知道：这次失败不是工具报错，而是护栏在执行前拒绝了。
 
-`dispatchGate` 是这个机制的核心：
+拒绝信号靠 `dispatchGate` 往外抛：
 
 ```js
 async dispatchGate(eventType, context = {}) {
@@ -135,31 +129,31 @@ async dispatchGate(eventType, context = {}) {
 }
 ```
 
-Python 参考实现里同一个入口叫 `dispatch_gate`，JS 版改成了驼峰写法。
+普通 Hook 异常只记录。`GuardrailDeny` 是策略主动拒绝，必须中断主流程。
 
-普通 Hook 异常只记录，不影响主流程。`GuardrailDeny` 不一样，它就是策略拒绝信号，必须往外抛。
+Python 参考实现里同一个入口叫 `dispatch_gate`。CrewAI 的 `before_tool_call` 只能返回 `False`，异常不好直接抛到任务外层，所以 adapter 用 `pending_deny` 先存起来，再在 step callback 里抛出。JS demo 自己控制执行循环，就不需要这层缓存。
 
-Python/CrewAI 版本里还有一个 `pending_deny`。那是框架适配层的处理：CrewAI 的 `before_tool_call` 只能返回 `False` 阻止工具，不能直接把异常一路抛到任务外层，所以 adapter 先把拒绝存进 `pending_deny`，等 step callback 再抛出来。
+到这里，主线清楚了：安全策略不是散落在 prompt 或业务代码里，而是集中挂到 `BEFORE_TOOL_CALL`。
 
-JS demo 自己控制执行循环，不需要这层缓存。名字不同，意思一样：拒绝信号不能丢。
+# 三、先查参数：SandboxGuard
 
-# 三、第一道门：SandboxGuard
+第一类风险是参数本身有问题。
 
-先看输入攻击：
+跑注入场景：
 
 ```bash
 npm run attack:inject
 ```
 
-场景里调用的是看起来安全的 `knowledge_search`，参数却是：
+工具名是安全的 `knowledge_search`，参数却长这样：
 
 ```js
 { query: '../../etc/passwd' }
 ```
 
-这类字符串不需要 LLM 再判断一次。路径穿越、危险命令、shell 拼接符，都是确定性特征，直接用确定性规则挡掉。
+这种输入不需要再问一次 LLM。路径穿越、危险命令、shell 拼接符，都是确定性特征，直接用确定性规则拦。
 
-`SandboxGuard` 做的事很朴素：
+`SandboxGuard` 只看 `toolInput`：
 
 ```js
 if (PATH_TRAVERSAL.test(text)) {
@@ -171,21 +165,25 @@ if (COMMAND_FIELDS.has(field.toLowerCase()) && SHELL_INJECTION.test(text)) {
 }
 ```
 
-这里我特意把字段分了一下。`command`、`query`、`script` 这类字段按命令风险看；`content` 这类字段不能见到一个 `|` 就拦，否则 Markdown 表格也会误伤。
+这里有个小细节：不同字段不能用同一把尺子。
 
-测试里就有这个用例：
+`command`、`query`、`script` 这类字段要按命令风险看；`content` 这种正文类字段不能见到一个 `|` 就拦，不然 Markdown 表格也会误伤。
+
+测试里专门留了这个例子：
 
 ```js
 toolInput: { content: '| a | b |\n|---|---|' }
 ```
 
-安全策略如果太粗，会把正常工作流打断；太松，又等于没拦。`SandboxGuard` 先做几个高置信度规则，拦住确定危险的输入，剩下的交给更高层的业务策略。
+`SandboxGuard` 的边界是参数消毒。它不关心工具有没有权限，只回答一个问题：这个入参本身危险吗？
 
-# 四、第二道门：PermissionGate
+# 四、再查权限：PermissionGate
 
-参数没问题，不代表工具可以用。
+参数没问题，也不代表工具可以用。
 
-`PermissionGate` 读取 `workspace/demo-agent/security.yaml`：
+第二类风险是工具越权。比如 `shell_executor` 的参数只是 `whoami`，没有路径穿越，也没有 shell 拼接符，但这个工具本身就不该给普通任务用。
+
+这层交给 `PermissionGate`。策略读取 `workspace/demo-agent/security.yaml`：
 
 ```yaml
 permissions:
@@ -198,9 +196,9 @@ permissions:
     secure_api: allow
 ```
 
-这里是一个很小的权限模型：`allow`、`ask`、`deny`。
+规则很小：`allow`、`ask`、`deny`。
 
-显式配置优先。`shell_executor` 明确是 `deny`，所以提权场景直接拒绝：
+显式配置优先。`shell_executor` 是 `deny`，所以提权场景会在工具执行前停住：
 
 ```js
 if (level === 'deny') {
@@ -212,15 +210,17 @@ if (level === 'deny') {
 }
 ```
 
-`ask` 在这个 demo 里只是记录一次决策后放行。真实系统可以在这里接人工确认、审批单、白名单会话，或者直接把任务暂停。
+`ask` 在 demo 里只是记录一次决策后放行。真实系统可以在这里接人工确认，或者把任务挂起等待审批。
 
-关键不在 `ask` 的 UI 怎么做，而在权限判断从 prompt 里拿了出来。Agent 说“我不会发邮件”不够，`email_sender: deny` 才是运行时边界。
+这一层和 `SandboxGuard` 的分工不一样。`SandboxGuard` 看参数，`PermissionGate` 看工具名和策略。前者防注入，后者防越权。
 
-# 五、第三道门：SecureToolWrapper
+# 五、最后处理密钥：SecureToolWrapper
 
-API Key 最容易被偷懒塞进 prompt、backstory 或工具 description 里。这样做很方便，也很危险，因为模型上下文里真的出现了密钥。
+第三类风险更隐蔽：工具需要 API Key。
 
-JS demo 里，`secure_api` 的工具 schema 只暴露 `query`：
+最省事的写法是把 key 塞进 prompt、backstory 或工具 description。这样模型一定能“知道”怎么调用，问题是它也真的看到了密钥。
+
+JS demo 里，`secure_api` 给模型看的 schema 只有 `query`：
 
 ```js
 parameters: {
@@ -230,7 +230,7 @@ parameters: {
 }
 ```
 
-密钥在执行时才注入：
+密钥在工具执行时注入：
 
 ```js
 secure_api: SecureToolWrapper.wrap(rawTool, {
@@ -238,7 +238,7 @@ secure_api: SecureToolWrapper.wrap(rawTool, {
 })
 ```
 
-包装器也很短：
+包装器只改执行层：
 
 ```js
 execute: async (input = {}) => {
@@ -247,19 +247,35 @@ execute: async (input = {}) => {
 }
 ```
 
-所以 `npm run attack:api-leak` 的结果只有预览：
+所以跑：
+
+```bash
+npm run attack:api-leak
+```
+
+输出只有预览：
 
 ```text
 Result: {"ok":true,"query":"account status","keyPreview":"sk-D...xxxx"}
 ```
 
-工具执行函数拿到了完整 `apiKey`，模型能看到的参数 schema 里没有 `apiKey`。这条隔离线很重要：密钥属于工具运行时，不属于对话上下文。
+`SecureToolWrapper` 要保住的是这条线：模型上下文里没有密钥，工具运行时才拿到密钥。
 
-# 六、安全事件要留痕
+# 六、把几条策略装到一起
 
-拦下来只是第一步。线上真出事的时候，我们还要知道是谁拦的、拦了什么、当时参数长什么样。
+前面三层分别解决不同问题：
 
-`SecurityAuditLogger` 做两件事：内存里留 metrics，磁盘上写 JSONL。
+| 风险 | 策略 | 拦截对象 |
+|---|---|---|
+| 参数注入 | `SandboxGuard` | `toolInput` |
+| 工具越权 | `PermissionGate` | `toolName` |
+| 密钥泄漏 | `SecureToolWrapper` | 工具执行层 |
+
+还差一件事：留痕。
+
+拦一次不难，线上真正要查的是：谁拦的、拦了什么、当时参数长什么样。
+
+`SecurityAuditLogger` 负责把安全事件写成 JSONL：
 
 ```js
 recordEvent(type, details = {}) {
@@ -273,7 +289,7 @@ recordEvent(type, details = {}) {
 }
 ```
 
-`hooks.yaml` 里把它声明在最前面：
+`hooks.yaml` 里它被放在最前面：
 
 ```yaml
 strategies:
@@ -291,34 +307,43 @@ strategies:
       audit: audit-logger
 ```
 
-`deps` 的含义很直接：把前面已经实例化好的 `audit-logger` 注入到 `SandboxGuard` 和 `PermissionGate` 的构造参数里。
+`deps` 的意思是：把前面已经创建好的 `audit-logger` 注入到后面策略的构造参数里。
 
-这样两类安全事件会进入同一份 `security-audit.jsonl`。路径穿越是 `sandbox_path_traversal`，权限拒绝是 `permission_deny`，会话结束还有一条 `session_summary`。
+这样 `SandboxGuard` 和 `PermissionGate` 共享同一个 `SecurityAuditLogger`。路径穿越会写 `sandbox_path_traversal`，权限拒绝会写 `permission_deny`，会话结束再写一条 `session_summary`。
 
-这里顺序有意义。被依赖的策略要先声明；加载器按 YAML 顺序实例化，找不到依赖就跳过当前策略。安全系统里这种失败应该早发现，不能悄悄退化成“没有审计也能跑”。
+顺序也不能乱。被依赖的策略要先声明，加载器按 YAML 顺序实例化；找不到依赖，当前策略就不该继续装上去。
 
-# 七、三层护栏
+# 七、回到四个场景
 
-到这里，前面几篇的 Hook 体系就能串起来了。
+到这里再看 demo 的四个命令，就不是四个零散例子了。
 
-| 层 | 解决的问题 | 代表策略 |
+| 命令 | 发生了什么 | 说明 |
 |---|---|---|
-| 可观测 | 看见 Agent 每一步做了什么 | structured log、Langfuse trace |
-| 可靠性 | 防止失败重试、循环、超预算 | RetryTracker、LoopDetector、CostGuard |
-| 安全性 | 防止越权、注入、密钥泄漏 | SandboxGuard、PermissionGate、SecureToolWrapper |
+| `npm start` | `knowledge_search` 正常执行 | 普通工具走完整链路 |
+| `npm run attack:privilege` | `shell_executor` 被拒绝 | 工具越权由 `PermissionGate` 拦 |
+| `npm run attack:inject` | `../../etc/passwd` 被拒绝 | 参数注入由 `SandboxGuard` 拦 |
+| `npm run attack:api-leak` | API Key 只出现预览 | 密钥由 `SecureToolWrapper` 注入 |
 
-这三层不应该散落在主流程里。Agent loop 只负责“准备调用工具”，Hook 策略负责“能不能调用”。
+这也是我觉得 Hook 适合做 Agent 安全的原因。Agent loop 只负责“准备调用工具”，策略负责判断“能不能调用”。安全逻辑不需要散在 prompt、工具函数和业务流程里。
 
-我比较喜欢这个拆法，因为它保住了两个边界：业务流程不用到处写安全判断，安全策略也不用理解每个 Agent 的完整任务。
+前面几篇的层次也能接上：
+
+| 层 | 解决的问题 |
+|---|---|
+| 可观测 | 先看见 Agent 每一步做了什么 |
+| 可靠性 | 再防止失败重试、循环、超预算 |
+| 安全性 | 最后拦住越权、注入、密钥泄漏 |
+
+安全性不是替代前两层，而是把“真实副作用”这一关补上。
 
 # 总结
 
 这篇讲的是 Agent 工具调用前后的安全边界。
 
-`SandboxGuard` 挡确定性的危险输入，`PermissionGate` 按工具名做运行时权限判断，`SecureToolWrapper` 把 API Key 留在工具执行层。
+主线只有一条：工具执行前先过 `BEFORE_TOOL_CALL`，策略可以通过 `GuardrailDeny` 中断调用。
 
-`SecurityAuditLogger` 和 `deps` 解决留痕问题，多条策略可以共享同一个审计实例。
+`SandboxGuard` 看参数，`PermissionGate` 看权限，`SecureToolWrapper` 把密钥留在工具执行层。
 
-Prompt 仍然有用，它适合写角色约束和行为偏好；真正涉及副作用的地方，要交给 Hook 和 `GuardrailDeny`。
+`SecurityAuditLogger` 和 `deps` 负责把这些策略串起来，拒绝以后能查得到原因。
 
 下一篇可以把这套安全层装进 XiaoPaw，让本地助手不只会做事，也知道哪些事不能碰。
