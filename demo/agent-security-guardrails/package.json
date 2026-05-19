@@ -1,0 +1,22 @@
+{
+  "name": "agent-security-guardrails-demo",
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "start": "node src/demo.js",
+    "attack:privilege": "SECURITY_SCENARIO=privilege node src/demo.js",
+    "attack:inject": "SECURITY_SCENARIO=inject node src/demo.js",
+    "attack:api-leak": "SECURITY_SCENARIO=api-leak SECURE_API_KEY=sk-DEMO-xxxxxxxxxxxxxxxxxxxxxxxx node src/demo.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "yaml": "^2.9.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.6"
+  }
+}
