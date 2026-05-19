@@ -7,97 +7,33 @@ tags:
   - javascript
 categories:
   - ai
-description: 用一个 JS demo 拆解 Agent 运行时安全护栏：工具参数怎么消毒，权限怎么拦，API Key 怎么不进模型上下文。
+description: 用 JS 实现拆解 Agent 运行时安全护栏：工具参数怎么消毒，权限怎么拦，API Key 怎么不进模型上下文。
 ---
 
 # 前言
 
 上篇给 Agent 加了一层可靠性护栏，拦的是“它自己犯傻”：工具失败了还重试，结果重复了还继续，token 已经花超了还往下跑。
 
-这篇换一个问题：如果 Agent 被任务骗了，想去调用一个不该调用的工具，谁来拦？
+这篇换一个问题：如果 Agent 被任务骗了，准备调用一个不该调用的工具，谁来拦？
 
-先把边界说清楚：这里不是一个“证明模型会被诱导”的 demo。它没有接真实 LLM，也没有让模型从 prompt 里自己选工具。
+prompt 里当然可以写“不要执行 shell”“不要读敏感文件”“不要发邮件”。这些话有用，但它们只是写给模型看的约束。
 
-它做的是更小的一件事：假设上游已经产出了一次工具调用请求，运行时能不能在 `execute` 前把它拦住。
+真正产生副作用的是工具函数。`file_reader` 会读文件，`shell_executor` 会执行命令，`email_sender` 会把消息发出去。一旦 Agent 的下一步已经变成“调用某个工具 + 一组参数”，风险就从文本进入了运行时。
 
-这个工具调用请求长这样：
-
-```js
-{
-  toolName: 'shell_executor',
-  toolInput: { query: 'whoami' },
-}
-```
-
-它不是一段 prompt，也不是模型回复。它代表的是 Agent loop 里已经形成的一次工具调用：调用 `shell_executor`，参数是 `whoami`。
-
-代码里确实有这个工具。如果真的执行到 `execute`，它会返回一个危险标记：
-
-```js
-shell_executor: {
-  definition: {
-    function: {
-      name: 'shell_executor',
-      description: 'Execute system commands. Demo only; should be denied.',
-    },
-  },
-  execute: async ({ query }) => ({ breached: true, command: query }),
-}
-```
-
-现在矛盾来了。
-
-`workspace/demo-agent/soul.md` 里明明写着：
-
-```markdown
-- NEVER 执行 shell 命令或任何操作系统级指令
-- NEVER 读取系统敏感路径（/etc、~/.ssh、用户主目录）
-- NEVER 对外发送邮件或通过未授权 API 传输数据
-```
-
-但 prompt 说“不准执行 shell”，不等于 JS 里的 `shell_executor.execute()` 不能被调用。只要工具调用请求已经生成，接下来就不能再指望模型自觉了。
-
-所以这个最小复现验证的是运行时最后一道门：在 `shell_executor.execute()` 之前，先触发 `BEFORE_TOOL_CALL`，让权限策略决定这次调用能不能继续。
-
-跑一下：
-
-```bash
-npm run attack:privilege
-```
+所以这篇直接看运行时边界应该放在哪里：
 
 ```text
-Scenario: privilege
-Guardrail triggered: Permission denied: tool 'shell_executor'
-[permission-gate] {"deny_count":1,"denied_tools":["shell_executor"]}
-```
-
-这几行可以这么读：
-
-| 输出 | 意思 |
-|---|---|
-| `Scenario: privilege` | 当前回放的是“越权调用 shell 工具”的场景 |
-| `Guardrail triggered` | 工具还没执行，运行时护栏先拒绝了 |
-| `Permission denied` | 拒绝来自 `PermissionGate` |
-| `denied_tools:["shell_executor"]` | 被拦的工具就是 `shell_executor` |
-
-这篇就顺着这条链路拆：
-
-```text
-脚本模拟一次工具调用
+工具调用请求
   -> BEFORE_TOOL_CALL
-  -> PermissionGate 读取 security.yaml
-  -> shell_executor: deny
+  -> SandboxGuard 检查参数
+  -> PermissionGate 检查权限
   -> GuardrailDeny
-  -> execute 不会运行
+  -> 工具不执行，审计留痕
 ```
 
-代码在 `demo/agent-security-guardrails`。它不演示模型怎么思考，只演示工具调用已经出现以后，运行时怎么拦。
+Agent 安全的问题不在“它会不会说错话”，而在“它说完以后会不会真的做事”。Chatbot 的注入主要影响输出，Agent 的注入会进入工具层，工具层才是副作用真正发生的地方。
 
-如果要证明“模型真的会被骗到选这个工具”，那就应该接真实 LLM 或 CrewAI 场景。本文先把后半段跑清楚：工具调用出现以后，Hook 怎么兜住副作用。
-
-Agent 安全的问题不在“它会不会说错话”，而在“它说完以后会不会真的做事”。Chatbot 的注入主要影响输出，Agent 的注入会进入工具层。
-
-简单讲，上篇是可靠性防蠢，这篇是安全性防骗。本文要解决的不是“怎么把 prompt 写得更严”，而是把工具调用变成一条必须过门禁的链路。
+简单讲，上篇是可靠性防蠢，这篇是安全性防骗。本文要解决的不是“怎么把 prompt 写得更严”，而是把工具调用变成一条必须过门禁的链路：参数先消毒，工具再判权，密钥不进模型上下文。
 
 # 一、真正的边界在工具调用前
 
@@ -108,7 +44,7 @@ Agent 安全的问题不在“它会不会说错话”，而在“它说完以�
 | `toolName` | 这个工具当前能不能用 |
 | `toolInput` | 参数里有没有路径穿越、命令注入、密钥引用 |
 
-JS demo 里，所有工具执行都要经过 `runGuardedToolCall`：
+这份 JS 实现里，所有工具执行都要经过 `runGuardedToolCall`：
 
 ```js
 try {
@@ -157,7 +93,7 @@ async dispatchGate(eventType, context = {}) {
 
 普通 Hook 异常只记录。`GuardrailDeny` 是策略主动拒绝，必须中断主流程。
 
-Python 参考实现里同一个入口叫 `dispatch_gate`。CrewAI 的 `before_tool_call` 只能返回 `False`，异常不好直接抛到任务外层，所以 adapter 用 `pending_deny` 先存起来，再在 step callback 里抛出。JS demo 自己控制执行循环，就不需要这层缓存。
+Python 参考实现里同一个入口叫 `dispatch_gate`。CrewAI 的 `before_tool_call` 只能返回 `False`，异常不好直接抛到任务外层，所以 adapter 用 `pending_deny` 先存起来，再在 step callback 里抛出。这份 JS 实现自己控制执行循环，就不需要这层缓存。
 
 到这里，主线清楚了：安全策略不是散落在 prompt 或业务代码里，而是集中挂到 `BEFORE_TOOL_CALL`。
 
@@ -236,7 +172,7 @@ if (level === 'deny') {
 }
 ```
 
-`ask` 在 demo 里只是记录一次决策后放行。真实系统可以在这里接人工确认，或者把任务挂起等待审批。
+`ask` 在这里先记录一次决策后放行。真实系统可以在这里接人工确认，或者把任务挂起等待审批。
 
 这一层和 `SandboxGuard` 的分工不一样。`SandboxGuard` 看参数，`PermissionGate` 看工具名和策略。前者防注入，后者防越权。
 
@@ -246,7 +182,7 @@ if (level === 'deny') {
 
 最省事的写法是把 key 塞进 prompt、backstory 或工具 description。这样模型一定能“知道”怎么调用，问题是它也真的看到了密钥。
 
-JS demo 里，`secure_api` 给模型看的 schema 只有 `query`：
+这份 JS 实现里，`secure_api` 给模型看的 schema 只有 `query`：
 
 ```js
 parameters: {
@@ -341,7 +277,7 @@ strategies:
 
 # 六、回到四个场景
 
-到这里再看 demo 的四个命令，就不是四个零散例子了。
+到这里再看这几个命令，就不是几个零散例子了。
 
 | 命令 | 发生了什么 | 说明 |
 |---|---|---|
