@@ -16,7 +16,22 @@ description: 用一个 JS demo 拆解 Agent 运行时安全护栏：工具参数
 
 这篇换一个问题：如果 Agent 被任务骗了，想去调用一个不该调用的工具，谁来拦？
 
-先看 demo 输出：
+先把 demo 讲清楚。
+
+它不是在跑一个完整的 LLM Agent，而是把“模型可能产生的一次工具调用”写死了：
+
+```js
+{
+  toolName: 'shell_executor',
+  toolInput: { query: 'whoami' },
+}
+```
+
+这代表一个危险时刻：Agent 准备调用 shell 工具。`soul.md` 里虽然写了 NEVER 执行 shell，但 prompt 只是提醒，不能拦住一个 JS 函数真的被调用。
+
+所以这个 demo 只验证一件事：在 `shell_executor.execute()` 之前，先触发 `BEFORE_TOOL_CALL`，让权限策略决定这次调用能不能继续。
+
+跑一下：
 
 ```bash
 npm run attack:privilege
@@ -28,17 +43,24 @@ Guardrail triggered: Permission denied: tool 'shell_executor'
 [permission-gate] {"deny_count":1,"denied_tools":["shell_executor"]}
 ```
 
-这里有个挺微妙的点：`workspace/demo-agent/soul.md` 里已经写了 NEVER 执行 shell。可最终拦住 `shell_executor` 的不是 prompt，而是 `BEFORE_TOOL_CALL` 上的 `PermissionGate`。
+这几行可以这么读：
+
+| 输出 | 意思 |
+|---|---|
+| `Scenario: privilege` | 当前跑的是“越权调用 shell 工具”的场景 |
+| `Guardrail triggered` | 工具还没执行，护栏先拒绝了 |
+| `Permission denied` | 拒绝来自 `PermissionGate` |
+| `denied_tools:["shell_executor"]` | 被拦的工具就是 `shell_executor` |
 
 这篇就顺着这条链路拆：
 
 ```text
-任务诱导
-  -> Agent 准备调用工具
+脚本模拟一次工具调用
   -> BEFORE_TOOL_CALL
-  -> SandboxGuard / PermissionGate
+  -> PermissionGate 读取 security.yaml
+  -> shell_executor: deny
   -> GuardrailDeny
-  -> 审计留痕
+  -> execute 不会运行
 ```
 
 代码在 `demo/agent-security-guardrails`。这是一个纯 JS demo，不接真实 LLM，方便把安全链路跑稳。简单讲，上篇是可靠性防蠢，这篇是安全性防骗。
