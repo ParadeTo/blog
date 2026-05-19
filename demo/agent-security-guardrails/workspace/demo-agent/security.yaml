@@ -1,0 +1,9 @@
+permissions:
+  default: ask
+  tools:
+    knowledge_search: allow
+    safe_calculator: allow
+    file_reader: ask
+    shell_executor: deny
+    email_sender: deny
+    secure_api: allow

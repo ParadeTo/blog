@@ -1,0 +1,29 @@
+hooks:
+  BEFORE_TOOL_CALL:
+    - handler: structured-log.beforeToolHandler
+  AFTER_TOOL_CALL:
+    - handler: structured-log.afterToolHandler
+
+strategies:
+  audit-logger:
+    class: audit-logger.SecurityAuditLogger
+    config:
+      auditFile: workspace/demo-agent/security-audit.jsonl
+    hooks:
+      SESSION_END: sessionEndHandler
+
+  sandbox-guard:
+    class: sandbox-guard.SandboxGuard
+    deps:
+      audit: audit-logger
+    hooks:
+      BEFORE_TOOL_CALL: beforeToolHandler
+
+  permission-gate:
+    class: permission-gate.PermissionGate
+    config:
+      defaultLevel: ask
+    deps:
+      audit: audit-logger
+    hooks:
+      BEFORE_TOOL_CALL: beforeToolHandler
