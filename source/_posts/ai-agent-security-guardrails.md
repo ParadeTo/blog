@@ -27,7 +27,29 @@ description: 用一个 JS demo 拆解 Agent 运行时安全护栏：工具参数
 }
 ```
 
-这代表一个危险时刻：Agent 准备调用 shell 工具。`soul.md` 里虽然写了 NEVER 执行 shell，但 prompt 只是提醒，不能拦住一个 JS 函数真的被调用。
+demo 里也确实有这个工具：
+
+```js
+shell_executor: {
+  definition: {
+    function: {
+      name: 'shell_executor',
+      description: 'Execute system commands. Demo only; should be denied.',
+    },
+  },
+  execute: async ({ query }) => ({ breached: true, command: query }),
+}
+```
+
+而 `workspace/demo-agent/soul.md` 里写着：
+
+```markdown
+- NEVER 执行 shell 命令或任何操作系统级指令
+- NEVER 读取系统敏感路径（/etc、~/.ssh、用户主目录）
+- NEVER 对外发送邮件或通过未授权 API 传输数据
+```
+
+这就到了 Agent 安全里最容易误判的地方：prompt 说“不准执行 shell”，不等于 JS 里的 `shell_executor.execute()` 不能被调用。
 
 所以这个 demo 只验证一件事：在 `shell_executor.execute()` 之前，先触发 `BEFORE_TOOL_CALL`，让权限策略决定这次调用能不能继续。
 
@@ -65,37 +87,11 @@ Guardrail triggered: Permission denied: tool 'shell_executor'
 
 代码在 `demo/agent-security-guardrails`。这是一个纯 JS demo，不接真实 LLM，方便把安全链路跑稳。简单讲，上篇是可靠性防蠢，这篇是安全性防骗。
 
-# 一、先看事故链路
-
-demo 里故意放了一个危险工具：
-
-```js
-shell_executor: {
-  definition: {
-    function: {
-      name: 'shell_executor',
-      description: 'Execute system commands. Demo only; should be denied.',
-    },
-  },
-  execute: async ({ query }) => ({ breached: true, command: query }),
-}
-```
-
-工具本身能执行，prompt 里也确实写了禁止：
-
-```markdown
-- NEVER 执行 shell 命令或任何操作系统级指令
-- NEVER 读取系统敏感路径（/etc、~/.ssh、用户主目录）
-- NEVER 对外发送邮件或通过未授权 API 传输数据
-```
-
-如果安全只靠这几行文字，边界其实还在模型脑子里。模型没选 `shell_executor`，这次就安全；模型被任务压力诱导，下一步就可能把工具调出去。
-
 Agent 安全的问题不在“它会不会说错话”，而在“它说完以后会不会真的做事”。Chatbot 的注入主要影响输出，Agent 的注入会进入工具层。
 
 所以本文要解决的不是“怎么把 prompt 写得更严”，而是把工具调用变成一条必须过门禁的链路。
 
-# 二、真正的边界在工具调用前
+# 一、真正的边界在工具调用前
 
 工具调用前刚好能看到两个关键信息：
 
@@ -157,7 +153,7 @@ Python 参考实现里同一个入口叫 `dispatch_gate`。CrewAI 的 `before_to
 
 到这里，主线清楚了：安全策略不是散落在 prompt 或业务代码里，而是集中挂到 `BEFORE_TOOL_CALL`。
 
-# 三、先查参数：SandboxGuard
+# 二、先查参数：SandboxGuard
 
 第一类风险是参数本身有问题。
 
@@ -199,7 +195,7 @@ toolInput: { content: '| a | b |\n|---|---|' }
 
 `SandboxGuard` 的边界是参数消毒。它不关心工具有没有权限，只回答一个问题：这个入参本身危险吗？
 
-# 四、再查权限：PermissionGate
+# 三、再查权限：PermissionGate
 
 参数没问题，也不代表工具可以用。
 
@@ -236,7 +232,7 @@ if (level === 'deny') {
 
 这一层和 `SandboxGuard` 的分工不一样。`SandboxGuard` 看参数，`PermissionGate` 看工具名和策略。前者防注入，后者防越权。
 
-# 五、最后处理密钥：SecureToolWrapper
+# 四、最后处理密钥：SecureToolWrapper
 
 第三类风险更隐蔽：工具需要 API Key。
 
@@ -283,7 +279,7 @@ Result: {"ok":true,"query":"account status","keyPreview":"sk-D...xxxx"}
 
 `SecureToolWrapper` 要保住的是这条线：模型上下文里没有密钥，工具运行时才拿到密钥。
 
-# 六、把几条策略装到一起
+# 五、把几条策略装到一起
 
 前面三层分别解决不同问题：
 
@@ -335,7 +331,7 @@ strategies:
 
 顺序也不能乱。被依赖的策略要先声明，加载器按 YAML 顺序实例化；找不到依赖，当前策略就不该继续装上去。
 
-# 七、回到四个场景
+# 六、回到四个场景
 
 到这里再看 demo 的四个命令，就不是四个零散例子了。
 
