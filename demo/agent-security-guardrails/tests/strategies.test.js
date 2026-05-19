@@ -93,6 +93,20 @@ describe('security strategies', () => {
     expect(JSON.stringify(wrapped.definition)).not.toContain('sk-secret-value');
   });
 
+  test('SecureToolWrapper resolves credentials only when tool executes', async () => {
+    delete process.env.MISSING_TEST_API_KEY;
+    const tool = {
+      definition: { function: { name: 'secure_api' } },
+      execute: async ({ apiKey }) => ({ apiKey }),
+    };
+
+    const wrapped = SecureToolWrapper.wrap(tool, { apiKey: 'MISSING_TEST_API_KEY' });
+
+    await expect(wrapped.execute({})).rejects.toThrow(
+      "Credential 'apiKey' requires env var 'MISSING_TEST_API_KEY'",
+    );
+  });
+
   test('SecurityAuditLogger writes jsonl and metrics', () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'audit-'));
     const auditFile = path.join(tmp, 'security-audit.jsonl');

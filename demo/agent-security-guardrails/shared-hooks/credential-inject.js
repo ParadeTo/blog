@@ -4,10 +4,12 @@ export class SecureToolWrapper {
       throw new Error('tool.execute is required');
     }
 
-    const resolved = SecureToolWrapper.resolveCredentials(credentials);
     return {
       ...tool,
-      execute: async (input = {}) => tool.execute({ ...input, ...resolved }),
+      execute: async (input = {}) => {
+        const resolved = SecureToolWrapper.resolveCredentials(credentials);
+        return tool.execute({ ...input, ...resolved });
+      },
     };
   }
 
