@@ -7,9 +7,33 @@ public/
 .deploy*/
 .idea/
 
+.claude/
+
+# 本地环境与运行产物
+.env
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+*.db
+*.sqlite
+*.sqlite3
+
 # 微信公众号转换输出目录
 scripts/output/
 *-wechat.html
 
 # 微信公众号配置（包含敏感信息）
 scripts/wechat-config.json
+
+# demo / agent 本地运行输出
+demo/*/workspace/**/output/*
+!demo/*/workspace/**/output/.gitkeep
+demo/xiaoquan/output/*
+!demo/xiaoquan/output/.gitkeep
+demo/xiaoquan/code/
+demo/xiaoquan/shared/projects/
+demo/xiaoquan/workspace/shared/projects/
