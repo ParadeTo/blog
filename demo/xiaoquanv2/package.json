@@ -1,0 +1,22 @@
+{
+  "name": "xiaoquanv2",
+  "version": "1.0.0",
+  "description": "小圈 v2 — 单助手 Hook 加固 Demo",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test tests/**/*.test.js",
+    "test:langfuse": "TRACE_TO_LANGFUSE=true node --test tests/langfuse-local.test.js"
+  },
+  "dependencies": {
+    "ai": "^4.3.0",
+    "@ai-sdk/anthropic": "^1.2.0",
+    "@ai-sdk/openai": "^1.2.0",
+    "@larksuiteoapi/node-sdk": "^1.0.0",
+    "pg": "^8.13.0",
+    "pgvector": "^0.2.0",
+    "js-yaml": "^4.1.0",
+    "zod": "^3.23.0"
+  }
+}

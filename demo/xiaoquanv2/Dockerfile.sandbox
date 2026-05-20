@@ -1,0 +1,30 @@
+FROM node:22-slim AS node-runtime
+
+FROM python:3.11-slim
+
+COPY --from=node-runtime /usr/local/bin/node /usr/local/bin/node
+COPY --from=node-runtime /usr/local/lib/node_modules /usr/local/lib/node_modules
+
+RUN ln -sf ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
+  && ln -sf ../lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir \
+    openpyxl \
+    requests \
+    python-pptx \
+    python-docx \
+    PyPDF2 \
+    beautifulsoup4 \
+    fastapi \
+    uvicorn \
+    pydantic \
+    pytest \
+    httpx \
+    starlette
+
+WORKDIR /workspace
