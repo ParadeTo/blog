@@ -18,16 +18,16 @@
    - `dispatch()`：观测层，handler 失败不影响主流程。
    - `dispatchGate()`：策略层，`GuardrailDeny` 能阻断执行。
 4. 接入本地 Langfuse。通过 Podman Compose 在本机启动 Langfuse，`langfuse-trace` handler 把每次会话写成 trace 树。
-5. 实现第一批 shared hooks：结构化日志、Langfuse trace、审计日志、沙箱守卫、权限网关、成本守卫、循环检测。
-6. 用测试覆盖 Hook 和策略层，再写实现。
+5. 做到 Python `xiaopaw-v2` 加固层的功能等价：结构化日志、Langfuse trace、审计日志、沙箱守卫、权限网关、成本守卫、循环检测、重试观测都要有 JS 对应实现。
+6. 支持 sub-agent trace 继承。主 Agent 通过 SkillLoader 或轻量 sub-agent 执行任务时，子 Agent 的 LLM 和工具 span 要挂到父级 tool span 下面。
+7. 用测试覆盖 Hook、策略层、Langfuse trace 和 sub-agent 继承，再写实现。
 
 ## 非目标
 
 1. 不做数字团队。
 2. 不接第 29 讲的团队 mailbox、角色 workspace 和 watcher。
 3. 不逐行翻译 Python 代码。
-4. 第一版不做 Python 版完整的 sub-crew 多线程 trace 继承。
-5. 第一版不实现复杂的用户身份透传和企业级 Secret Manager。
+4. 不实现复杂的用户身份透传和企业级 Secret Manager。
 
 ## 参考文件
 
@@ -43,6 +43,7 @@ Python 版：
 - `/Users/youxingzhi/ayou/xiaopaw-v2/shared_hooks/audit_logger.py`
 - `/Users/youxingzhi/ayou/xiaopaw-v2/shared_hooks/cost_guard.py`
 - `/Users/youxingzhi/ayou/xiaopaw-v2/shared_hooks/loop_detector.py`
+- `/Users/youxingzhi/ayou/xiaopaw-v2/shared_hooks/retry_tracker.py`
 
 JS 基线：
 
@@ -65,7 +66,8 @@ demo/xiaoquanv2/
 │   ├── hook-framework/
 │   │   ├── registry.js
 │   │   ├── loader.js
-│   │   └── adapter.js
+│   │   ├── adapter.js
+│   │   └── trace-context.js
 │   ├── shared-hooks/
 │   │   ├── hooks.yaml
 │   │   ├── structured-log.js
@@ -74,7 +76,8 @@ demo/xiaoquanv2/
 │   │   ├── sandbox-guard.js
 │   │   ├── permission-gate.js
 │   │   ├── cost-guard.js
-│   │   └── loop-detector.js
+│   │   ├── loop-detector.js
+│   │   └── retry-tracker.js
 │   ├── agent/
 │   │   ├── react-loop.js
 │   │   └── skill-tools.js
@@ -92,6 +95,8 @@ demo/xiaoquanv2/
 │   ├── permission-gate.test.js
 │   ├── hook-chain.test.js
 │   ├── langfuse-trace.test.js
+│   ├── sub-agent-trace.test.js
+│   ├── retry-tracker.test.js
 │   └── runner-hardening.test.js
 ├── config.yaml.template
 ├── package.json
@@ -102,7 +107,7 @@ demo/xiaoquanv2/
 
 ### EventType
 
-第一版保留 5+2 事件，但 JS 实现可以少用 `TASK_COMPLETE`：
+JS 版完整保留 Python 版 5+2 事件。`TASK_COMPLETE` 也要实现，用来标记 demo 任务完成、收口最终输出和 trace 状态：
 
 - `BEFORE_TURN`
 - `BEFORE_LLM`
@@ -186,6 +191,9 @@ hooks:
   AFTER_TURN:
     - handler: structured-log.afterTurnHandler
     - handler: langfuse-trace.afterTurnHandler
+  TASK_COMPLETE:
+    - handler: structured-log.taskCompleteHandler
+    - handler: langfuse-trace.taskCompleteHandler
   SESSION_END:
     - handler: structured-log.sessionEndHandler
     - handler: langfuse-trace.flushAndClose
@@ -226,6 +234,14 @@ strategies:
     hooks:
       AFTER_TOOL_CALL: afterToolHandler
       AFTER_TURN: afterTurnHandler
+
+  - name: retry-tracker
+    class: retry-tracker.RetryTracker
+    config:
+      maxRetries: 3
+    hooks:
+      AFTER_TOOL_CALL: afterToolHandler
+      AFTER_TURN: afterTurnHandler
 ```
 
 `sandbox-guard` 和 `permission-gate` 使用 `failClosed`。Langfuse 和 structured log 不使用 `failClosed`。
@@ -254,6 +270,9 @@ tool wrapper:
   adapter.beforeToolCall(toolName, args)
   result = realTool.execute(args)
   adapter.afterToolCall(toolName, args, result)
+
+task complete:
+  adapter.taskComplete({ reply, usage, status })
 
 final:
   return reply
@@ -301,7 +320,7 @@ Langfuse 初始化失败时只写 warning，不阻断主流程。
 
 ## Langfuse Trace 树
 
-第一版目标树：
+目标树：
 
 ```text
 Trace: sessionId
@@ -310,7 +329,10 @@ Trace: sessionId
         ├── llm-call-1
         │   └── tool-list_skills
         ├── llm-call-2
-        │   └── tool-execute_code
+        │   └── tool-run_skill_or_sub_agent
+        │       └── sub-agent
+        │           ├── llm-call-3
+        │           └── tool-execute_code
         └── final_answer
 ```
 
@@ -322,8 +344,9 @@ Trace: sessionId
 4. `beforeLlm` 创建 generation。
 5. `beforeTool` 创建 tool span，并把 span id 压栈。
 6. `afterTool` 弹栈并更新 output、duration、level。
-7. `afterTurn` 关闭最后一个 generation 和 agent span，更新 trace output。
-8. `SESSION_END` 强制 flush。
+7. `taskComplete` 标记任务完成，记录最终 reply、usage 和 status。
+8. `afterTurn` 关闭最后一个 generation 和 agent span，更新 trace output。
+9. `SESSION_END` 强制 flush。
 
 被拦截请求也要可见：
 
@@ -335,7 +358,20 @@ Trace: sessionId
         level = ERROR
 ```
 
-第一版不处理 sub-crew 多线程继承。JS 单助手链路没有 Python CrewAI 的子线程问题。
+## Sub-Agent Trace 继承
+
+虽然 `xiaoquanv2` 不做数字团队，但 Python 版已经处理了子任务 trace 继承，JS 版也要有等价能力。
+
+JS 版用 `AsyncLocalStorage` 做 `trace-context.js`：
+
+- `runWithTraceContext(ctx, fn)`：进入一段 Agent 或工具执行时绑定当前 trace、session、parent span。
+- `getTraceContext()`：Langfuse handler 读取当前父级 span。
+- `withChildSpan(parentSpanId, fn)`：SkillLoader 或轻量 sub-agent 执行时，把子 Agent 的 LLM/tool span 挂到父级 tool span 下。
+
+这个能力先服务两个场景：
+
+1. Skill 执行内部又触发模型调用时，trace 不新开一棵树。
+2. 轻量 sub-agent demo 执行时，子 Agent 继承父级 trace context，而不是另起 trace。
 
 ## Shared Hooks
 
@@ -377,7 +413,7 @@ flush 在 `AFTER_TURN` 或 `SESSION_END` 发生。
 
 ### permission-gate
 
-第一版只按 tool name 判断：
+权限策略先按 tool name 判断：
 
 - `allow`
 - `warn`
@@ -387,13 +423,17 @@ flush 在 `AFTER_TURN` 或 `SESSION_END` 发生。
 
 ### cost-guard
 
-基于 AI SDK usage 统计 input/output token。第一版用估算价格，够做预算围栏。
+基于 AI SDK usage 统计 input/output token。价格使用配置化估算值，够做预算围栏。
 
 在 `AFTER_TURN` 算账，在 `BEFORE_TOOL_CALL` 再检查一次预算。
 
 ### loop-detector
 
 对工具 output 和最终 reply 做 hash。连续 `threshold` 次相同则抛 `GuardrailDeny`。
+
+### retry-tracker
+
+记录同一轮内工具失败、重试次数和最终状态。达到 `maxRetries` 时抛 `GuardrailDeny`，并把 retry 信息写入 audit 和 Langfuse metadata。
 
 ## 配置
 
@@ -422,6 +462,9 @@ security:
 observability:
   trace_to_langfuse: true
   langfuse_base_url: "http://localhost:3000"
+
+retry:
+  max_retries: 3
 ```
 
 环境变量优先于 config：
@@ -464,9 +507,21 @@ observability:
 `langfuse-trace.test.js`
 
 - 使用 fake Langfuse client，不依赖真实容器。
-- 验证 `beforeTurn -> beforeLlm -> beforeTool -> afterTool -> afterTurn` 生成 trace、generation、span 事件。
+- 验证 `beforeTurn -> beforeLlm -> beforeTool -> afterTool -> taskComplete -> afterTurn` 生成 trace、generation、span 事件。
 - 验证 deny span level 为 error。
 - 验证 flush 调用 batch。
+
+`sub-agent-trace.test.js`
+
+- 验证 `AsyncLocalStorage` 能把 trace id 和 parent span 传给子 Agent。
+- 验证子 Agent 的 LLM/tool span 挂在父级 tool span 下。
+- 验证并发两轮 session 不串 trace context。
+
+`retry-tracker.test.js`
+
+- 工具失败后记录 retry 次数。
+- 达到 `maxRetries` 后抛 `GuardrailDeny`。
+- retry metadata 同时进入 audit 和 Langfuse span。
 
 ### 集成测试
 
@@ -503,23 +558,23 @@ observability:
    - `workspace/rd`
    - `workspace/qa`
 3. 恢复 `index.js` 为单助手启动链路。
-4. 新增 Hook 框架和 shared hooks。
+4. 新增 Hook 框架、trace context 和 shared hooks。
 5. 在 `runner.js` 和 `react-loop.js` 接入 adapter。
 6. 加 Podman Langfuse compose。
 7. 先跑单元测试，再跑集成测试。
 
 ## 文章写作重点
 
-文章不要写成 Langfuse 教程，也不要复述极客时间原文。
+文章不要写成 Langfuse 教程，也不要复述极客时间原文。前几篇已经讲过的 Hook、Skill、沙箱和数字团队技术细节，这篇只在 demo 需要时点名入口，不再重新铺开解释。
 
 主线可以是：
 
-1. 小圈能跑了，但还缺“长期跑”的护栏。
-2. Python 版 `xiaopaw-v2` 给了设计参照，JS 版翻译的是边界和语义。
-3. HookRegistry 的两套语义决定了观测层和策略层的失败处理。
-4. `hooks.yaml` 是接线图，顺序是架构的一部分。
-5. Langfuse 不是锦上添花。危险请求被拦住后，更需要在 trace 里留下证据。
-6. 第一版 JS 实现先把单助手链路打通，sub-crew 继承和更复杂的企业身份模型留到后面。
+1. 先启动本地 Podman Langfuse，再启动 `xiaoquanv2`。
+2. 跑一个正常 demo：用户消息进入 Runner，Agent 调 Skill 或沙箱，Langfuse 里出现完整 trace。
+3. 跑几个拦截 demo：路径穿越、危险命令、权限 deny、成本或循环触发，展示用户回复、audit JSONL 和 Langfuse error span。
+4. 跑一个 sub-agent/子任务 demo：子任务的 LLM/tool span 继承父级 trace，不另起一棵树。
+5. 最后回到少量源码入口：`hooks.yaml`、`wrapToolsWithHooks()`、`trace-context.js`、几个 guard 文件。只讲它们如何支撑 demo，不重复前文已讲过的通用原理。
+6. 总结强调：Python 版已有的加固能力，JS 版这次都补齐；数字团队不在本文范围内。
 
 ## 风险和处理
 
@@ -528,8 +583,9 @@ observability:
 | Langfuse 官方 compose 依赖较多，本地 Podman 启动复杂 | `infra/README.md` 记录固定命令和端口，Langfuse 不可用时主流程降级 |
 | AI SDK 工具 wrapper 漏包某些工具 | 工具统一在构造后走 `wrapToolsWithHooks()`，测试覆盖 `read_file` 和 `execute_code` |
 | 观测 handler 先后顺序被改坏 | `hook-chain.test.js` 验证观测先于策略 |
-| 成本统计不精确 | 第一版只做围栏估算，文章里明确范围 |
-| 安全规则误杀自然语言 | 单测覆盖常见 false positive，第一版默认 warn 的权限策略减少误杀 |
+| 成本统计不精确 | 预算围栏使用配置化估算值，文章里明确范围 |
+| 安全规则误杀自然语言 | 单测覆盖常见 false positive，默认 warn 的权限策略减少误杀 |
+| AsyncLocalStorage context 串线 | `sub-agent-trace.test.js` 覆盖并发 session，确保 trace 和 parent span 隔离 |
 
 ## 验收标准
 
@@ -538,5 +594,7 @@ observability:
 3. 路径穿越输入会返回安全拦截消息。
 4. `data/security_audit.jsonl` 有对应 deny 记录。
 5. 本地 Podman Langfuse 启动后，普通请求和被拦截请求都能在 UI 里看到 trace。
-6. `idea/xiaopaw-hardening/idea.md` 和文章草稿能引用 `xiaoquanv2` 的真实文件路径和测试结果。
-
+6. sub-agent 或子任务执行时，子 LLM/tool span 挂在父级 tool span 下。
+7. retry tracker 能记录失败重试并在超过阈值时拦截。
+8. 文章草稿以 demo 截图、命令输出、trace/audit 结果为主，不重复前文已经讲过的技术细节。
+9. `idea/xiaopaw-hardening/idea.md` 和文章草稿能引用 `xiaoquanv2` 的真实文件路径和测试结果。
