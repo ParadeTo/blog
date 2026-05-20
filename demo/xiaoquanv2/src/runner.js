@@ -1,5 +1,6 @@
 import path from 'path'
 import fs from 'fs'
+import {runWithTraceContext} from './hook-framework/trace-context.js'
 // import {storeMemory} from './memory/rag-memory.js'
 
 const HELP_TEXT = `小圈 可用命令：
@@ -121,10 +122,71 @@ export class Runner {
     const history = await this._sessionMgr.loadHistory(session.id)
     console.log(`[Runner] history turns=${history.length}`)
 
-    await this._sender.sendThinking(routingKey, rootId)
+    const adapter = this._hookAdapterFactory
+      ? this._hookAdapterFactory({
+          sessionId: session.id,
+          senderId: inbound.senderId,
+          turnNumber: session.messageCount + 1,
+          agentId: 'xiaoquan',
+        })
+      : null
 
-    const result = await this._agentFn(userContent, history, session.id, routingKey, rootId, session.verbose)
-    const reply = typeof result === 'object' ? result.text : result
+    const runHardenedTurn = async () => {
+      let success = false
+      try {
+        await adapter?.beforeTurn(userContent)
+        await this._sender.sendThinking(routingKey, rootId)
+
+        const result = await this._agentFn(
+          userContent,
+          history,
+          session.id,
+          routingKey,
+          rootId,
+          session.verbose,
+          {adapter},
+        )
+        const reply = typeof result === 'object' ? result.text : result
+        const inputTokens = typeof result === 'object' ? result.inputTokens || 0 : 0
+        const outputTokens = typeof result === 'object' ? result.outputTokens || 0 : 0
+
+        await adapter?.taskComplete({metadata: {reply}, success: true})
+        await adapter?.afterTurn({
+          metadata: {reply},
+          success: true,
+          inputTokens,
+          outputTokens,
+        })
+        success = true
+        return {reply}
+      } catch (err) {
+        if (adapter?.isDeny(err)) {
+          await adapter.afterTurn({
+            success: false,
+            metadata: {
+              guardrailDeny: true,
+              reasonCode: err.reasonCode,
+              detail: err.detail || err.message,
+            },
+          })
+          await this._sendReply(routingKey, `安全策略拦截：${err.reasonCode}`, rootId)
+          return null
+        }
+        throw err
+      } finally {
+        await adapter?.sessionEnd({success})
+      }
+    }
+
+    const turn = adapter
+      ? await runWithTraceContext(
+          {traceId: session.id, parentSpanId: `session-${session.id}`, spanStack: []},
+          runHardenedTurn,
+        )
+      : await runHardenedTurn()
+    if (turn === null) return
+
+    const {reply} = turn
     console.log(`[Runner] reply length=${reply.length}`)
 
     const userTextForLog = Array.isArray(userContent) ? '[图片消息]' : userContent
@@ -143,11 +205,7 @@ export class Runner {
     //   dbDsn: this._dbDsn,
     // }).catch(e => console.error('[Runner] storeMemory error:', e.message))
 
-    if (this._sender.hasPendingCard?.(routingKey)) {
-      await this._sender.consumePendingCard(routingKey, reply)
-    } else {
-      await this._sender.send(routingKey, reply, rootId)
-    }
+    await this._sendReply(routingKey, reply, rootId)
   }
 
   async _handleSlash(inbound) {
@@ -188,6 +246,14 @@ export class Runner {
     for (const waker of (this._wakers?.values() || [])) waker()
     this._wakers?.clear()
     this._workers.clear()
+  }
+
+  async _sendReply(routingKey, reply, rootId) {
+    if (this._sender.hasPendingCard?.(routingKey)) {
+      await this._sender.consumePendingCard(routingKey, reply)
+    } else {
+      await this._sender.send(routingKey, reply, rootId)
+    }
   }
 }
 

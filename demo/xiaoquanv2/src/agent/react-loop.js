@@ -98,6 +98,44 @@ function buildTools(skillRegistry, {sessionId, historyAll, sandbox, sessionDir, 
   return {...skillTools, ...utilityTools}
 }
 
+export function wrapToolsWithHooks(tools, adapter) {
+  if (!adapter) return tools
+
+  return Object.fromEntries(Object.entries(tools).map(([name, def]) => {
+    if (typeof def.execute !== 'function') return [name, def]
+
+    const original = def.execute
+    return [name, {
+      ...def,
+      execute: async (args, ...rest) => {
+        const started = Date.now()
+        let result
+        try {
+          await adapter.beforeToolCall(name, args)
+          result = await original(args, ...rest)
+        } catch (err) {
+          try {
+            await adapter.afterToolCall(name, args, err.message, {
+              success: false,
+              durationMs: Date.now() - started,
+              guardrailDeny: adapter.isDeny(err),
+            })
+          } catch (afterErr) {
+            if (!adapter.isDeny(err)) throw afterErr
+          }
+          throw err
+        }
+
+        await adapter.afterToolCall(name, args, result, {
+          success: true,
+          durationMs: Date.now() - started,
+        })
+        return result
+      },
+    }]
+  }))
+}
+
 export async function runAgent({
   userMessage,
   history = [],
@@ -106,6 +144,7 @@ export async function runAgent({
   config,
   onStep = null,
   sandbox = null,
+  adapter = null,
 }) {
   const workspaceDir = config.memory?.workspace_dir || './workspace'
   const ctxDir = config.memory?.ctx_dir || './data/ctx'
@@ -132,9 +171,12 @@ export async function runAgent({
   messages.push({role: 'user', content: userMessage})
 
   const skillRegistry = loadSkillRegistry()
-  const tools = buildTools(skillRegistry, {sessionId, historyAll: history, sandbox, sessionDir, routingKey})
+  const rawTools = buildTools(skillRegistry, {sessionId, historyAll: history, sandbox, sessionDir, routingKey})
+  const tools = wrapToolsWithHooks(rawTools, adapter)
 
   let lastPromptTokens = 0
+  let inputTokens = 0
+  let outputTokens = 0
 
   for (let i = 1; i <= maxIter; i++) {
     pruneToolResults(messages, {keepTurns: pruneKeepTurns})
@@ -146,6 +188,10 @@ export async function runAgent({
       })
     }
 
+    await adapter?.beforeLlm({
+      metadata: {model: modelId, messageCount: messages.length},
+    })
+
     const {steps, text, usage, response} = await generateText({
       model: getModel(modelId),
       system: systemPrompt,
@@ -155,16 +201,18 @@ export async function runAgent({
     })
 
     lastPromptTokens = usage?.promptTokens || 0
+    inputTokens += usage?.promptTokens || usage?.inputTokens || 0
+    outputTokens += usage?.completionTokens || usage?.outputTokens || 0
     const step = steps[0]
     if (!step) {
       saveSessionCtx(sessionId, messages, ctxDir)
-      return text || ''
+      return {text: text || '', inputTokens, outputTokens}
     }
 
     if (step.toolCalls.length === 0) {
       if (step.text) messages.push({role: 'assistant', content: step.text})
       saveSessionCtx(sessionId, messages, ctxDir)
-      return step.text || ''
+      return {text: step.text || '', inputTokens, outputTokens}
     }
 
     for (const tc of step.toolCalls) {
@@ -183,5 +231,5 @@ export async function runAgent({
   }
 
   saveSessionCtx(sessionId, messages, ctxDir)
-  return '（达到最大迭代次数）'
+  return {text: '（达到最大迭代次数）', inputTokens, outputTokens}
 }
