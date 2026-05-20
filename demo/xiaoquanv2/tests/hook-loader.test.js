@@ -91,4 +91,35 @@ hooks:
       /missing\.beforeTurnHandler/,
     )
   })
+
+  it('merges strategy config overrides from the app config', async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'xiaoquan-hooks-'))
+    writeFixture(dir, {
+      'hooks.yaml': `
+strategies:
+  - name: permission-gate
+    class: permission.PermissionGate
+    config:
+      default: warn
+    hooks:
+      BEFORE_TOOL_CALL: beforeToolHandler
+`,
+      'permission.js': 'export class PermissionGate { constructor(config) { this.config = config } beforeToolHandler() {} }',
+    })
+
+    const registry = new HookRegistry()
+    const instances = await new HookLoader(registry).load(dir, {
+      strategyConfig: {
+        'permission-gate': {
+          default: 'deny',
+          tools: {read_file: 'allow'},
+        },
+      },
+    })
+
+    assert.deepEqual(instances.get('permission-gate').config, {
+      default: 'deny',
+      tools: {read_file: 'allow'},
+    })
+  })
 })

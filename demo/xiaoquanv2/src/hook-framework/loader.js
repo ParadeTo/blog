@@ -34,13 +34,13 @@ export class HookLoader {
     this._logger = logger
   }
 
-  async load(dir, {failClosedNames = new Set()} = {}) {
+  async load(dir, {failClosedNames = new Set(), strategyConfig = {}} = {}) {
     const yamlPath = path.join(dir, 'hooks.yaml')
     const config = yaml.load(fs.readFileSync(yamlPath, 'utf8')) || {}
     const instances = new Map()
 
     await this._loadObserverHooks(dir, config.hooks || {})
-    await this._loadStrategies(dir, config.strategies || [], instances, failClosedNames)
+    await this._loadStrategies(dir, config.strategies || [], instances, failClosedNames, strategyConfig)
 
     return instances
   }
@@ -62,7 +62,7 @@ export class HookLoader {
     }
   }
 
-  async _loadStrategies(dir, strategies, instances, failClosedNames) {
+  async _loadStrategies(dir, strategies, instances, failClosedNames, strategyConfig) {
     for (const strategy of strategies) {
       if (!isEnabled(strategy)) continue
 
@@ -70,7 +70,10 @@ export class HookLoader {
       try {
         const Klass = await loadSymbol(dir, strategy.class)
         const deps = this._resolveDeps(strategy, instances)
-        instance = new Klass(strategy.config || {}, deps)
+        instance = new Klass({
+          ...(strategy.config || {}),
+          ...(strategyConfig[strategy.name] || {}),
+        }, deps)
         instances.set(strategy.name, instance)
       } catch (err) {
         this._handleLoadError(strategy, strategy.name || strategy.class, err)
