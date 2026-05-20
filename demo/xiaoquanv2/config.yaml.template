@@ -34,6 +34,39 @@ sender:
   max_retries: 3
   retry_backoff: [1, 2, 4]
 
+hooks:
+  enabled: true
+  dir: "./src/shared-hooks"
+  fail_closed:
+    - sandbox-guard
+    - permission-gate
+    - cost-guard
+    - loop-detector
+    - retry-tracker
+
+security:
+  audit_file: "./data/security_audit.jsonl"
+  permissions:
+    default: warn
+    tools:
+      list_skills: allow
+      get_skill: allow
+      memory_search: allow
+      read_file: warn
+      write_file: warn
+      execute_code: warn
+      run_script: warn
+      sub_agent_echo: allow
+
+observability:
+  trace_to_langfuse: true
+  langfuse_base_url: "${XIAOQUAN_LANGFUSE_BASE_URL}"
+  langfuse_public_key: "${XIAOQUAN_LANGFUSE_PUBLIC_KEY}"
+  langfuse_secret_key: "${XIAOQUAN_LANGFUSE_SECRET_KEY}"
+
+retry:
+  max_retries: 3
+
 data_dir: "./data"
 
 debug:
