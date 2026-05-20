@@ -31,6 +31,10 @@
 - Compose command: `podman compose -f demo/xiaoquanv2/infra/langfuse-podman-compose.yaml up -d`
 - Ports: UI `http://localhost:3010`, MinIO API `http://localhost:9190`, MinIO console `http://127.0.0.1:9191`
 - Container start result: compose created and started `xiaoquanv2-langfuse-{postgres,clickhouse,redis,minio,langfuse-web,langfuse-worker}-1`.
-- Current readiness result: `TRACE_TO_LANGFUSE=true XIAOQUAN_LANGFUSE_BASE_URL=http://127.0.0.1:3010 node --test tests/langfuse-local.test.js` timed out after 5 seconds.
-- Observed cause: the web container initially spent several minutes in Langfuse/Prisma cleanup before `web/server.js` was ready; local Podman/Docker compat queries also began timing out while the stack was initializing.
-- Article note: do not claim a visible Langfuse UI trace from this run. Re-run the optional local test after the stack finishes initializing and capture the trace id from the UI.
+- Screenshot run: used the stable local Langfuse stack at `http://127.0.0.1:3000` with project keys `pk-lf-course-demo` / `sk-lf-course-demo`.
+- Trace list screenshot: `source/_posts/ai-agent-xiaoquanv2-hardening-demo/langfuse-traces.png`.
+- Normal trace screenshot: `source/_posts/ai-agent-xiaoquanv2-hardening-demo/langfuse-normal-trace.png`.
+- Deny trace screenshot: `source/_posts/ai-agent-xiaoquanv2-hardening-demo/langfuse-deny-trace.png`.
+- Trace ids shown in UI:
+  - Normal: `039f8d427c0dfc5a947e73d713f10df7`
+  - Deny: `a26e884b2b34d9c8b7cc5a7d8c1d9821`
