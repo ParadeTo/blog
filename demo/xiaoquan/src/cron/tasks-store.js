@@ -4,7 +4,6 @@
  * 对齐 Python xiaopaw-team 的 tasks_store.py：
  * - write-then-rename 原子写入，CronService 通过 mtime 检测热重载
  * - scheduleWake: 去重（同 routingKey+message 的未到期 at job 复用）
- * - scheduleHeartbeat: 固定 id，重复调用替换
  * - 锁：用 fs.open(lockPath, 'wx') 实现进程间文件锁（retry）
  */
 
@@ -26,6 +25,7 @@ function lockPath(tasksPath) {
 }
 
 async function acquireLock(tasksPath, {timeoutMs = 5000, retryMs = 20} = {}) {
+  fs.mkdirSync(path.dirname(tasksPath), {recursive: true})
   const lp = lockPath(tasksPath)
   const deadline = Date.now() + timeoutMs
   while (Date.now() < deadline) {
@@ -143,30 +143,6 @@ export async function scheduleWake(tasksPath, {role, reason = 'new_mail', delayM
   } finally {
     releaseLock(tasksPath)
   }
-}
-
-export async function scheduleHeartbeat(tasksPath, {role, intervalMs = 30000, firstDelayMs = 0} = {}) {
-  const jobId = `heartbeat-${role}`
-  // 不需要文件锁（启动时单次调用）
-  const store = loadStore(tasksPath)
-  const now = nowMs()
-  // 替换同名 heartbeat
-  store.jobs = store.jobs.filter(j => j.id !== jobId)
-  store.jobs.push({
-    id: jobId,
-    name: `heartbeat-${role}`,
-    enabled: true,
-    schedule: {kind: 'every', atMs: null, everyMs: intervalMs, expr: null, tz: null},
-    payload: {routingKey: `team:${role}`, message: '__wake__:heartbeat'},
-    state: {nextRunAtMs: now + firstDelayMs, lastRunAtMs: null, lastStatus: null, lastError: null},
-    createdAtMs: now,
-    updatedAtMs: now,
-    deleteAfterRun: false,
-  })
-  const dir = path.dirname(tasksPath)
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, {recursive: true})
-  dumpStore(tasksPath, store)
-  return jobId
 }
 
 export function listJobs(tasksPath) {

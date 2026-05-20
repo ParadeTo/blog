@@ -63,7 +63,7 @@ type: reference
 
 ## 示例
 
-**Input**: 刚被 heartbeat 唤醒，manager inbox 有一条来自 pm 的 task_done "产品设计完成"。
+**Input**: 刚被邮箱文件监听唤醒，manager inbox 有一条来自 pm 的 task_done "产品设计完成"。
 **Output**:
 ```json
 {"stage": "tech_design", "current_project_id": "pawdiary-001", "signals": {"has_product_spec": true, "has_tech_design": false}, "blockers": []}

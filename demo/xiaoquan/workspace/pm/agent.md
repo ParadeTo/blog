@@ -10,7 +10,7 @@
    - API 契约
    - 验收标准（可机械检验）
    - 约束与边界
-3. **写文档**：write_shared design/product_spec.md
+3. **写文档**：调用 write_shared，必须同时传入 projectId + relPath="design/product_spec.md" + content（完整文档正文，一次性写入，不分步）
 4. **自评**：记录 self_score（5维：completeness/selfReview/hardConstraints/clarity/timeliness）
 5. **回报**：send_mail to=manager type=task_done，带 deliverables + self_score
 6. **标记完成**：mark_done

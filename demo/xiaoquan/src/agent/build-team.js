@@ -31,13 +31,32 @@ function buildBootstrapForRole(workspaceRoot, role) {
     .join('\n\n')
 }
 
-function buildSystemPrompt(workspaceRoot, role) {
+function buildSkillIndexSection(workspaceRoot, role) {
+  const registry = loadRoleScopedSkillRegistry(workspaceRoot, role)
+  const skills = Object.values(registry).sort((a, b) => a.name.localeCompare(b.name))
+  if (skills.length === 0) return ''
+
+  const lines = skills.map(s => `- ${s.name}: ${s.description || '(no description)'}`).join('\n')
+  return `<skill_usage_rules>
+你拥有一组角色专属 Skill。Skill 正文不会自动展开；执行匹配任务前必须先调用 get_skill(name) 获取详细指令。
+当用户请求或当前任务匹配下方 skill description 中的"一定/必须/触发"规则时，必须先 get_skill，再调用业务工具或回复人类。
+不确定该用哪个 skill 时，先调用 list_skills。
+</skill_usage_rules>
+
+<available_skills role="${role}">
+${lines}
+</available_skills>`
+}
+
+export function buildSystemPrompt(workspaceRoot, role) {
   const bootstrap = buildBootstrapForRole(workspaceRoot, role)
   const protocolPath = path.join(workspaceRoot, 'shared', 'team_protocol.md')
   const protocol = fs.existsSync(protocolPath) ? fs.readFileSync(protocolPath, 'utf-8') : ''
+  const skillIndex = buildSkillIndexSection(workspaceRoot, role)
 
   let prompt = bootstrap
   if (protocol) prompt += `\n\n<team_protocol>\n${protocol}\n</team_protocol>`
+  if (skillIndex) prompt += `\n\n${skillIndex}`
   prompt += `\n\n你是小圈团队的 ${role} 角色数字员工。`
   return prompt
 }
@@ -111,7 +130,7 @@ export function buildTeamAgentFn({
 
     const skillTools = createScopedSkillTools(registry, {sessionId, historyAll: history, role})
     const teamTools = cronTasksPath
-      ? buildRoleTools(workspaceRoot, {role, cronTasksPath, sender, defaultRoutingKey: routingKey})
+      ? buildRoleTools(workspaceRoot, {role, cronTasksPath, sender, defaultRoutingKey: routingKey, sandbox})
       : {}
     const baseTools = buildBaseTools({sessionId, sessionDir, sandbox})
 
@@ -148,7 +167,7 @@ export function buildTeamAgentFn({
           if (e[Symbol.for('vercel.ai.error.AI_InvalidToolArgumentsError')]) {
             const callId = `repair-${Date.now()}`
             messages.push({role: 'assistant', content: [{type: 'tool-call', toolCallId: callId, toolName: e.toolName, args: JSON.parse(e.toolArgs || '{}')}]})
-            messages.push({role: 'tool', content: [{type: 'tool-result', toolCallId: callId, toolName: e.toolName, result: `{"errcode":1,"errmsg":"工具参数校验失败：${e.message.split('\n')[0]}，请重新调用并补全所有必填字段"}`}]})
+            messages.push({role: 'tool', content: [{type: 'tool-result', toolCallId: callId, toolName: e.toolName, result: `{"errcode":1,"errmsg":"工具参数校验失败：${e.message.split('\n')[0]}。⚠️ 请检查：(1) content 字段是否存在且非空？(2) 所有必填字段（projectId/relPath/content）是否都已提供？请重新调用并在 content 参数中传入完整文件正文。"}`}]})
             continue
           }
           throw e

@@ -77,7 +77,7 @@ export async function sendMail(mailboxDir, {to, from: from_, type, subject, cont
   return msgId
 }
 
-export async function readInbox(mailboxDir, {role}) {
+export async function readInbox(mailboxDir, {role, staleTimeoutSec = 300}) {
   if (!VALID_ROLES.has(role)) throw new Error(`invalid role: ${role}`)
   const inbox = inboxPath(mailboxDir, role)
   if (!fs.existsSync(inbox)) throw new Error(`mailbox not initialized: ${inbox}`)
@@ -88,8 +88,18 @@ export async function readInbox(mailboxDir, {role}) {
   try {
     const messages = JSON.parse(fs.readFileSync(inbox, 'utf-8') || '[]')
     const now = isoUtcNow()
+    const nowMs = Date.now()
     let changed = false
     for (const m of messages) {
+      // auto-reset stale in_progress messages so they can be reprocessed
+      if (m.status === 'in_progress' && m.processingSince) {
+        const ageSec = (nowMs - new Date(m.processingSince).getTime()) / 1000
+        if (ageSec > staleTimeoutSec) {
+          m.status = 'unread'
+          m.processingSince = null
+          changed = true
+        }
+      }
       if (m.status === 'unread') {
         m.status = 'in_progress'
         m.processingSince = now

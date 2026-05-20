@@ -1,6 +1,7 @@
 import path from 'path'
 import fs from 'fs'
-import {storeMemory} from './memory/rag-memory.js'
+// import {storeMemory} from './memory/rag-memory.js'
+import {classify} from './tools/feishu-bridge.js'
 
 const HELP_TEXT = `小圈 可用命令：
 /new       — 创建新对话，之前历史不带入
@@ -33,7 +34,7 @@ function _isWakeMessage(inbound) {
 
 export class Runner {
   constructor(sessionMgr, sender, agentFn, {
-    idleTimeoutS = 300, downloader = null, dbDsn = null, agentFnMap = null,
+    idleTimeoutS = 300, downloader = null, dbDsn = null, agentFnMap = null, checkpointStore = null,
   } = {}) {
     this._sessionMgr = sessionMgr
     this._sender = sender
@@ -42,6 +43,7 @@ export class Runner {
     this._idleTimeoutS = idleTimeoutS
     this._downloader = downloader
     this._dbDsn = dbDsn
+    this._checkpointStore = checkpointStore
     this._queues = new Map()
     this._workers = new Map()
     this._wakers = new Map()
@@ -51,7 +53,7 @@ export class Runner {
     const {routingKey} = inbound
 
     // 29 课：wake_reason 去重（相同 routingKey 已有 pending wake 则丢弃）
-    if (_isWakeMessage(inbound) && this._hasPendingWake(routingKey)) {
+    if (_isWakeMessage(inbound) && this._hasPendingWake(routingKey, inbound)) {
       console.log(`[Runner] dedup wake: routingKey=${routingKey}`)
       return
     }
@@ -65,10 +67,14 @@ export class Runner {
     if (waker) waker()
   }
 
-  _hasPendingWake(routingKey) {
+  _hasPendingWake(routingKey, inbound) {
     const queue = this._queues.get(routingKey)
     if (!queue) return false
-    return queue.some(msg => msg.meta && msg.meta.wakeReason)
+    const wakeKey = `${inbound.meta?.wakeReason || ''}:${inbound.content || ''}`
+    return queue.some(msg =>
+      msg.meta &&
+      msg.meta.wakeReason &&
+      `${msg.meta?.wakeReason || ''}:${msg.content || ''}` === wakeKey)
   }
 
   _startWorker(routingKey) {
@@ -144,6 +150,9 @@ export class Runner {
       return
     }
 
+    const checkpointResponse = await this._maybeTransformCheckpointResponse(inbound, userContent)
+    if (checkpointResponse) userContent = checkpointResponse.content
+
     // 29 课：按 routing_key 选对应角色的 agentFn
     const agentFn = _pickAgentFn(routingKey, this._agentFnMap, this._agentFn)
 
@@ -161,6 +170,11 @@ export class Runner {
     const reply = typeof result === 'object' ? result.text : result
     console.log(`[Runner] reply length=${reply.length}`)
 
+    if (checkpointResponse?.checkpointId && this._checkpointStore) {
+      await this._checkpointStore.resolve(checkpointResponse.checkpointId).catch(e =>
+        console.warn('[Runner] checkpoint resolve error:', e.message))
+    }
+
     const userTextForLog = Array.isArray(userContent) ? '[图片消息]' : userContent
     await this._sessionMgr.append(session.id, {
       user: userTextForLog,
@@ -168,14 +182,14 @@ export class Runner {
       assistant: reply,
     })
 
-    storeMemory({
-      sessionId: session.id,
-      routingKey,
-      userMessage: userTextForLog,
-      assistantReply: reply,
-      turnTs: Date.now(),
-      dbDsn: this._dbDsn,
-    }).catch(e => console.error('[Runner] storeMemory error:', e.message))
+    // storeMemory({
+    //   sessionId: session.id,
+    //   routingKey,
+    //   userMessage: userTextForLog,
+    //   assistantReply: reply,
+    //   turnTs: Date.now(),
+    //   dbDsn: this._dbDsn,
+    // }).catch(e => console.error('[Runner] storeMemory error:', e.message))
 
     // team:* wake 消息不回飞书（Agent 通过 send_to_human 主动发）
     // send_to_human 调用 sender.send() 时会自动消费 pending card（updateCard）
@@ -217,6 +231,41 @@ export class Runner {
       }
       default:
         return null
+    }
+  }
+
+  async _maybeTransformCheckpointResponse(inbound, userContent) {
+    if (!this._checkpointStore) return null
+    if (inbound.routingKey.startsWith(TEAM_PREFIX)) return null
+    if (_isWakeMessage(inbound)) return null
+    if (Array.isArray(userContent) || typeof userContent !== 'string') return null
+
+    let pendingForRk = []
+    try {
+      pendingForRk = await this._checkpointStore.pendingForRoutingKey(inbound.routingKey)
+    } catch (e) {
+      console.warn('[Runner] checkpoint pending lookup error:', e.message)
+      return null
+    }
+    if (pendingForRk.length === 0) return null
+
+    const [category, checkpointId] = classify(userContent, {pendingForRk})
+    if (category !== 'checkpoint_response' || !checkpointId) return null
+
+    const checkpoint = pendingForRk.find(c => c.checkpointId === checkpointId) || {}
+    const payload = {
+      type: 'checkpoint_response',
+      checkpointId,
+      projectId: checkpoint.projectId || '',
+      kind: checkpoint.kind || 'checkpoint_request',
+      routingKey: inbound.routingKey,
+      reply: userContent.trim(),
+      question: checkpoint.question || '',
+    }
+
+    return {
+      checkpointId,
+      content: `收到人类 checkpoint 回复，请按 handle_checkpoint_reply / 当前 SOP 继续推进，并在需要时记录 checkpoint_reply_classified 事件。\n\n${JSON.stringify(payload, null, 2)}`,
     }
   }
 

@@ -162,6 +162,7 @@ export async function runAgent({
     }
 
     if (step.toolCalls.length === 0) {
+      if (step.text) messages.push({role: 'assistant', content: step.text})
       saveSessionCtx(sessionId, messages, ctxDir)
       return step.text || ''
     }

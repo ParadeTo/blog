@@ -8,9 +8,22 @@ import {SessionManager} from '../src/session/session-manager.js'
 import {createInboundMessage} from '../src/models.js'
 
 class CaptureSender {
-  constructor() { this.messages = [] }
+  constructor() {
+    this.messages = []
+    this.pendingCards = new Map()
+  }
   async send(routingKey, content) { this.messages.push({routingKey, content}) }
-  async sendThinking() { return 'card_123' }
+  async sendThinking(routingKey) {
+    const cardMsgId = 'card_123'
+    this.pendingCards.set(routingKey, cardMsgId)
+    return cardMsgId
+  }
+  hasPendingCard(routingKey) { return this.pendingCards.has(routingKey) }
+  async consumePendingCard(routingKey, content) {
+    const cardMsgId = this.pendingCards.get(routingKey)
+    this.pendingCards.delete(routingKey)
+    this.messages.push({cardMsgId, content})
+  }
   async updateCard(cardMsgId, content) { this.messages.push({cardMsgId, content}) }
   async sendText(routingKey, content) { this.messages.push({routingKey, content, type: 'text'}) }
 }
@@ -76,8 +89,8 @@ describe('Runner', () => {
     const agentFn = async () => { callCount++; return 'ok' }
     runner = new Runner(mgr, sender, agentFn, {idleTimeoutS: 1, agentFnMap: {manager: agentFn}})
 
-    const wake1 = createInboundMessage({routingKey: 'team:manager', content: '__wake__:heartbeat', msgId: 'w1', senderId: 'system', meta: {wakeReason: 'heartbeat'}})
-    const wake2 = createInboundMessage({routingKey: 'team:manager', content: '__wake__:heartbeat', msgId: 'w2', senderId: 'system', meta: {wakeReason: 'heartbeat'}})
+    const wake1 = createInboundMessage({routingKey: 'team:manager', content: '__wake__:new_mail:project_a', msgId: 'w1', senderId: 'system', meta: {wakeReason: 'new_mail'}})
+    const wake2 = createInboundMessage({routingKey: 'team:manager', content: '__wake__:new_mail:project_a', msgId: 'w2', senderId: 'system', meta: {wakeReason: 'new_mail'}})
     // No await between dispatches — both must run before any microtask fires,
     // so wake1 stays in queue when wake2 is checked.
     const p1 = runner.dispatch(wake1)
@@ -85,5 +98,53 @@ describe('Runner', () => {
     await Promise.all([p1, p2])
     await new Promise(r => setTimeout(r, 300))
     assert.equal(callCount, 1)
+  })
+
+  it('team: wake dedupe keeps different project messages', async () => {
+    const seen = []
+    const agentFn = async (userMessage) => { seen.push(userMessage); return 'ok' }
+    runner = new Runner(mgr, sender, agentFn, {idleTimeoutS: 1, agentFnMap: {manager: agentFn}})
+
+    const wake1 = createInboundMessage({routingKey: 'team:manager', content: '__wake__:new_mail:project_a', msgId: 'w1', senderId: 'system', meta: {wakeReason: 'new_mail'}})
+    const wake2 = createInboundMessage({routingKey: 'team:manager', content: '__wake__:new_mail:project_b', msgId: 'w2', senderId: 'system', meta: {wakeReason: 'new_mail'}})
+    const p1 = runner.dispatch(wake1)
+    const p2 = runner.dispatch(wake2)
+    await Promise.all([p1, p2])
+    await new Promise(r => setTimeout(r, 300))
+    assert.deepEqual(seen.sort(), ['__wake__:new_mail:project_a', '__wake__:new_mail:project_b'])
+  })
+
+  it('routes pending checkpoint numeric replies as structured manager input', async () => {
+    let seenUserMessage = ''
+    let resolvedCheckpoint = ''
+    const checkpointStore = {
+      async pendingForRoutingKey(routingKey) {
+        assert.equal(routingKey, 'p2p:ou_test')
+        return [{
+          checkpointId: 'urlshortener_dep_decision',
+          routingKey,
+          projectId: 'urlshortener',
+          kind: 'checkpoint_request',
+          question: '1 or 2?',
+          createdAtMs: 100,
+        }]
+      },
+      async resolve(checkpointId) { resolvedCheckpoint = checkpointId; return true },
+    }
+    const agentFn = async (userMessage) => { seenUserMessage = userMessage; return 'ok' }
+    runner = new Runner(mgr, sender, null, {
+      idleTimeoutS: 1,
+      agentFnMap: {manager: agentFn},
+      checkpointStore,
+    })
+
+    const msg = createInboundMessage({routingKey: 'p2p:ou_test', content: '2', msgId: 'm1', senderId: 'ou_test'})
+    await runner.dispatch(msg)
+    await new Promise(r => setTimeout(r, 200))
+
+    assert.match(seenUserMessage, /checkpoint_response/)
+    assert.match(seenUserMessage, /urlshortener_dep_decision/)
+    assert.match(seenUserMessage, /"reply": "2"/)
+    assert.equal(resolvedCheckpoint, 'urlshortener_dep_decision')
   })
 })

@@ -1,10 +1,9 @@
 # 小圈小队协作通用约定
 
-## Kickoff 两步法（每次被唤醒必须执行）
+## Kickoff 两步法（每次被邮箱文件监听唤醒必须执行）
 
 1. **解析 project_id**：从 wake 消息中提取项目 ID
    - 格式：`__wake__:new_mail:{project_id}` → project_id = 消息中的 projectId
-   - 格式：`__wake__:heartbeat` → 主动检查当前有无未读邮件
 2. **读取邮件**：调用 `read_inbox(projectId)` 读取自己的未读邮件
 
 ## 邮件处理流程
@@ -12,7 +11,7 @@
 1. `read_inbox` → 获取 unread 邮件（自动转 in_progress）
 2. 处理邮件内容（执行任务）
 3. `mark_done(msgId)` → 标记邮件完成
-4. 若需要通知其他人 → `send_mail`（发完自动唤醒收件方）
+4. 若需要通知其他人 → `send_mail`（写入收件箱后由文件监听自动唤醒收件方）
 
 ## 邮件类型约定
 

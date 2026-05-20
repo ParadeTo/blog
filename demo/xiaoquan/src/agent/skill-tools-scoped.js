@@ -10,6 +10,15 @@ import path from 'path'
 import {tool} from 'ai'
 import {z} from 'zod'
 
+function normalizeFrontmatterValue(value) {
+  const trimmed = value.trim()
+  if ((trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+      (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+    return trimmed.slice(1, -1)
+  }
+  return trimmed
+}
+
 function parseFrontmatter(raw) {
   const match = raw.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/)
   if (!match) return {data: {}, body: raw.trim()}
@@ -17,7 +26,7 @@ function parseFrontmatter(raw) {
   for (const line of match[1].split('\n')) {
     const colonIdx = line.indexOf(':')
     if (colonIdx === -1) continue
-    data[line.slice(0, colonIdx).trim()] = line.slice(colonIdx + 1).trim()
+    data[line.slice(0, colonIdx).trim()] = normalizeFrontmatterValue(line.slice(colonIdx + 1))
   }
   return {data, body: match[2].trim()}
 }

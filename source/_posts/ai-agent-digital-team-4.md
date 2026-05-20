@@ -1,5 +1,5 @@
 ---
-title: 简单实战一下 Multi-Agent 数字员工（四）：把四个机制装配成一个团队
+title: 简单实战一下 Multi-Agent 数字员工（四）：让 Agent 小队交付真实项目
 date: 2026-05-10 20:00:00
 tags:
   - ai
@@ -7,207 +7,393 @@ tags:
   - multi-agent
 categories:
   - ai
-description: 数字团队系列终篇。把角色定义、邮箱通信、Human 介入、自我进化四个机制装进同一个进程，用一个 URL 短链服务项目跑完整六阶段交付，拆解四个让系统真正跑通的拼装接缝。
+description: 数字团队系列终篇。把角色定义、邮箱通信、Human 介入、自我进化四个机制放到同一个小队里，用 URL 短链服务跑完整需求、设计、开发、测试、交付流程。
 ---
 
 # 前言
 
-前三篇各解决了一个维度：角色定义让 Agent 知道自己是谁、能做什么；邮箱通信解决了 Agent 之间怎么传话；Human 介入设计了三个关键节点和单一入口；自我进化给团队加上了从错误中学习的闭环。
+前三篇把数字团队的几个零件拆开讲了一遍：固定角色、文件邮箱、Human 介入、自我进化。单看每一块都还说得通，麻烦通常出现在最后一步：
 
-每篇单独看，逻辑都跑得通。但放在一起就有点像招了四个能力很强的人，每个人都通过了单项考核，第一天一起开会却完全乱套：不知道谁先说话，不知道结论交给谁，不知道下一步是谁的事。这不是能力问题，是**拼装问题**。
+**这些机制放在一起，能不能像一个小团队一样，完成一个真实项目？**
 
-今天做的事就是把这四个机制装进同一个进程，用一个具体项目跑完整的交付流程来验证：URL 短链服务，输入一条长 URL，系统输出一个短码，支持跳转和访问统计。项目足够小，跑起来不费时间；又有完整的需求分析、设计、开发、测试环节，够验证协作链路。
+所以这篇不再继续加概念，而是跑一个完整需求：做一个 URL 短链服务。用户输入长链接，系统生成短码；访问短码能跳转回原链接；还能查询访问统计。
 
-一边跑，一边回答这个问题：**四个机制装在一起，哪里需要加"胶水代码"，加多少？**
+项目本身不大，但环节齐全：Manager 收需求，PM 写产品规格，RD 写技术方案和代码，QA 写测试计划并执行，最后 Manager 发起验收。这个例子刚好可以拿来验一件事：多 Agent 系统是不是只会“看起来很忙”，还是能把产物一步步落到文件、代码和测试结果里。
+
+这篇对应的 demo 代码在这里：[ParadeTo/blog/demo/xiaoquan](https://github.com/ParadeTo/blog/tree/master/demo/xiaoquan)。
 
 ---
 
-# 架构鸟瞰
+# 这次要验证什么
 
-先看整体结构：
+我最关心的不是模型能不能写 FastAPI。这个需求不难。上下文给够，一个单 Agent 通常也能写出可用版本。
+
+这次主要看团队协作：
+
+| 问题 | 需要系统回答什么 |
+|------|------------------|
+| 谁来接用户需求 | 用户只和 Manager 对话，PM/RD/QA 不直接找用户 |
+| 产物放在哪里 | 需求、设计、代码、测试报告都沉淀到项目共享目录 |
+| 谁决定下一步 | Manager 按 SOP Skill 推进阶段 |
+| 失败怎么办 | QA 发现缺陷后能打回 RD，RD 修完后 QA 继续重测 |
+| 什么时候能交付 | 交付前必须读 QA 机器可读状态，不能只看自然语言汇报 |
+
+我看的是这支小队有没有“组织能力”：任务能不能交接，产物会不会归档，失败能不能返修，验收前有没有门禁。
+
+---
+
+# 小队分工
+
+这次小队里有四个角色：
+
+| 角色 | 主要职责 | 关键产物 |
+|------|----------|----------|
+| Manager | 接用户需求、建项目、派任务、收敛阶段、发起验收 | `needs/requirements.md`、事件流、交付报告 |
+| PM | 把自然语言需求翻译成产品契约 | `design/product_spec.md` |
+| RD | 写技术方案、实现代码、修复缺陷 | `tech/tech_design.md`、`code/` |
+| QA | 写测试计划、执行测试、发现缺陷、推动返修 | `qa/test_plan.md`、`qa/test_report.md`、`qa/test_status.json` |
+
+Human 只面对 Manager。这个约束看起来有点死板，但很有用。用户如果同时和 PM、RD、QA 对话，项目状态很快就会散掉。
+
+---
+
+# 项目现场
+
+一轮跑完后，短链项目会落在共享工作区里：
+
+```text
+workspace/shared/projects/url-short-1/
+├── needs/
+│   └── requirements.md
+├── design/
+│   └── product_spec.md
+├── tech/
+│   └── tech_design.md
+├── code/
+│   ├── app/
+│   ├── tests/
+│   ├── requirements.txt
+│   └── run_tests.sh
+├── qa/
+│   ├── test_plan.md
+│   ├── test_report.md
+│   └── test_status.json
+├── mailboxes/
+│   ├── manager.json
+│   ├── pm.json
+│   ├── rd.json
+│   └── qa.json
+└── events.jsonl
+```
+
+这个目录就是项目现场。Agent 的每一步动作最后都要落到这里：邮件发给了谁、哪个阶段完成了、测试跑没跑、报告是不是通过，都能从文件里查出来。
+
+这点比“Agent 回复了一段话”可靠得多。回复会被上下文窗口吞掉，文件至少给了我们一个可检查、可恢复的落点。
+
+---
+
+# 架构：代码管工具，流程放在 Skill 里
+
+整体结构大概是这样：
 
 ![多 Agent 系统架构](./ai-agent-digital-team-4/arch.png)
 
-系统分三层。底层是单个 Agent 的运行层，ReAct 循环、工具调用、日志写入，第一篇讲的那套，这次一行没改。中间层是邮箱通信层，三态邮箱、Human 收件箱、日志的 AOP 写入，第一、二、三篇搭的，这次也一行没动。
+底层还是前几篇做过的 Agent 运行时：接收消息、构造 prompt、调用模型、执行工具、写日志。
 
-**所有新代码都在顶层，也就是团队协作层。**
+这次新增的是团队协作层：
 
-这里有一个关键的设计取向，值得单独说一下：团队协作层没有任何写死的流程判断。代码里找不到 `if (stage === 'design') callPM()` 这样的东西。Manager 读的是自然语言写的 Skill 文件，根据文件内容决定当前任务该交给谁、下一步是什么。**SOP 是这套系统的流程操作系统。** 要改工作流，改 Skill 文本文件就够了，不用动 JS。
+| 模块 | 作用 |
+|------|------|
+| 角色工作区 | 每个角色有自己的 `soul.md`、`agent.md`、`memory.md`、`user.md` 和 Skills |
+| Skill Index | 把当前角色能用的 Skill 列表注入 system prompt |
+| 团队工具 | `send_mail`、`read_inbox`、`mark_done`、`read_shared`、`write_shared` 等 |
+| 共享项目目录 | 所有阶段产物都写到 `workspace/shared/projects/{projectId}/` |
+| 文件邮箱 | 角色之间通过 `mailboxes/*.json` 传递任务 |
+| 交付门禁 | Manager 交付前读取 QA 状态，决定交付、打回 RD，还是让 QA 重测 |
+
+我最想保留的一点是：**流程判断不写在 JS 里，而是写在 Skill 文本里。**
+
+Manager 的 system prompt 里会注入当前角色可用的 Skill 列表：
+
+```text
+<skill_usage_rules>
+执行匹配任务前必须先调用 get_skill(name) 获取详细指令。
+当任务匹配 skill description 中的“一定/必须/触发”规则时，必须先 get_skill。
+</skill_usage_rules>
+
+<available_skills role="manager">
+- sop_feature_dev: Manager 主 SOP：小功能开发 6 阶段主流程...
+- requirements_guide: 需求澄清指南...
+- delivery_gate_check: Manager 交付前的业务门禁 skill...
+</available_skills>
+```
+
+这样 Manager 收到“帮我做一个短链服务”时，不需要 JS 告诉它“下一步调用 PM”。它会先加载 `sop_feature_dev`，再按 SOP 里的阶段规则推进。
 
 ---
 
-# 全流程走一遍
+# 阶段 1：Manager 收需求
 
-以 URL 短链服务为例，跟着六个阶段走一遍完整交付。
+用户在飞书里发需求：
 
----
+> 帮我做一个 URL 短链服务，输入长链接生成短码，支持跳转和访问统计。
 
-## 阶段 0：SOP 共创（可选）
+Manager 判断这是一个新功能需求，于是加载两个 Skill：
 
-正式开始前，用户可以先和 Manager 在飞书里共创一份定制 SOP。Manager 加载 `sop_cocreate_guide`，和用户来回对话三到四轮，依次覆盖六个维度：目标、阶段划分、角色职责、交付物、检查点、复盘方式。对话结束后，结果落地成一个新的 SOP Skill `.md` 文件，保存到 `workspace/manager/skills/`。
+| Skill | 用来做什么 |
+|-------|------------|
+| `sop_feature_dev` | 决定完整项目应该走哪几个阶段 |
+| `requirements_guide` | 按 goal / boundary / constraint / risk 检查需求是否足够 |
 
-这件事值得单独拿出来说的原因是：**SOP 是文本文件，改工作流等于改文本，不碰 JS。** 团队有新要求，比如加一个安全审查环节，或者把 PM 审批改成 Manager 直批，改一个 `.md` 文件，下次运行就生效了。
+需求足够明确后，Manager 会创建项目目录，把需求写入 `needs/requirements.md`，然后通过飞书发 checkpoint，让用户确认“这个需求可以开工”。
 
-![用户与 Manager 在飞书共创 SOP](./ai-agent-digital-team-4/feishu-0-sop.png)
+![Manager 通过飞书卡片请用户确认需求](./ai-agent-digital-team-4/feishu-2-checkpoint.jpg)
 
----
+用户批准后，Manager 记录 `checkpoint_approved` 事件，再给 PM 发一封 `task_assign` 邮件：
 
-## 阶段 1：需求澄清
-
-用户在飞书发了一条消息："帮我做一个 URL 短链服务，输入长链接生成短码，支持跳转和访问统计。"
-
-![用户在飞书发起需求](./ai-agent-digital-team-4/feishu-1-request.png)
-
-Manager 判断这是一个新需求，加载 `sop_feature_dev`，从四个维度评估：目标、边界、约束、风险。评估完，向用户发一张 Checkpoint 确认卡，等用户点确认。
-
-![Manager 通过飞书卡片请用户确认需求](./ai-agent-digital-team-4/feishu-2-checkpoint.png)
-
-用户批了之后，Manager 在 workspace 里建好项目目录树（`needs/`、`design/`、`tech/`、`code/`、`qa/`、`mailboxes/`、`events.jsonl`），然后给 PM 发一封 `task_assign` 邮件。
-
-![用户批准后项目启动](./ai-agent-digital-team-4/feishu-3-approve.png)
-
-邮件发完，下一个问题自然出现：**发邮件之后 PM 怎么知道该醒来了？**
-
-来看 `send_mail` 工具的 `execute` 函数：
-
-```javascript
-// team-tools.js — send_mail 工具的 execute
-execute: async ({to, type, subject, content, projectId}) => {
-  const msgId = await mailbox.sendMail(mailboxDir, {to, from: role, type, subject, content, projectId})
-  const jobId = await tasksStore.scheduleWake(cronTasksPath, {role: to, reason: 'new_mail', delayMs: 1000, projectId})
-  return JSON.stringify({errcode: 0, msgId, scheduledWake: jobId, to, type})
+```json
+{
+  "to": "pm",
+  "type": "task_assign",
+  "subject": "产品设计 (第 1 轮)",
+  "projectId": "url-short-1"
 }
 ```
 
-`sendMail` 在内部做了两件事：写入邮箱文件，同时给收件人注册一个 1 秒后的唤醒任务。Agent 不需要知道"发完邮件还要通知调度器"，工具层把这两步封装在一起了。**发邮件 = 叫人**，这就是为什么整个系统里不需要写显式的编排代码。
+![用户批准后项目启动](./ai-agent-digital-team-4/feishu-3-approve.jpg)
 
-顺便说一个 token 开销的问题：四个角色各自有心跳，默认 30 秒一次，没有活跃项目时每次唤醒都会走一轮 LLM 调用，纯空转。实测启动 10 分钟就能跑出几十条 LLM 日志。生产用的话，要么把心跳间隔拉到 5 分钟，要么在进入 agentFn 之前判断一下收件箱有没有未读邮件，没有就直接跳过。Demo 里没有做这个优化，跑完截图之后记得关掉进程。
+邮件只是一个 JSON 文件，但它是小队协作的接口。PM 被唤醒后，第一件事不是猜上下文，而是调用 `read_inbox(projectId)`，从自己的收件箱里取任务。
+
+---
+
+# 阶段 2：PM 把需求变成产品契约
+
+PM 收到任务后加载 `product_design` Skill，产出 `design/product_spec.md`。
+
+这一阶段不是为了“写一份 PRD”而写 PRD，而是把用户的一句话变成下游可执行的契约。RD 要按它写接口，QA 要按它写断言。
+
+短链项目的产品规格里，PM 把接口收敛成三类：
+
+| 能力 | 接口 |
+|------|------|
+| 创建短码 | `POST /api/links` |
+| 短码跳转 | `GET /{code}` |
+| 查询统计 | `GET /api/stats/{code}` |
+
+它还把验收标准写成了可以机械检查的形式：
+
+```markdown
+3. 跳转返回 3xx 且 Location 正确
+   - Given：创建短码成功得到 code
+   - When：GET /{code}
+   - Then：HTTP status 为 3xx
+   - And：Location header == 创建时的 long_url
+
+4. 访问统计累加
+   - When：对 GET /{code} 连续请求 N 次
+   - Then：GET /api/stats/{code} 的 total_visits == N
+```
+
+这种细节很琐碎，但少不了。如果 PM 只写“支持访问统计”，RD 可能返回 `count`，QA 可能断言 `total_visits`，最后大家都觉得自己没错。产品契约的作用就是提前消灭这种分歧。
+
+PM 完成后，会给 Manager 回 `task_done`。Manager 收到后，根据 SOP 派 RD 做技术方案。
+
+---
+
+# 阶段 3：RD 分两步实现
+
+RD 阶段刻意拆成两封任务邮件：
+
+| 顺序 | 任务 | 产物 |
+|------|------|------|
+| 1 | 技术方案设计 | `tech/tech_design.md` |
+| 2 | 代码实现 | `code/` + 单元测试 |
+
+这个拆分不是仪式感，是跑出来的经验。一次消息里同时要求“写技术设计 + 写完整代码”，很容易前半段做完，后半段漏掉。SOP 里直接把这条规则写成硬约束：
+
+```markdown
+| 当前 task_done 来自 | 下一 task_assign | 必须独立发送 |
+|-------------------|-----------------|-------------|
+| PM（含 product_spec.md） | to=rd "技术方案设计" | ✅ 仅技术方案，不含实现 |
+| RD（含 tech_design.md） | to=rd "代码实现" | ✅ 单独再发一次 |
+| RD（含 code/main.py + tests/） | to=qa "测试设计" | ✅ 仅测试设计，不含执行 |
+| QA（含 test_plan.md） | to=qa "测试执行" | ✅ 单独再发一次 |
+```
+
+这次 RD 选择了 FastAPI + SQLAlchemy + SQLite，代码目录里包含应用、模型、路由、服务层和测试。完成后，RD 会先自己跑测试，通过后再向 Manager 回报。
+
+共享目录也做了写权限隔离。PM 只能写 `design/`，RD 只能写 `tech/` 和 `code/`，QA 只能写 `qa/`。这个限制不是靠 prompt 里说“请不要乱写”，而是在工具层拦截：
+
+```javascript
+const OWNER_BY_PREFIX = {
+  'needs/': new Set(['manager']),
+  'design/': new Set(['pm']),
+  'tech/': new Set(['rd']),
+  'code/': new Set(['rd']),
+  'qa/': new Set(['qa']),
+}
+```
+
+Agent 可以犯错，但工具不能放行越权写入。
+
+---
+
+# 阶段 4：QA 测试和返修闭环
+
+Manager 收到 RD 的代码完成邮件后，不会直接交付，而是先让 QA 做两件事：
+
+| 顺序 | 任务 | 产物 |
+|------|------|------|
+| 1 | 测试设计 | `qa/test_plan.md` |
+| 2 | 测试执行 | `qa/test_report.md`、`qa/test_status.json` |
+
+这一段最像真实团队：QA→RD→QA。
+
+如果 QA 发现缺陷，QA 会自己给 RD 发 `task_assign`，让 RD 修复；RD 修完后，再通知 QA 重测；全部通过后，QA 才给 Manager 发 `task_done`。这个闭环不是 JS 里写的 `if qaFail then callRD()`，而是写在 `test_run` Skill 的自然语言里。
+
+摘一段真实 Skill 文本：
+
+```markdown
+若返回 status=pass，确认 qa/test_report.md 与 qa/test_status.json 已写入，
+然后 mark_done 当前测试执行邮件。
+
+若返回 status=fail，工具已经写 defect 并发送 RD 修复任务；
+你只需确认结果并 mark_done 当前测试执行邮件。
+
+测试命令失败不是沙箱失败：pytest 非 0、断言失败、
+服务启动后接口返回不符合预期，都必须写 defect 并发给 RD。
+
+xfail/xpass 不能算通过：pytest 即使 returncode=0，
+只要 summary 出现 xfailed 或 xpassed，都必须标 fail、写 defect、发 RD 修复。
+```
+
+这也是我喜欢把业务编排放进 Skill 的原因。工具层只管几件确定的事：跑测试、写报告、发邮件。至于“什么情况该打回 RD”，由 QA Skill 决定。
+
+这次短链项目的最终测试结果是：
+
+```text
+状态：pass
+命令：python -m pip install -q -r requirements.txt && bash run_tests.sh
+pytest outcome：{"passed":7}
+disallowed outcome：["xfailed","xpassed"]
+覆盖率：95%
+状态原因：all_tests_passed
+```
+
+终端里能看到小队在自己接力：
 
 ![终端日志展示自驱动循环](./ai-agent-digital-team-4/feishu-4-logs.png)
 
 ---
 
-## 阶段 2：PM 产品设计
+# 阶段 5：交付前再过一道门禁
 
-PM 被唤醒，读收件箱，加载 `product_design` Skill，开始输出产品设计文档：API 定义（`POST /shorten`、`GET /{code}`、`GET /{code}/stats`）、数据模型、验收标准，写完用 `self_score` 自评一遍，再把 `task_done` 邮件发回给 Manager。
+QA 回 `task_done` 之后，Manager 还不能直接发验收。
 
-**这里有一个容易忽视的并发 bug。**
+交付前必须加载 `delivery_gate_check` Skill。这个 Skill 会读取：
 
-最初的 SkillLoader 用一个模块级全局变量存 `skillsDir`。单个 Agent 跑的时候没问题，但四个角色并发时，PM 的 Loader 可能被 Manager 的调用覆盖，PM 一不小心就会读到 Manager 的 13 个 Skill，而不是自己的 5 个。
+```text
+qa/test_status.json
+qa/test_report.md
+mailboxes/manager.json
+mailboxes/qa.json
+mailboxes/rd.json
+```
 
-修复只改了一行：
+然后按顺序判断：
 
-```javascript
-// 改之前：模块级全局变量，四角色并发时互相覆盖
-let _skillsDir = null  // ← 危险
+| 情况 | 决策 |
+|------|------|
+| 缺测试报告或状态文件 | 派 QA 执行测试 |
+| `test_status.status != pass` | 派 RD 修复，或派 QA 重测 |
+| 出现 QA policy 失败 | 派 RD 修复 |
+| RD 修复时间晚于 QA 通过时间 | 派 QA 重测 |
+| 全部通过 | 允许交付 |
 
-// 改之后：每次调用从参数派生，与任何全局状态无关
-export function loadRoleScopedSkillRegistry(workspaceRoot, role) {
-  const skillsDir = path.join(workspaceRoot, role, 'skills')  // ← 实例绑定
-  const registry = {}
-  // ...从 skillsDir 读取
-  return registry
+Manager 不能凭一句“QA 说通过了”就交付，它要读机器可判定的状态文件。这个门禁后来很有用：如果测试里出现 `xfailed` 这种“看似 pytest 通过，实际关键路径被跳过”的情况，系统会自动打回 RD，而不是把旧验收当成通过。
+
+门禁通过后，Manager 才向用户发送交付报告。
+
+![Manager 在飞书发出交付汇报](./ai-agent-digital-team-4/feishu-5-delivery.jpg)
+
+交付确认后，还有一步可以继续触发：复盘。Manager 按 SOP 加载 `team_retrospective`，给 PM、RD、QA 各发一封 `retro_trigger` 邮件。三个角色会回看本轮项目里的需求、设计、代码、测试报告和邮件链，写出自己的 retro，再把改进建议发回 Manager。
+
+这一步对应第三篇讲的自我进化机制。它不影响本次短链服务是否交付，但会影响下一次小队怎么工作：比如把“测试通过必须有 `qa/test_status.json`”写进 QA 规则，把“代码修复后必须重测”写进交付门禁，把容易漏掉的任务拆分规则沉淀到 SOP。经验不能只停在聊天记录里，得回写到团队的工作说明书里。
+
+---
+
+# 验收之后：真的跑一下成品
+
+交付报告不是结束，我还把短链服务跑起来试了一遍。
+
+创建短码：
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/links \
+  -H 'Content-Type: application/json' \
+  -d '{"long_url":"https://example.com/demo"}'
+```
+
+示例返回如下，短码每次运行可能不同：
+
+```json
+{
+  "code": "teyhke",
+  "long_url": "https://example.com/demo"
 }
 ```
 
-从全局变量改成函数参数，Manager 的 `skillsDir` 是 `workspace/manager/skills/`，PM 的是 `workspace/pm/skills/`，互不干扰。**这是单 Agent 转多 Agent 最典型的 bug 模式：一行改动，从全局到实例。**
+访问短码会返回 3xx，并带上 `Location`：
 
----
+```bash
+curl -i http://127.0.0.1:8000/teyhke
+```
 
-## 阶段 3：RD 技术实现
+查询统计：
 
-Manager 收到 PM 的 `task_done` 邮件，分两步给 RD 派任务：先发一封 `tech_design` 任务，等 RD 把 `tech/tech_design.md` 写完回报后，再单独发一封 `code_impl` 任务。两步拆开不是为了仪式感。实测把两个任务合在一封邮件里，Agent 写完技术方案就当自己完成了，代码实现根本没动。
+```bash
+curl http://127.0.0.1:8000/api/stats/teyhke
+```
 
-RD 收到 `code_impl` 后，加载对应 Skill，建好目录结构，在沙箱里写代码：Express + SQLite，实现三个接口（`POST /shorten`、`GET /:code`、`GET /:code/stats`）。代码写完自动跑测试，如果失败，RD 会读 stderr、修代码、重新跑，最多三轮，跑通为止。
+返回：
 
-**这里有一个问题值得停下来想一下：**
-
-四个角色共享同一个项目目录，RD 不能动 PM 的 `design/`，QA 也不能往 `code/` 里写。怎么保证？
-
-靠 Prompt 说"请不要改别人的目录"？这太软了，Agent 偶尔会忘。真正可靠的办法是在工具层做强制拦截，用前缀 ACL：
-
-```javascript
-// workspace.js — 前缀 ACL
-const OWNER_BY_PREFIX = {
-  'needs/':  new Set(['manager']),
-  'design/': new Set(['pm']),
-  'tech/':   new Set(['rd']),
-  'code/':   new Set(['rd']),
-  'qa/':     new Set(['qa']),
-}
-
-export function checkWrite(role, relPath) {
-  for (const [prefix, owners] of Object.entries(OWNER_BY_PREFIX)) {
-    if (relPath.startsWith(prefix) && !owners.has(role)) {
-      throw new Error(`${role} cannot write ${relPath} (owner=${[...owners]})`)
-    }
-  }
+```json
+{
+  "code": "teyhke",
+  "total_visits": 1
 }
 ```
 
-Prompt 约束是软约束，Agent 想绕就能绕。这个是工具层的硬抛出，Agent 就算想写也写不进去。`PermissionError` 直接返回给 Agent，它自己就知道这条路不通。
+这时候我才敢把它当成一个最小服务：能跑，能测，也能验收。
 
 ---
 
-## 阶段 4：QA 测试 + 缺陷修复循环
+# 关键接缝
 
-Manager 先给 QA 发 `test_design` 任务，QA 输出 `qa/test_plan.md`；之后再发 `test_run` 任务，QA 在沙箱里跑完所有测试用例。
+跑完整个项目之后再回头看，需要代码兜住的地方并不多，但每个都不能省。
 
-这里有一个值得注意的设计：如果发现缺陷，QA **自己**给 RD 发 `task_assign` 邮件，不需要经过 Manager 中转。RD 修完，QA 再验一遍，全部通过后才把 `task_done` 发回给 Manager。这个 QA→RD→QA 的闭环，JS 代码里一行都没有写死。QA 的 `test_run` Skill 文本里用自然语言描述了这个决策逻辑，Agent 自己读完就知道该怎么做。编排逻辑在 Skill 文本里，不在 JS 里。
+| 接缝 | 放在哪里 | 解决什么问题 |
+|------|----------|--------------|
+| Skill Index 注入 | `build-team.js` | Agent 先知道自己有哪些 Skill，才可能按规则加载 |
+| 文件邮箱 | `mailboxes/*.json` | 角色之间用稳定文件传任务，消息不会丢在上下文里 |
+| 邮箱监听 | `mailbox-watcher.js` | 有新未读邮件才唤醒对应角色 |
+| workspace 权限 | `workspace.js` / team tools | PM/RD/QA 只能写自己的目录 |
+| QA 自动测试 | `run_project_tests` + `test_run` Skill | 测试结果写成报告和机器可读状态 |
+| 交付门禁 | `delivery_gate_check` Skill + 工具层检查 | Skill 定义交付口径，工具层读取状态并执行确定性检查 |
+| 执行串行化 | `build-team.js` 共享锁 | 避免多个角色同时跑时污染同一套运行上下文 |
 
----
+这条边界我会单独记下来：**确定性的事情交给代码，业务判断留给 Skill。**
 
-## 阶段 5-6：交付 + 复盘
-
-所有测试通过，Manager 调用 `send_to_human({kind: 'delivery'})` 向用户发送交付报告，用户在飞书确认，系统记录 `delivered` 事件。
-
-![Manager 在飞书发出交付汇报](./ai-agent-digital-team-4/feishu-5-delivery.png)
-
-复盘阶段，Manager 同时给 PM、RD、QA 发 `retro_trigger` 邮件，三个角色同时被唤醒，各自写复盘。
-
-**这里又有一个问题：**
-
-JS 是单线程，三个角色同时唤醒有问题吗？
-
-有，而且是真实踩到过的问题。单线程不等于没有并发问题。PM 的 ReAct 循环挂在 `await generateText(...)` 等待 LLM 返回时，事件循环可以调度 Manager 开始跑，两个角色的循环**交替执行**。任何 SDK 里的模块级可变状态，都可能在这个交替里被污染。
-
-解法是用 Promise 链串行化所有 Agent 的执行：
-
-```javascript
-// build-team.js — Promise 链串行化
-export function wrapWithLock(agentFn) {
-  let lock = Promise.resolve()
-  return function lockedAgentFn(...args) {
-    let resolve
-    const prev = lock
-    lock = new Promise(r => { resolve = r })
-    return prev.then(() => agentFn(...args)).finally(() => resolve())
-  }
-}
-```
-
-有意思的是，Python 版本也有一把锁，但原因不一样。Python 那边是 CrewAI 的 `@before_llm_call` 钩子挂在全局事件总线上，并发执行时 PM 的钩子会触发在 QA 的 LLM 调用上，把系统提示搞乱。JS 版没有这个框架层面的问题，这把锁是纯粹的防御性编程，防止任何潜在的 SDK 级共享状态被异步交替污染。**同一个接缝，Python 和 JS 各有各的根因。**
-
-<!-- 运行后填入：events.jsonl 前几行（项目事件链） -->
-<!-- 运行后填入：mailboxes/pm.json 中 Manager→PM 的首封 task_assign 邮件 -->
-
----
-
-# 接缝总结
-
-六个阶段全部跑通。回头数一下，真正需要写的"胶水代码"到底有多少。
-
-| 接缝 | 文件 | 解决的问题 |
-|------|------|-----------|
-| SendMail = 叫人 | team-tools.js | 发邮件自动注册唤醒，消灭显式编排代码 |
-| RoleScopedSkillLoader | skill-tools-scoped.js | skillsDir 从全局变量改为实例绑定，多角色 Skill 不串台 |
-| workspace 前缀 ACL | workspace.js | 共享目录按角色隔离写权限，工具层硬拦截 |
-| 全局锁（Promise 链） | build-team.js | async 交织执行不污染，JS/Python 根因不同 |
-
-业务逻辑全在 Skill 文本文件里，JS 代码只管接缝。**新增一个角色几乎不用动接缝代码**：在 `workspace/` 下建一个目录，在 `ROLES` 数组里加一条，在 `OWNER_BY_PREFIX` 里加一个前缀，就结束了。
+比如“文件里有没有 unread 邮件”，代码读 JSON 就能判断；“QA 失败后应该打回 RD 还是上报基础设施问题”，这属于业务规则，更适合写在 QA Skill 里。规则以后变了，改 Skill 文本就行。
 
 ---
 
 # 结语
 
-四篇写完了，从"临时工"写到"能自我进化的团队"。回头看，多 Agent 系统最难的不是业务逻辑，那些都在 Skill 文件里，改文本就够了。真正难的是接缝：几行看起来不起眼的代码，每一行都是踩过坑才知道要加的。SOP 是流程操作系统，邮件是调度器，JS 只管把这几处拼缝粘好。
+这篇是整个数字团队系列的最后一篇。前面几篇像是在做零件，这篇终于把它们装起来，跑了一次完整项目。
+
+跑完之后，我最大的感受是：多 Agent 的难点不在“多”，而在“团队”。角色要有边界，产物要有归档，消息要能追踪，测试要能挡住交付，业务流程还要能改。
+
+如果所有流程都写进 JS，系统很快会变成一堆难维护的 `if/else`。把流程放进 Skill，把文件和工具做扎实，反而更像真实团队的工作方式：人读 SOP，按产物交接，出了问题回到上一个责任人，直到测试和验收都过。
+
+一个最小但完整的 Agent 小队，就这样跑通了。

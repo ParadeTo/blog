@@ -6,11 +6,17 @@ import path from 'path'
 const execFileAsync = promisify(execFile)
 
 export class PodmanSandbox {
-  constructor({image = 'xiaoquan-sandbox:latest', timeoutMs = 30000, dataDir = './data'} = {}) {
+  constructor({
+    image = 'xiaoquan-sandbox:latest',
+    timeoutMs = 30000,
+    dataDir = './data',
+    workspaceRoot = './workspace',
+  } = {}) {
     this._image = image
     this._timeoutMs = timeoutMs
     this._dataDir = path.resolve(dataDir)
     this._credentialsDir = path.join(this._dataDir, '.sandbox-credentials')
+    this._workspaceRoot = path.resolve(workspaceRoot)
   }
 
   writeCredentials(credentials) {
@@ -74,6 +80,10 @@ export class PodmanSandbox {
     const mounts = [
       '-v', `${path.resolve('skills')}:/mnt/skills:ro`,
     ]
+    const sharedDir = path.join(this._workspaceRoot, 'shared')
+    fs.mkdirSync(sharedDir, {recursive: true})
+    mounts.push('-v', `${sharedDir}:/workspace/shared:rw`)
+
     if (fs.existsSync(this._credentialsDir)) {
       mounts.push('-v', `${this._credentialsDir}:/workspace/.config:ro`)
     }

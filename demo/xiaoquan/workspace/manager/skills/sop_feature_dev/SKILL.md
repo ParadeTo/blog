@@ -47,24 +47,45 @@ kind: sop
 | RD（含 code/main.py + code/tests/）| to=qa | "测试设计 (第 1 轮)" | ✅ 仅测试设计，不含执行 |
 | QA（含 qa/test_plan.md）| to=qa | "测试执行 (第 1 轮)" | ✅ **单独再发一次** task_assign 让 QA 跑 pytest |
 | QA（含 qa/test_report.md 且全 pass）| — | — | 进入阶段 5 交付 |
+| QA（qa/test_report.md 有 fail 或 qa/defects/ 非空）| to=rd | "缺陷修复 / fix defects (第 N 轮)" | ✅ 打回 RD，修复后再派 QA 重测 |
 
 **不要做的事**：
 - 🚫 subject="技术设计与实现" — 这是一条消息做两件事，RD 会漏做实现
 - 🚫 subject="测试设计与执行" — QA 会漏做执行
 - 🚫 没收到 RD 的"代码实现完成"就派 QA —— code/ 目录还没产物可测
 - 🚫 没收到 QA 的"测试执行完成"就发 delivery —— 等 test_report.md 生成、且无 fail
+- 🚫 QA 有具体失败输出/defect 时发"沙箱阻塞"checkpoint —— 这是返修，不是验收
 
 **收到每条 `type=task_done` 邮件时**：
 1. 调 `read_inbox(project_id)` → 拿到 task_done
-2. 加载 skill `check_review_criteria` → 按 5 条判据判 threshold_met
+2. 加载 skill `check_review_criteria` → 按 5 条判据判 threshold_met（**必须执行，不可跳过**）
 3. threshold_met=false（常见情况）：
    - `append_event("task_done_received", {from_role, artifacts})`
    - 调 `mark_done(pid, msg_id)`
    - 按上表 → 下一 task_assign 发送
 4. threshold_met=true：`append_event("decided_insert_review")` + 发 review_request ×2 → 等 review_done → 汇总决策
+5. 若 task_done 来自 RD 且 subject/content 表明是代码实现或缺陷修复完成：必须按上表派 QA `测试执行 / retest`，不能直接发 delivery。
+
+**评审汇总需要人类选择时**：
+- 如果 review_done 暴露出需求/验收口径需要人类选择（例如 A/B 选项、规则确认、是否接受评审建议），必须调用 `send_to_human(kind="checkpoint_request", checkpoint_id="review-decision-<project_id>-<stage>-<round>", project_id=<pid>)`。
+- 不要用 `kind="info"` 发送需要用户回复的选择题；否则用户回复不会进入 checkpoint_response 分流。
+- checkpoint 消息里要要求用户按稳定格式回复，例如 `1B 2A`，并在收到回复后加载 `handle_checkpoint_reply` 继续推进。
+
+**QA 执行失败的处理规则**：
+- 如果 QA report 写明 pytest/assertion/requirements/import/API 行为失败，或 `qa/defects/` 非空：
+  1. `append_event("revision_requested", {"to":"rd","reason":"qa_defects"})`
+  2. `send_mail(to="rd", type="task_assign", subject="缺陷修复 / fix defects (第 N 轮)", content={"defects":[...]})`
+  3. 等 RD `task_done` 后，再 `send_mail(to="qa", type="task_assign", subject="测试执行 / retest (第 N 轮)")`
+- 只有 execute_code 工具本身连接失败、容器无法创建、共享目录无法挂载，且没有可执行测试证据时，才允许向人类发沙箱阻塞 checkpoint。
 
 ### 阶段 5：交付
 QA 的 test_report 到达且所有通过：
+0. 交付前必须先加载 skill `delivery_gate_check`，按 skill 输出决定是否交付：
+   - 缺 `qa/test_report.md` / `qa/test_status.json` → 自动派 QA `测试执行 / run tests`
+   - `qa/test_status.json` 为 fail 且 RD 尚未修复 → 自动派 RD `缺陷修复 / fix defects`
+   - QA policy 标记的失败（例如 `disallowed_outcome:xfailed`）→ 自动派 RD 修复，不能发验收
+   - RD 修复时间晚于上次失败测试 → 自动派 QA `测试执行 / retest`
+   - 只有 `delivery_gate_check` 输出 `decision=deliver` 时才调用 `send_to_human(kind="delivery")`
 1. 调 `append_event(pid, "delivery_requested", {...})`（交付准备好）
 2. 调 `send_to_human(routing_key=<用户rk>, message="交付汇报+验收请求", kind="delivery", project_id=pid, checkpoint_id="delivery-<pid>")`
 3. 记录到 events 的 `delivery_sent` 动作已由 send_to_human 自动写入

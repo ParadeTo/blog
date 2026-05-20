@@ -15,6 +15,7 @@ function nowMs() { return Date.now() }
 function genCkptId() { return 'ckpt-' + randomBytes(4).toString('hex') }
 
 async function acquireLock(lockPath, {timeoutMs = 5000, retryMs = 20} = {}) {
+  fs.mkdirSync(path.dirname(lockPath), {recursive: true})
   const deadline = Date.now() + timeoutMs
   while (Date.now() < deadline) {
     try { const fd = fs.openSync(lockPath, 'wx'); fs.closeSync(fd); return }
@@ -72,6 +73,8 @@ export class CheckpointStore {
     await acquireLock(this._lockPath)
     try {
       this._ensure()
+      const existing = this._readAll().find(d => d.checkpointId === cid && d.routingKey === routingKey)
+      if (existing) return cid
       fs.appendFileSync(this._path, JSON.stringify(entry) + '\n', 'utf-8')
     } finally { releaseLock(this._lockPath) }
     return cid
@@ -117,11 +120,23 @@ const NEW_REQ_KEYWORDS = [
 ]
 const SOP_KEYWORDS = ['sop', '流程', '标准', '工作流', '规范', 'workflow']
 const CLARIFICATION_KEYWORDS = ['答复', '回答', '澄清', '答案', 'answer']
-const DECISION_TOKENS = ['同意', '批准', 'approve', 'yes', '确认', 'ok', '拒绝', '不同意', 'reject', 'no']
+const DECISION_TOKENS = ['同意', '批准', 'approve', 'yes', '确认', 'ok', '接受', '接受默认', '默认', '拒绝', '不同意', 'reject', 'no']
 
 function matchKeywords(text, keywords) {
   const t = text.toLowerCase()
   return keywords.some(kw => t.includes(kw.toLowerCase()))
+}
+
+function isDecisionReply(text) {
+  // TODO: replace the growing regex fallback with a lightweight LLM classifier
+  // for ambiguous checkpoint replies; keep explicit checkpoint IDs and simple
+  // approve/reject tokens on the deterministic fast path.
+  const stripped = (text || '').trim()
+  const lower = stripped.toLowerCase()
+  if (/^(选\s*)?[12]$/.test(stripped)) return true
+  if (/^[a-f]$/i.test(stripped)) return true
+  if (/^(?:\d+\s*[a-f](?:\s+|$)){2,}$/i.test(stripped)) return true
+  return DECISION_TOKENS.some(tok => lower.includes(tok.toLowerCase()))
 }
 
 /**
@@ -140,12 +155,13 @@ export function classify(text, {callbackValue = null, pendingForRk = []} = {}) {
   const ckptMatch = /ckpt-[0-9a-f]{8}/.exec(stripped)
   if (ckptMatch && pendingForRk.some(c => c.checkpointId === ckptMatch[0]))
     return ['checkpoint_response', ckptMatch[0]]
+  const explicitPending = pendingForRk.find(c => c.checkpointId && stripped.includes(c.checkpointId))
+  if (explicitPending) return ['checkpoint_response', explicitPending.checkpointId]
 
   // 3. 有 pending，用户直接给决策词
   if (pendingForRk.length > 0) {
     const latest = pendingForRk.reduce((a, b) => a.createdAtMs > b.createdAtMs ? a : b)
-    const lower = stripped.toLowerCase()
-    if (DECISION_TOKENS.some(tok => lower.includes(tok)))
+    if (isDecisionReply(stripped))
       return ['checkpoint_response', latest.checkpointId]
   }
 

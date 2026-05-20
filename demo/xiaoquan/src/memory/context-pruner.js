@@ -13,12 +13,18 @@ export function pruneToolResults(messages, {keepTurns = 10} = {}) {
   for (let i = 0; i < cutoff; i++) {
     const msg = messages[i]
     if (msg.role !== 'tool') continue
-    const content = typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)
-    if (content.length <= MAX_TOOL_RESULT_CHARS) continue
-    messages[i] = {
-      ...msg,
-      content: content.slice(0, KEEP_CHARS) + `\n...(truncated, original: ${content.length} chars)`,
-    }
+    if (!Array.isArray(msg.content)) continue
+
+    const pruned = msg.content.map(part => {
+      if (part.type !== 'tool-result') return part
+      const resultStr = typeof part.result === 'string' ? part.result : JSON.stringify(part.result)
+      if (resultStr.length <= MAX_TOOL_RESULT_CHARS) return part
+      return {
+        ...part,
+        result: resultStr.slice(0, KEEP_CHARS) + `\n...(truncated, original: ${resultStr.length} chars)`,
+      }
+    })
+    messages[i] = {...msg, content: pruned}
   }
   return messages
 }

@@ -1,22 +1,21 @@
 import {generateText} from 'ai'
-import {createAnthropic} from '@ai-sdk/anthropic'
-
-const anthropic = createAnthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-  baseURL: process.env.ANTHROPIC_BASE_URL || 'http://localhost:3002/v1',
-})
 import {createOpenAI} from '@ai-sdk/openai'
 import {embed} from 'ai'
 
+const openai = createOpenAI({
+  baseURL: 'http://localhost:3002/v1',
+  apiKey: process.env.ANTHROPIC_API_KEY || 'no-key',
+})
+
 const embeddingOpenai = createOpenAI({
-  baseURL: process.env.EMBEDDING_BASE_URL || 'http://localhost:3002',
+  baseURL: 'http://localhost:3002',
   apiKey: process.env.EMBEDDING_API_KEY || process.env.ANTHROPIC_API_KEY || 'no-key',
 })
 
 let _embeddingModel = null
 
 export function getModel(modelId) {
-  return anthropic(modelId || 'claude-sonnet-4-6')
+  return openai(modelId || 'gpt-5.4-nano-2026-03-17')
 }
 
 export function getEmbeddingModel(modelId) {

@@ -14,7 +14,11 @@
 ## 行为规则
 
 - **每次被唤醒**：先解析 wake 消息中的 project_id，再 read_inbox(projectId) 读取邮件
-- **收到用户新需求**：evaluate 需求 → create_project → 发 checkpoint 给用户确认 → append_event
+- **收到用户新需求**：必须先调用 `get_skill("sop_feature_dev")`，再调用 `get_skill("requirements_guide")`；按 skill 做 4 维覆盖度评估。缺口 > 0 时只用 `send_to_human(kind="info")` 问 1-3 个最关键问题，并展示覆盖度评估；四维覆盖后再调用 `get_skill("requirements_write")` → create_project → 发 checkpoint 给用户确认 → append_event
+- **send_to_human 的 routingKey**：不知道用户 routing_key 时**必须传 `"default"`**，系统自动路由
+- **收到 task_done**：必须先加载 skill `check_review_criteria` 决定是否评审，**不可直接跳到下一阶段**
+- **需要用户选择/确认**：凡是消息需要用户回复选项、确认口径、批准方案，都必须用 `send_to_human(kind="checkpoint_request", checkpointId=非空)`；纯通知才用 `kind="info"`
+- **准备交付**：必须先加载 skill `delivery_gate_check`，只有它输出 `decision=deliver` 才能调用 `send_to_human(kind="delivery")`
 - **分配任务顺序**：PM（产品设计）→ RD（技术方案）→ RD（代码实现）→ QA（测试设计）→ QA（测试执行）
 - **每步必须独立 send_mail**：不要在一条邮件里合并多步任务
 - **防只说不做**：说"已分配"就必须已经调了 send_mail；说"已创建"就必须调了 create_project
