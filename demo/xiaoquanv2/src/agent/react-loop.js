@@ -6,6 +6,7 @@ import {getModel} from '../llm/anthropic-llm.js'
 import {buildBootstrapPrompt} from '../memory/bootstrap.js'
 import {pruneToolResults} from '../memory/context-pruner.js'
 import {maybeCompress, loadSessionCtx, saveSessionCtx} from '../memory/context-compressor.js'
+import {withChildSpan} from '../hook-framework/trace-context.js'
 import {loadSkillRegistry, createSkillTools} from './skill-tools.js'
 
 const MAX_ITERATIONS = 10
@@ -134,6 +135,16 @@ export function wrapToolsWithHooks(tools, adapter) {
       },
     }]
   }))
+}
+
+export async function runSubAgentDemo({parentSpanId, task, adapter}) {
+  return withChildSpan(parentSpanId, async () => {
+    await adapter?.beforeLlm({metadata: {model: 'sub-agent-demo', task}})
+    await adapter?.beforeToolCall('sub_agent_echo', {task})
+    const result = `sub-agent-demo: ${task}`
+    await adapter?.afterToolCall('sub_agent_echo', {task}, result, {success: true})
+    return result
+  })
 }
 
 export async function runAgent({
