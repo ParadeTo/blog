@@ -71,4 +71,38 @@ describe('Runner hardening', () => {
 
     assert.match(sender.messages.at(-1).content, /安全策略拦截：prompt_injection/)
   })
+
+  it('unwraps tool execution errors caused by guardrail denies', async () => {
+    const registry = new HookRegistry()
+    const afterTurns = []
+    registry.register(EventType.AFTER_TURN, ctx => afterTurns.push(ctx))
+
+    runner = new Runner(mgr, sender, async () => {
+      const cause = new GuardrailDeny(
+        DenyReason.SANDBOX_VIOLATION,
+        'mock read_file error: mock-read-error.txt',
+        {metadata: {costUsage: {spentUsd: 0.1, budgetUsd: 0.01}}},
+      )
+      throw Object.assign(new Error(`Error executing tool read_file: ${cause.message}`), {
+        cause,
+      })
+    }, {
+      idleTimeoutS: 1,
+      hookRegistry: registry,
+      hookAdapterFactory: opts => new HookAdapter(registry, opts),
+    })
+
+    await runner.dispatch(createInboundMessage({
+      routingKey: 'p2p:ou_test',
+      content: '帮我打开这个本地文件看看：mock-read-error.txt',
+      msgId: 'm2',
+      senderId: 'ou_test',
+    }))
+    await new Promise(r => setTimeout(r, 200))
+
+    assert.match(sender.messages.at(-1).content, /安全策略拦截：sandbox_violation/)
+    assert.equal(afterTurns.at(-1).success, false)
+    assert.equal(afterTurns.at(-1).metadata.reply, '安全策略拦截：sandbox_violation')
+    assert.deepEqual(afterTurns.at(-1).metadata.costUsage, {spentUsd: 0.1, budgetUsd: 0.01})
+  })
 })

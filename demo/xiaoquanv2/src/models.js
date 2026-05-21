@@ -1,3 +1,9 @@
+import crypto from 'crypto'
+
+export function newTraceId() {
+  return crypto.randomUUID().replace(/-/g, '').slice(0, 16)
+}
+
 /**
  * @typedef {Object} Attachment
  * @property {string} msgType   - "image" | "file"
@@ -15,6 +21,7 @@
  * @property {number} ts          - millisecond timestamp
  * @property {boolean} isCron     - true if from CronService
  * @property {Attachment|null} attachment
+ * @property {string} traceId     - per-inbound-message trace id
  */
 
 /**
@@ -31,8 +38,20 @@ export function createInboundMessage({
   isCron = false,
   attachment = null,
   meta = null,
+  traceId = '',
 }) {
-  return {routingKey, content, msgId, rootId: rootId || msgId, senderId, ts, isCron, attachment, meta}
+  return {
+    routingKey,
+    content,
+    msgId,
+    rootId: rootId || msgId,
+    senderId,
+    ts,
+    isCron,
+    attachment,
+    meta,
+    traceId: traceId || newTraceId(),
+  }
 }
 
 /**

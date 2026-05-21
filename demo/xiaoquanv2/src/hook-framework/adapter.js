@@ -1,5 +1,16 @@
 import {EventType, GuardrailDeny, createHookContext} from './registry.js'
 
+export function findGuardrailDeny(err) {
+  let current = err
+  const seen = new Set()
+  while (current && !seen.has(current)) {
+    if (current instanceof GuardrailDeny) return current
+    seen.add(current)
+    current = current.cause
+  }
+  return null
+}
+
 export class HookAdapter {
   constructor(registry, base = {}) {
     this.registry = registry
@@ -80,6 +91,10 @@ export class HookAdapter {
   }
 
   isDeny(err) {
-    return err instanceof GuardrailDeny
+    return !!findGuardrailDeny(err)
+  }
+
+  denyError(err) {
+    return findGuardrailDeny(err)
   }
 }

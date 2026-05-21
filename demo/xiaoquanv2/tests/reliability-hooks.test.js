@@ -30,7 +30,18 @@ describe('reliability hooks', () => {
         sessionId: 's1',
         toolName: 'read_file',
       })),
-      err => err instanceof GuardrailDeny && err.reasonCode === DenyReason.BUDGET_EXCEEDED,
+      err => {
+        assert.equal(err instanceof GuardrailDeny, true)
+        assert.equal(err.reasonCode, DenyReason.BUDGET_EXCEEDED)
+        assert.deepEqual(err.metadata.costUsage, {
+          spentUsd: 0.02,
+          budgetUsd: 0.000001,
+          exceededByUsd: 0.019999,
+          inputUsdPerMillion: 10,
+          outputUsdPerMillion: 10,
+        })
+        return true
+      },
     )
   })
 

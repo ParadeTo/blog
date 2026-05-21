@@ -55,7 +55,7 @@ strategies:
   - name: cost-guard
     class: cost-guard.CostGuard
     config:
-      budgetUsd: 1.0
+      budgetUsd: 0.000001
       inputUsdPerMillion: 0.5
       outputUsdPerMillion: 1.5
     hooks:

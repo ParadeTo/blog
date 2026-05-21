@@ -19,11 +19,12 @@ export const DenyReason = Object.freeze({
 })
 
 export class GuardrailDeny extends Error {
-  constructor(reasonCode, detail = '') {
+  constructor(reasonCode, detail = '', options = {}) {
     super(detail || reasonCode)
     this.name = 'GuardrailDeny'
     this.reasonCode = reasonCode
     this.detail = detail
+    this.metadata = Object.freeze({...options.metadata})
   }
 }
 

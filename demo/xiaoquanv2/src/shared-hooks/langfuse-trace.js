@@ -4,6 +4,10 @@ function id(prefix) {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(16).slice(2, 8)}`
 }
 
+function nowIso() {
+  return new Date().toISOString()
+}
+
 function createHttpClient({
   baseUrl = process.env.XIAOQUAN_LANGFUSE_BASE_URL || process.env.LANGFUSE_BASE_URL || 'http://localhost:3000',
   publicKey = process.env.XIAOQUAN_LANGFUSE_PUBLIC_KEY || process.env.LANGFUSE_PUBLIC_KEY || '',
@@ -20,10 +24,55 @@ function createHttpClient({
         },
         body: JSON.stringify({batch: events}),
       })
+      const bodyText = await resp.text()
       if (!resp.ok) {
-        throw new Error(`Langfuse ingestion failed: ${resp.status} ${await resp.text()}`)
+        throw new Error(`Langfuse ingestion failed: ${resp.status} ${bodyText}`)
+      }
+      if (resp.status === 207) {
+        const body = JSON.parse(bodyText)
+        if (body.errors?.length) {
+          throw new Error(`Langfuse ingestion partial failure: ${JSON.stringify(body.errors)}`)
+        }
       }
     },
+  }
+}
+
+function asLangfuseValue(value) {
+  if (value === undefined || value === null) return undefined
+  if (typeof value === 'string') return value
+  try {
+    return JSON.stringify(value)
+  } catch {
+    return String(value)
+  }
+}
+
+function buildGenerationInput(metadata = {}) {
+  if (metadata.promptMessages) return {messages: metadata.promptMessages}
+  if (metadata.promptPreview) return {prompt: metadata.promptPreview}
+  return undefined
+}
+
+function buildGenerationMetadata(metadata = {}) {
+  const {
+    promptMessages,
+    previousLlmOutput,
+    ...rest
+  } = metadata
+  return rest
+}
+
+function appendToolCallOutput(existing, tool) {
+  if (existing?.action === 'tool_calls' && Array.isArray(existing.tools)) {
+    return {
+      action: 'tool_calls',
+      tools: [...existing.tools, tool],
+    }
+  }
+  return {
+    action: 'tool_calls',
+    tools: [tool],
   }
 }
 
@@ -35,16 +84,24 @@ class IngestionBuffer {
     this.stateBySession = new Map()
   }
 
-  state(sessionId) {
-    if (!this.stateBySession.has(sessionId)) {
-      this.stateBySession.set(sessionId, {
-        traceId: sessionId,
-        rootSpanId: `session-${sessionId}`,
+  state(ctx) {
+    const inherited = getTraceContext()
+    const turnNumber = ctx.turnNumber || 1
+    const traceId = inherited?.traceId || `${ctx.sessionId}-turn-${turnNumber}`
+    if (!this.stateBySession.has(traceId)) {
+      this.stateBySession.set(traceId, {
+        traceId,
+        sessionId: ctx.sessionId,
+        turnNumber,
+        rootSpanId: inherited?.parentSpanId || `agent-${traceId}`,
         stack: [],
         generationId: '',
+        generationOutput: undefined,
+        input: '',
+        output: '',
       })
     }
-    return this.stateBySession.get(sessionId)
+    return this.stateBySession.get(traceId)
   }
 
   parentObservationId(state) {
@@ -54,10 +111,11 @@ class IngestionBuffer {
 
   push(type, body) {
     if (!this.enabled) return
+    const timestamp = nowIso()
     this.events.push({
       id: id('evt'),
       type,
-      timestamp: new Date().toISOString(),
+      timestamp,
       body,
     })
   }
@@ -80,37 +138,73 @@ export function createLangfuseTraceHandlers({
 
   return {
     async beforeTurnHandler(ctx) {
-      const state = buffer.state(ctx.sessionId)
+      const state = buffer.state(ctx)
       const inherited = getTraceContext()?.parentSpanId || ''
+      state.input = asLangfuseValue(ctx.metadata.userContent) || ''
       buffer.push('trace-create', {
         id: state.traceId,
-        name: `session-${ctx.sessionId}`,
+        name: `session-${ctx.sessionId}-turn-${ctx.turnNumber || 1}`,
         sessionId: ctx.sessionId,
         userId: ctx.senderId,
+        input: state.input,
+        metadata: {
+          agentId: ctx.agentId,
+          turnNumber: ctx.turnNumber,
+        },
       })
       buffer.push('span-create', {
         id: state.rootSpanId,
         traceId: state.traceId,
         name: 'agent_execution',
         parentObservationId: inherited && inherited !== state.rootSpanId ? inherited : null,
+        input: state.input,
+        metadata: {
+          agentId: ctx.agentId,
+          turnNumber: ctx.turnNumber,
+        },
       })
     },
 
     beforeLlmHandler(ctx) {
-      const state = buffer.state(ctx.sessionId)
+      const state = buffer.state(ctx)
+      const previousOutput = ctx.metadata.previousLlmOutput !== undefined
+        ? ctx.metadata.previousLlmOutput
+        : state.generationOutput
+      if (state.generationId && previousOutput !== undefined) {
+        buffer.push('generation-update', {
+          id: state.generationId,
+          traceId: state.traceId,
+          output: previousOutput,
+          endTime: nowIso(),
+        })
+      }
       state.generationId = id('gen')
+      state.generationOutput = undefined
       buffer.push('generation-create', {
         id: state.generationId,
         traceId: state.traceId,
         parentObservationId: buffer.parentObservationId(state),
         name: 'llm-call',
         model: ctx.metadata.model,
-        metadata: ctx.metadata,
+        input: buildGenerationInput(ctx.metadata),
+        metadata: buildGenerationMetadata(ctx.metadata),
       })
     },
 
     beforeToolHandler(ctx) {
-      const state = buffer.state(ctx.sessionId)
+      const state = buffer.state(ctx)
+      if (state.generationId) {
+        state.generationOutput = appendToolCallOutput(state.generationOutput, {
+          name: ctx.toolName,
+          input: ctx.toolInput,
+        })
+        buffer.push('generation-update', {
+          id: state.generationId,
+          traceId: state.traceId,
+          output: state.generationOutput,
+          endTime: nowIso(),
+        })
+      }
       const spanId = id(`tool-${ctx.toolName || 'unknown'}`)
       buffer.push('span-create', {
         id: spanId,
@@ -123,12 +217,13 @@ export function createLangfuseTraceHandlers({
     },
 
     afterToolHandler(ctx) {
-      const state = buffer.state(ctx.sessionId)
+      const state = buffer.state(ctx)
       const span = state.stack.pop() || {id: id(`tool-${ctx.toolName || 'unknown'}`)}
       buffer.push('span-update', {
         id: span.id,
         traceId: state.traceId,
         output: ctx.metadata.result,
+        endTime: nowIso(),
         level: ctx.success ? 'DEFAULT' : 'ERROR',
         statusMessage: ctx.success ? undefined : ctx.metadata.result,
         metadata: ctx.metadata,
@@ -136,8 +231,13 @@ export function createLangfuseTraceHandlers({
     },
 
     async afterTurnHandler(ctx) {
-      const state = buffer.state(ctx.sessionId)
+      const state = buffer.state(ctx)
+      const output = asLangfuseValue(ctx.metadata.reply || ctx.metadata.detail || ctx.metadata.reasonCode) || state.output
+      if (output) state.output = output
       if (state.generationId) {
+        const generationOutput = state.generationOutput !== undefined
+          ? state.generationOutput
+          : state.output || undefined
         buffer.push('generation-update', {
           id: state.generationId,
           traceId: state.traceId,
@@ -145,29 +245,46 @@ export function createLangfuseTraceHandlers({
             input: ctx.inputTokens,
             output: ctx.outputTokens,
           },
+          output: generationOutput,
+          endTime: nowIso(),
         })
       }
       buffer.push('span-update', {
         id: state.rootSpanId,
         traceId: state.traceId,
+        output: state.output || undefined,
+        endTime: nowIso(),
         level: ctx.success ? 'DEFAULT' : 'ERROR',
         metadata: ctx.metadata,
+      })
+      buffer.push('trace-create', {
+        id: state.traceId,
+        input: state.input || undefined,
+        output: state.output || undefined,
+        metadata: {
+          ...ctx.metadata,
+          success: ctx.success,
+        },
       })
       await buffer.flush()
     },
 
     taskCompleteHandler(ctx) {
-      const state = buffer.state(ctx.sessionId)
-      buffer.push('trace-update', {
+      const state = buffer.state(ctx)
+      state.output = asLangfuseValue(ctx.metadata.reply) || ''
+      buffer.push('trace-create', {
         id: state.traceId,
-        output: ctx.metadata.reply,
+        output: state.output || undefined,
         metadata: ctx.metadata,
       })
     },
 
     async flushAndClose(ctx) {
       await buffer.flush()
-      if (ctx.sessionId) buffer.stateBySession.delete(ctx.sessionId)
+      if (ctx.sessionId) {
+        const state = buffer.state(ctx)
+        buffer.stateBySession.delete(state.traceId)
+      }
     },
   }
 }

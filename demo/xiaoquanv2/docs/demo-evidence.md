@@ -6,12 +6,24 @@
 - Result: `{"events":7,"strategies":6}`
 - Meaning: the default `hooks.yaml` loads structured logs, Langfuse trace hooks, audit logger, sandbox guard, permission gate, cost guard, loop detector, and retry tracker.
 
-## Path Traversal Deny
+## Feishu Demo Run
 
-- Command: one-off Node smoke script loaded `src/shared-hooks/hooks.yaml`, created `HookAdapter(sessionId="evidence-s1")`, then called `beforeToolCall("read_file", {path: "../../etc/passwd"})`.
-- User-visible reply shape used by Runner: `安全策略拦截：sandbox_violation`
-- Structured log line: `{"phase":"before_tool_call","eventType":"BEFORE_TOOL_CALL","sessionId":"evidence-s1","toolName":"read_file"}`
-- Audit JSONL line: `{"type":"sandbox_deny","sessionId":"evidence-s1","tool":"read_file","reasonCode":"sandbox_violation","detail":"path traversal: ../../etc/passwd"}`
+- Start command: `npm start`
+- Entry path: Feishu message -> `FeishuListener` -> `Runner` -> `runAgent` -> tool wrapper -> `HookAdapter`.
+- Normal message to send in Feishu: `你现在有哪些 skill？`
+- Deny message to send in Feishu: `帮我打开这个本地文件看看：mock-read-error.txt`
+- Loop demo message to send in Feishu: `请连续读取 3 次 loop-demo.txt，每次都原样返回读取结果。`
+- Cost demo message pair to send in Feishu: `你现在有哪些 skill？` then `再查一次你现在有哪些 skill？` with a tiny demo budget.
+- Expected user-visible deny reply shape used by Runner: `安全策略拦截：sandbox_violation`
+- Expected loop deny reply shape used by Runner: `安全策略拦截：loop_detected`
+- Expected budget deny reply shape used by Runner: `安全策略拦截：budget_exceeded`
+- Expected structured log line shape: `{"phase":"before_tool_call","eventType":"BEFORE_TOOL_CALL","toolName":"read_file"}`
+- Expected tool error detail: `mock read_file error: mock-read-error.txt`
+- Screenshot placeholders:
+  - `source/_posts/ai-agent-xiaoquanv2-hardening-demo/feishu-normal-chat.png`
+  - `source/_posts/ai-agent-xiaoquanv2-hardening-demo/feishu-deny-chat.png`
+  - `source/_posts/ai-agent-xiaoquanv2-hardening-demo/feishu-loop-chat.png`
+  - `source/_posts/ai-agent-xiaoquanv2-hardening-demo/feishu-cost-chat.png`
 
 ## Dangerous Command Deny
 
@@ -31,10 +43,9 @@
 - Compose command: `podman compose -f demo/xiaoquanv2/infra/langfuse-podman-compose.yaml up -d`
 - Ports: UI `http://localhost:3010`, MinIO API `http://localhost:9190`, MinIO console `http://127.0.0.1:9191`
 - Container start result: compose created and started `xiaoquanv2-langfuse-{postgres,clickhouse,redis,minio,langfuse-web,langfuse-worker}-1`.
-- Screenshot run: used the stable local Langfuse stack at `http://127.0.0.1:3000` with project keys `pk-lf-course-demo` / `sk-lf-course-demo`.
-- Trace list screenshot: `source/_posts/ai-agent-xiaoquanv2-hardening-demo/langfuse-traces.png`.
-- Normal trace screenshot: `source/_posts/ai-agent-xiaoquanv2-hardening-demo/langfuse-normal-trace.png`.
-- Deny trace screenshot: `source/_posts/ai-agent-xiaoquanv2-hardening-demo/langfuse-deny-trace.png`.
-- Trace ids shown in UI:
-  - Normal: `039f8d427c0dfc5a947e73d713f10df7`
-  - Deny: `a26e884b2b34d9c8b7cc5a7d8c1d9821`
+- Screenshot source: pending real Feishu demo run against the local Langfuse stack.
+- Trace list screenshot placeholder: `source/_posts/ai-agent-xiaoquanv2-hardening-demo/langfuse-traces.png`.
+- Normal trace screenshot placeholder: `source/_posts/ai-agent-xiaoquanv2-hardening-demo/langfuse-normal-trace.png`.
+- Deny trace screenshot placeholder: `source/_posts/ai-agent-xiaoquanv2-hardening-demo/langfuse-deny-trace.png`.
+- Loop trace screenshot placeholder: `source/_posts/ai-agent-xiaoquanv2-hardening-demo/langfuse-loop-trace.png`.
+- Cost trace screenshot placeholder: `source/_posts/ai-agent-xiaoquanv2-hardening-demo/langfuse-cost-trace.png`.

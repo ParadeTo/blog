@@ -1,6 +1,7 @@
 import path from 'path'
 import fs from 'fs'
 import {runWithTraceContext} from './hook-framework/trace-context.js'
+import {newTraceId} from './models.js'
 // import {storeMemory} from './memory/rag-memory.js'
 
 const HELP_TEXT = `小圈 可用命令：
@@ -130,6 +131,9 @@ export class Runner {
           agentId: 'xiaoquan',
         })
       : null
+    const turnNumber = session.messageCount + 1
+    const traceId = inbound.traceId || newTraceId()
+    const rootSpanId = `agent-${traceId}`
 
     const runHardenedTurn = async () => {
       let success = false
@@ -160,16 +164,20 @@ export class Runner {
         success = true
         return {reply}
       } catch (err) {
-        if (adapter?.isDeny(err)) {
+        const denyErr = adapter?.denyError?.(err)
+        if (denyErr) {
+          const reply = `安全策略拦截：${denyErr.reasonCode}`
           await adapter.afterTurn({
             success: false,
             metadata: {
+              ...denyErr.metadata,
+              reply,
               guardrailDeny: true,
-              reasonCode: err.reasonCode,
-              detail: err.detail || err.message,
+              reasonCode: denyErr.reasonCode,
+              detail: denyErr.detail || denyErr.message,
             },
           })
-          await this._sendReply(routingKey, `安全策略拦截：${err.reasonCode}`, rootId)
+          await this._sendReply(routingKey, reply, rootId)
           return null
         }
         throw err
@@ -180,7 +188,7 @@ export class Runner {
 
     const turn = adapter
       ? await runWithTraceContext(
-          {traceId: session.id, parentSpanId: `session-${session.id}`, spanStack: []},
+          {traceId, parentSpanId: rootSpanId, spanStack: []},
           runHardenedTurn,
         )
       : await runHardenedTurn()

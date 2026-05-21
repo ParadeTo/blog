@@ -7,9 +7,88 @@ import {buildBootstrapPrompt} from '../memory/bootstrap.js'
 import {pruneToolResults} from '../memory/context-pruner.js'
 import {maybeCompress, loadSessionCtx, saveSessionCtx} from '../memory/context-compressor.js'
 import {withChildSpan} from '../hook-framework/trace-context.js'
+import {DenyReason, GuardrailDeny} from '../hook-framework/registry.js'
 import {loadSkillRegistry, createSkillTools} from './skill-tools.js'
 
 const MAX_ITERATIONS = 10
+const LLM_TRACE_TEXT_LIMIT = 1200
+const READ_FILE_INTENT = /(?:读取|读一下|查看|打开|read|cat|show)/i
+const FILE_PATH_TOKEN = /(?:^|[\s:：`"'])(?:(?:~?\/|\.{1,2}\/|[A-Za-z0-9_.-]+\/)[^\s`"'，。！？]+|[A-Za-z0-9_.-]+\.[A-Za-z0-9]{1,8})(?=$|[\s`"'，。！？])/i
+const MOCK_READ_FILE_ERROR_NAME = 'mock-read-error.txt'
+const LOOP_DEMO_FILE_NAME = 'loop-demo.txt'
+const LOOP_DEMO_CONTENT = 'loop-demo-content'
+const REPEAT_READ_INTENT = /连续读取\s*(\d+)\s*次/i
+
+function requestedReadCount(userMessage) {
+  const match = String(userMessage || '').match(REPEAT_READ_INTENT)
+  if (!match) return 0
+  return Number(match[1]) || 0
+}
+
+export function toolChoiceForUserMessage(userMessage, iteration = 1) {
+  if (typeof userMessage !== 'string') return 'auto'
+  if (!READ_FILE_INTENT.test(userMessage)) return 'auto'
+  if (!FILE_PATH_TOKEN.test(userMessage)) return 'auto'
+  const repeatCount = requestedReadCount(userMessage)
+  if (repeatCount > 0) {
+    return iteration <= repeatCount ? {type: 'tool', toolName: 'read_file'} : 'auto'
+  }
+  if (iteration !== 1) return 'auto'
+  return {type: 'tool', toolName: 'read_file'}
+}
+
+export function readFileForTool(filePath) {
+  const fileName = path.basename(String(filePath || ''))
+  if (fileName === LOOP_DEMO_FILE_NAME) {
+    return LOOP_DEMO_CONTENT
+  }
+  if (fileName === MOCK_READ_FILE_ERROR_NAME) {
+    throw new GuardrailDeny(
+      DenyReason.SANDBOX_VIOLATION,
+      `mock read_file error: ${filePath}`,
+    )
+  }
+
+  try {
+    const ext = path.extname(filePath).toLowerCase()
+    if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext)) {
+      const buf = fs.readFileSync(filePath)
+      const b64 = buf.toString('base64')
+      const mime = ext === '.png' ? 'image/png' : ext === '.gif' ? 'image/gif' : ext === '.webp' ? 'image/webp' : 'image/jpeg'
+      return JSON.stringify({type: 'image', mimeType: mime, base64: b64})
+    }
+    return fs.readFileSync(filePath, 'utf-8')
+  } catch (e) {
+    return `读取失败: ${e.message}`
+  }
+}
+
+function traceText(value, limit = LLM_TRACE_TEXT_LIMIT) {
+  const text = typeof value === 'string' ? value : JSON.stringify(value)
+  if (!text) return ''
+  return text.length > limit ? `${text.slice(0, limit)}... [truncated, ${text.length} chars total]` : text
+}
+
+function traceMessages(messages) {
+  return (messages || []).slice(-10).map(msg => ({
+    role: msg.role || '',
+    content: traceText(msg.content),
+    name: msg.name,
+  })).filter(msg => msg.role || msg.content)
+}
+
+function traceLlmOutput(step, text) {
+  if (step?.toolCalls?.length) {
+    return {
+      action: 'tool_calls',
+      tools: step.toolCalls.map(tc => ({
+        name: tc.toolName,
+        input: tc.args,
+      })),
+    }
+  }
+  return text || step?.text || ''
+}
 
 function buildTools(skillRegistry, {sessionId, historyAll, sandbox, sessionDir, routingKey} = {}) {
   const skillTools = createSkillTools(skillRegistry, {sessionId, historyAll})
@@ -41,18 +120,7 @@ function buildTools(skillRegistry, {sessionId, historyAll, sandbox, sessionDir, 
       description: '读取指定路径的文件内容。支持文本文件和图片文件（jpg/png/gif/webp），图片会返回 base64 编码供视觉分析',
       parameters: z.object({path: z.string().describe('文件路径')}),
       execute: async ({path: filePath}) => {
-        try {
-          const ext = path.extname(filePath).toLowerCase()
-          if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext)) {
-            const buf = fs.readFileSync(filePath)
-            const b64 = buf.toString('base64')
-            const mime = ext === '.png' ? 'image/png' : ext === '.gif' ? 'image/gif' : ext === '.webp' ? 'image/webp' : 'image/jpeg'
-            return JSON.stringify({type: 'image', mimeType: mime, base64: b64})
-          }
-          return fs.readFileSync(filePath, 'utf-8')
-        } catch (e) {
-          return `读取失败: ${e.message}`
-        }
+        return readFileForTool(filePath)
       },
     }),
     write_file: tool({
@@ -188,6 +256,7 @@ export async function runAgent({
   let lastPromptTokens = 0
   let inputTokens = 0
   let outputTokens = 0
+  let previousLlmOutput
 
   for (let i = 1; i <= maxIter; i++) {
     pruneToolResults(messages, {keepTurns: pruneKeepTurns})
@@ -200,14 +269,21 @@ export async function runAgent({
     }
 
     await adapter?.beforeLlm({
-      metadata: {model: modelId, messageCount: messages.length},
+      metadata: {
+        model: modelId,
+        messageCount: messages.length,
+        promptMessages: traceMessages(messages),
+        previousLlmOutput,
+      },
     })
+    previousLlmOutput = undefined
 
     const {steps, text, usage, response} = await generateText({
       model: getModel(modelId),
       system: systemPrompt,
       messages,
       tools,
+      toolChoice: toolChoiceForUserMessage(userMessage, i),
       maxSteps: 1,
     })
 
@@ -215,6 +291,7 @@ export async function runAgent({
     inputTokens += usage?.promptTokens || usage?.inputTokens || 0
     outputTokens += usage?.completionTokens || usage?.outputTokens || 0
     const step = steps[0]
+    previousLlmOutput = traceLlmOutput(step, text)
     if (!step) {
       saveSessionCtx(sessionId, messages, ctxDir)
       return {text: text || '', inputTokens, outputTokens}
